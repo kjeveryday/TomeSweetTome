@@ -21,7 +21,7 @@ createServer(async (req, res) => {
     let path = decodeURIComponent(url.pathname);
     if (path.endsWith('/')) path += 'index.html';
     const file = normalize(join(ROOT, path));
-    if (!file.startsWith(ROOT)) throw new Error('forbidden');
+    if (!file.startsWith(ROOT + '/')) throw new Error('forbidden');
     const body = await readFile(file);
     res.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store' });
     res.end(body);
@@ -29,4 +29,4 @@ createServer(async (req, res) => {
     res.writeHead(404, { 'content-type': 'text/plain' });
     res.end('not found');
   }
-}).listen(PORT, () => console.log(`serving ${ROOT} on http://localhost:${PORT}`));
+}).listen(PORT, '127.0.0.1', () => console.log(`serving ${ROOT} on http://localhost:${PORT}`));

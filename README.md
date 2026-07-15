@@ -24,13 +24,15 @@ This file is the entry point for developing the Stacklings MVP. It explains whic
 | `creature-care-mvp/BRIEF.md` | Existing v1 implementation notes | Use to understand current behavior; the current PRD wins if it conflicts |
 | `# Multi-agent sessions.md` | Multi-agent coordination and session reference | Read before dividing implementation among multiple agents. Use it to plan delegation, isolated contexts, coordinator responsibilities, follow-up work, and parallel tasks; adapt environment-specific setup examples to the tools actually in use |
 | `# WRITING.md` | Writing and revision rules | Use for PRDs, backlog items, user-facing copy, UI text, research summaries, documentation, and agent handoffs. Apply its source discipline, plain-language rules, and required revision checks |
-| `tools/` | Document build scripts and the local dev server | Regenerate both `.docx` copies with `python3 tools/build_stacklings_mvp_docs.py` (requires `python-docx`) after editing the Markdown sources; `node tools/serve.mjs` serves the app locally |
+| `tools/` | Document build scripts and the local dev server | Regenerate both `.docx` copies with `python3 tools/build_stacklings_mvp_docs.py` (install dependencies first: `python3 -m pip install -r tools/requirements.txt`) after editing the Markdown sources; `node tools/serve.mjs` serves the app locally. `build_stacklings_mechanics_sheet.mjs` is a historical one-off bound to a machine-local runtime; do not treat it as portable tooling |
+| `.claude/launch.json` | Machine-local browser-preview launch config | Contains an absolute path by necessity — the preview launcher resolves no working directory, so relative paths fail. Update the path after moving or cloning the workspace |
 | `outputs/` | Generated document renders (PDF and page images) | Regenerable review output; do not edit by hand; not version-controlled |
 | `successful-reading-program-blueprint.md` | Reading-program research synthesis | Use as background evidence, not as a source of unapproved mechanics |
 | `childrens-reading-report (1 of 2).md`, `childrens_reading_research_report (2 of 2).md` | Reading research behind the blueprint | Use as background evidence only |
 | `chicago-library-availability-mvp.md`, `chicago-library-cover-tracking-mvp.md`, `library-metadata-and-genre-classification-report.md`, `library-lending-systems-overview.md` | Integration research | Use when implementing the corresponding provider; they do not expand MVP scope |
 | Superseded product documents: `Stacklings General Access PRD v0.2.docx`, `Stacklings General Access PRD - Hearth and Shelf v0.1.docx`, `creature-care-mvp-agent-brief.md`, the `Stacklings … Overview` `.html` files, `library-creature-game-overview.html`, `monster-generation-mechanics-report.md`, `book-values-creature-generation.md`, `physical_capture_report.md`, `cozy-game-return-loops-report.md` | Historical exploration | Do not treat them as current requirements or copy terminology from them into the MVP |
 | `Game dev prompt example.pdf` | Prompt-authoring example reference | Not a Stacklings product document; no requirements live here |
+| `workspace-changes-2026-07-15.md` | Record of the July 15, 2026 workspace reorganization | Historical record; not a requirements source |
 
 ## Run and verify locally
 
@@ -118,3 +120,5 @@ Official background: [FTC COPPA compliance plan](https://www.ftc.gov/business-gu
 ## Next implementation artifact
 
 The next artifact should be an ordered development backlog. Each backlog item should be small enough for one developer or agent, point to its PRD requirements, declare its module contract, and contain verifiable acceptance criteria.
+
+The backlog's first item is fixed: the independent baseline verification of v1 defined in `workspace-changes-2026-07-15.md`. No Phase 1 module work starts before that item closes.
