@@ -10,6 +10,16 @@ export function createEventIdFactory(sessionId) {
   return (type, at) => `event:${encodeURIComponent(sessionId)}:${at}:${sequence += 1}:${type}`;
 }
 
+// Local (intra-module) recommendation-preference events. Like the v1 events above,
+// these are NOT part of the frozen PRD section-5 shared contract — only
+// RecommendationRequested/Delivered are shared. Save/dismiss/reset manage advisory
+// local preference data and flow through the reducer like every other state change.
+export const LocalRecommendationEventTypes = Object.freeze({
+  RecommendationSaved: 'RecommendationSaved',
+  RecommendationDismissed: 'RecommendationDismissed',
+  RecommendationReset: 'RecommendationReset'
+});
+
 export const EventTypes = Object.freeze({
   Hatched: 'Hatched',
   TimeElapsed: 'TimeElapsed',
@@ -20,6 +30,7 @@ export const EventTypes = Object.freeze({
   CreatureGenerated: 'CreatureGenerated',
   TuckedIn: 'TuckedIn',
   ResourceGranted: 'ResourceGranted',
+  ...LocalRecommendationEventTypes,
   ...SharedEventTypes
 });
 
@@ -145,3 +156,28 @@ export const careItemUsed = ({ useId, itemId, creatureId, actionId, cpGranted },
   compatibilityEvent(EventTypes.CareItemUsed, now, {
     useId, itemId, creatureId, actionId, cpGranted
   }, id);
+
+export const recommendationRequested = ({ requestId, categoryIds, branchId }, now, id) =>
+  compatibilityEvent(EventTypes.RecommendationRequested, now, {
+    requestId,
+    categoryIds: [...categoryIds],
+    ...(branchId === undefined ? {} : { branchId })
+  }, id);
+
+export const recommendationDelivered = ({ requestId, recommendationId, source, workIds, editionIds }, now, id) =>
+  compatibilityEvent(EventTypes.RecommendationDelivered, now, {
+    requestId,
+    recommendationId,
+    source,
+    workIds: [...workIds],
+    editionIds: [...editionIds]
+  }, id);
+
+export const recommendationSaved = (recommendationId, now, id) =>
+  compatibilityEvent(EventTypes.RecommendationSaved, now, { recommendationId }, id);
+
+export const recommendationDismissed = (recommendationId, now, id) =>
+  compatibilityEvent(EventTypes.RecommendationDismissed, now, { recommendationId }, id);
+
+export const recommendationReset = (now, id) =>
+  compatibilityEvent(EventTypes.RecommendationReset, now, {}, id);

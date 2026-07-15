@@ -85,6 +85,55 @@
       "adventure": "starcandy"
     }
   },
+  "recommendations": {
+    "recentCategoryLimit": 5,
+    "visitorName": "A book buddy",
+    "sampleLabel": "Sample suggestion",
+    "generalId": "rec:general",
+    "categoryMap": {
+      "animal": "rec:animals",
+      "nature": "rec:animals",
+      "fantasy": "rec:fantasy",
+      "magic": "rec:fantasy",
+      "adventure": "rec:adventure",
+      "friendship": "rec:friendship"
+    },
+    "entries": {
+      "rec:general": {
+        "reason": "A cozy pick to start with",
+        "books": [
+          { "workId": "work:fixture:general:1", "editionId": "edition:fixture:general:1", "title": "Last Stop on Market Street", "authors": ["Matt de la Peña"] },
+          { "workId": "work:fixture:general:2", "editionId": "edition:fixture:general:2", "title": "The Wonky Donkey", "authors": ["Craig Smith"] }
+        ]
+      },
+      "rec:animals": {
+        "reason": "Because you've been reading animal stories",
+        "books": [
+          { "workId": "work:fixture:animals:1", "editionId": "edition:fixture:animals:1", "title": "The Tale of Despereaux", "authors": ["Kate DiCamillo"] },
+          { "workId": "work:fixture:animals:2", "editionId": "edition:fixture:animals:2", "title": "Poppy", "authors": ["Avi"] }
+        ]
+      },
+      "rec:fantasy": {
+        "reason": "For your love of magic and wonder",
+        "books": [
+          { "workId": "work:fixture:fantasy:1", "editionId": "edition:fixture:fantasy:1", "title": "The Girl Who Drank the Moon", "authors": ["Kelly Barnhill"] },
+          { "workId": "work:fixture:fantasy:2", "editionId": "edition:fixture:fantasy:2", "title": "Dragon Rider", "authors": ["Cornelia Funke"] }
+        ]
+      },
+      "rec:adventure": {
+        "reason": "More big adventures to explore",
+        "books": [
+          { "workId": "work:fixture:adventure:1", "editionId": "edition:fixture:adventure:1", "title": "The Wild Robot", "authors": ["Peter Brown"] }
+        ]
+      },
+      "rec:friendship": {
+        "reason": "Warm stories about friends",
+        "books": [
+          { "workId": "work:fixture:friendship:1", "editionId": "edition:fixture:friendship:1", "title": "Frog and Toad Are Friends", "authors": ["Arnold Lobel"] }
+        ]
+      }
+    }
+  },
   "generation": {
     "seedVersion": "stacklings:v1",
     "hashAlgorithm": "SHA-256",
@@ -355,6 +404,17 @@
     "collectionActivateLabel": "Care for {name}",
     "relationshipLine": "{icon} {name} {text} · day {days} together",
     "relationshipToast": "{icon} {name} {text}",
-    "finishedBadge": "Finished this book"
+    "finishedBadge": "Finished this book",
+    "visitorTitle": "Book buddies",
+    "visitorAsk": "Ask a book buddy to visit",
+    "visitorGreeting": "{name} stopped by with an idea!",
+    "visitorSampleNote": "Sample suggestion — just for fun",
+    "visitorSave": "Save it",
+    "visitorSaved": "Saved ⭐",
+    "visitorDismiss": "No thanks",
+    "visitorReset": "Clear suggestions",
+    "visitorArrivedToast": "{name} stopped by! 📚",
+    "visitorNone": "No book buddy right now — try again later",
+    "visitorReasonPrefix": "Because"
   }
 }

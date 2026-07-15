@@ -28,7 +28,7 @@ import {
 import { generateCreature, rarityFor } from '../src/systems/generation.js';
 import { decodeBookBarcode } from '../src/systems/barcode.js';
 import { applyEvent, initialState } from '../src/state.js';
-import { EventTypes, creatureGenerated, hatched } from '../src/events.js';
+import { EventTypes, LocalRecommendationEventTypes, creatureGenerated, hatched } from '../src/events.js';
 import { SharedEventTypes } from '../src/contracts.js';
 
 // ---------------------------------------------------------------------------
@@ -432,11 +432,19 @@ test('the original events, CreatureGenerated, and frozen Phase 1 shared events a
     'Hatched', 'TimeElapsed', 'DayRolledOver', 'CareActionPerformed',
     'CreatureStateChanged', 'GiftGranted', 'TuckedIn', 'ResourceGranted'
   ];
-  const expected = new Set([...original, 'CreatureGenerated', ...Object.values(SharedEventTypes)]);
+  // Local intra-module events (v1 originals + Package 6 recommendation preference events)
+  // are declared but not part of the frozen PRD section-5 shared contract.
+  const expected = new Set([
+    ...original,
+    'CreatureGenerated',
+    ...Object.values(LocalRecommendationEventTypes),
+    ...Object.values(SharedEventTypes)
+  ]);
   const all = new Set(Object.values(EventTypes));
   assert.equal(all.size, expected.size, 'no undeclared event names are present');
   for (const name of original) assert.ok(all.has(name), `${name} still present`);
   assert.ok(all.has('CreatureGenerated'));
+  for (const name of Object.values(LocalRecommendationEventTypes)) assert.ok(all.has(name), `${name} declared`);
   for (const name of Object.values(SharedEventTypes)) assert.ok(all.has(name), `${name} is frozen`);
 });
 

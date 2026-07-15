@@ -14,6 +14,13 @@ import {
 import { freshCareState, selectActiveCreature } from './systems/collection.js';
 import { shouldMarkFinished } from './systems/relationship.js';
 import { applyGrant, applyUse } from './systems/care-items.js';
+import {
+  applyDelivery,
+  applyDismiss,
+  applyRequest,
+  applyReset,
+  applySave
+} from './systems/recommendations.js';
 
 const STATS = content.stats;
 
@@ -250,6 +257,35 @@ function grantCareItem(state, payload) {
 // feed with a different animation) subject to the existing daily cap — the cap decision
 // arrives on the event as cpGranted, exactly like CareActionPerformed. It never grants
 // extra reading progress or power. No-op (replay-safe) if no matching treat is available.
+// Recommendations are advisory local preference data. The two shared events record the
+// request and the delivered fixture result; the three local events (save/dismiss/reset)
+// manage the player's preference lists. Nothing here changes books, creatures, reading,
+// or care — reset/delete never removes owned data.
+function requestRecommendation(state, payload) {
+  if (!EVENT_PAYLOAD_VALIDATORS.RecommendationRequested(payload)) return state;
+  return { ...state, recommendations: applyRequest(state.recommendations, payload) };
+}
+
+function deliverRecommendation(state, payload) {
+  if (!EVENT_PAYLOAD_VALIDATORS.RecommendationDelivered(payload)) return state;
+  if (!state.recommendations.requests[payload.requestId]) return state;
+  return { ...state, recommendations: applyDelivery(state.recommendations, payload) };
+}
+
+function saveRecommendation(state, payload) {
+  if (typeof payload.recommendationId !== 'string' || payload.recommendationId.length === 0) return state;
+  return { ...state, recommendations: applySave(state.recommendations, payload.recommendationId) };
+}
+
+function dismissRecommendation(state, payload) {
+  if (typeof payload.recommendationId !== 'string' || payload.recommendationId.length === 0) return state;
+  return { ...state, recommendations: applyDismiss(state.recommendations, payload.recommendationId) };
+}
+
+function resetRecommendations(state) {
+  return { ...state, recommendations: applyReset(state.recommendations) };
+}
+
 function useCareItem(state, payload) {
   if (!EVENT_PAYLOAD_VALIDATORS.CareItemUsed(payload)) return state;
   if (!state.hatched) return state;
@@ -492,6 +528,21 @@ export function applyEvent(state, event) {
 
     case EventTypes.CareItemUsed:
       return useCareItem(state, event.payload ?? event);
+
+    case EventTypes.RecommendationRequested:
+      return requestRecommendation(state, event.payload ?? event);
+
+    case EventTypes.RecommendationDelivered:
+      return deliverRecommendation(state, event.payload ?? event);
+
+    case EventTypes.RecommendationSaved:
+      return saveRecommendation(state, event.payload ?? event);
+
+    case EventTypes.RecommendationDismissed:
+      return dismissRecommendation(state, event.payload ?? event);
+
+    case EventTypes.RecommendationReset:
+      return resetRecommendations(state);
 
     case EventTypes.Hatched: {
       return {

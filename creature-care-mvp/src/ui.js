@@ -103,6 +103,22 @@ export function createUI(root, content, handlers) {
       <h2 id="collection-title" class="collection-title"></h2>
       <div class="collection-list" role="list"></div>
     </section>
+    <section class="visitor" aria-labelledby="visitor-title" hidden>
+      <h2 id="visitor-title" class="visitor-title"></h2>
+      <button class="visitor-ask" type="button"></button>
+      <div class="visitor-card" hidden>
+        <p class="visitor-greeting"></p>
+        <p class="visitor-reason"></p>
+        <p class="visitor-sample-note"></p>
+        <ul class="visitor-books"></ul>
+        <div class="visitor-card-actions">
+          <button class="visitor-save" type="button"></button>
+          <span class="visitor-saved" hidden></span>
+          <button class="visitor-dismiss" type="button"></button>
+        </div>
+      </div>
+      <button class="visitor-reset" type="button"></button>
+    </section>
     <button class="tuck-btn" type="button">
       <span class="a-icon"></span><span class="t-label"></span>
     </button>
@@ -258,6 +274,18 @@ export function createUI(root, content, handlers) {
     collection: q('.collection'),
     collectionTitle: q('.collection-title'),
     collectionList: q('.collection-list'),
+    visitor: q('.visitor'),
+    visitorTitle: q('.visitor-title'),
+    visitorAsk: q('.visitor-ask'),
+    visitorCard: q('.visitor-card'),
+    visitorGreeting: q('.visitor-greeting'),
+    visitorReason: q('.visitor-reason'),
+    visitorSampleNote: q('.visitor-sample-note'),
+    visitorBooks: q('.visitor-books'),
+    visitorSave: q('.visitor-save'),
+    visitorSaved: q('.visitor-saved'),
+    visitorDismiss: q('.visitor-dismiss'),
+    visitorReset: q('.visitor-reset'),
     welcome: q('.welcome'),
     welcomeTitle: q('.welcome-title'),
     welcomeBody: q('.welcome-body'),
@@ -436,6 +464,95 @@ export function createUI(root, content, handlers) {
   }
   el.shelf.setAttribute('aria-label', copy.shelfLabel);
   el.collectionTitle.textContent = copy.collectionTitle;
+  el.visitorTitle.textContent = copy.visitorTitle;
+  el.visitorAsk.textContent = copy.visitorAsk;
+  el.visitorSave.textContent = copy.visitorSave;
+  el.visitorSaved.textContent = copy.visitorSaved;
+  el.visitorDismiss.textContent = copy.visitorDismiss;
+  el.visitorReset.textContent = copy.visitorReset;
+
+  // ----- book buddy visitor: fixture recommendation card (flag-gated) -----
+  let visitorRecommendationId = null;
+
+  function renderVisitorBooks(books) {
+    el.visitorBooks.replaceChildren();
+    for (const book of Array.isArray(books) ? books : []) {
+      const item = document.createElement('li');
+      item.className = 'visitor-book';
+      const title = document.createElement('span');
+      title.className = 'visitor-book-title';
+      title.textContent = book?.title ?? '';
+      const authors = document.createElement('span');
+      authors.className = 'visitor-book-authors';
+      authors.textContent = Array.isArray(book?.authors) ? book.authors.join(', ') : '';
+      item.append(title, authors);
+      el.visitorBooks.append(item);
+    }
+  }
+
+  function renderVisitor(state) {
+    if (!handlers.isRecommendationVisitorsEnabled()) {
+      el.visitor.hidden = true;
+      return;
+    }
+    el.visitor.hidden = false;
+
+    const dismissedIds = Array.isArray(state?.recommendations?.dismissedIds)
+      ? state.recommendations.dismissedIds
+      : [];
+    const savedIds = Array.isArray(state?.recommendations?.savedIds)
+      ? state.recommendations.savedIds
+      : [];
+    const entry = visitorRecommendationId
+      ? content.recommendations?.entries?.[visitorRecommendationId]
+      : null;
+    const showCard = Boolean(entry) && !dismissedIds.includes(visitorRecommendationId);
+
+    if (!showCard) {
+      el.visitorCard.hidden = true;
+      el.visitorBooks.replaceChildren();
+      return;
+    }
+
+    el.visitorCard.hidden = false;
+    el.visitorGreeting.textContent = interpolate(copy.visitorGreeting, {
+      name: content.recommendations?.visitorName ?? ''
+    });
+    el.visitorReason.textContent = entry.reason ?? '';
+    el.visitorSampleNote.textContent = copy.visitorSampleNote;
+    renderVisitorBooks(entry.books);
+
+    const isSaved = savedIds.includes(visitorRecommendationId);
+    el.visitorSave.hidden = isSaved;
+    el.visitorSaved.hidden = !isSaved;
+  }
+
+  el.visitorAsk.addEventListener('click', () => {
+    const outcome = handlers.onRequestRecommendation();
+    if (outcome.ok) {
+      visitorRecommendationId = outcome.recommendationId;
+      toast(interpolate(copy.visitorArrivedToast, { name: content.recommendations?.visitorName ?? '' }));
+      spawnSparks(icons.sparkle);
+    } else {
+      visitorRecommendationId = null;
+      toast(copy.visitorNone);
+    }
+    renderVisitor(latestState);
+  });
+  el.visitorSave.addEventListener('click', () => {
+    if (visitorRecommendationId) handlers.onSaveRecommendation(visitorRecommendationId);
+  });
+  el.visitorDismiss.addEventListener('click', () => {
+    const id = visitorRecommendationId;
+    visitorRecommendationId = null;
+    if (id) handlers.onDismissRecommendation(id);
+    renderVisitor(latestState);
+  });
+  el.visitorReset.addEventListener('click', () => {
+    visitorRecommendationId = null;
+    handlers.onResetRecommendations();
+    renderVisitor(latestState);
+  });
   el.welcomeTitle.textContent = copy.welcomeTitle;
   el.giftLine.textContent = copy.giftLine;
   el.welcomeBtn.textContent = copy.giftButton;
@@ -964,6 +1081,7 @@ export function createUI(root, content, handlers) {
 
     renderShelf(state);
     renderCollection(state);
+    renderVisitor(state);
 
     for (const meter of content.stats.meters) {
       const value = state.stats[meter.id];

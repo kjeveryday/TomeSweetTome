@@ -17,12 +17,18 @@ import {
   readingChallengeStarted,
   readingDayRecorded,
   readingRecorded,
+  recommendationDelivered,
+  recommendationDismissed,
+  recommendationRequested,
+  recommendationReset,
+  recommendationSaved,
   resourceGranted
 } from './events.js';
 import { SharedEventTypes } from './contracts.js';
 import { previewForBook, revealForReading } from './systems/collection.js';
 import { recordRelationshipDay } from './systems/relationship.js';
 import { selectTreat } from './systems/care-items.js';
+import { FixtureRecommendationProvider, buildRecommendationInput, deliveredFromResult } from './systems/recommendations.js';
 import { DEFAULT_FEATURE_FLAGS } from './feature-flags.js';
 import * as clock from './systems/clock.js';
 import * as care from './systems/care.js';
@@ -68,6 +74,11 @@ function localTimerPreviewEnabled() {
     && new URLSearchParams(window.location.search).get('timer') === 'on';
 }
 
+function localRecommendationPreviewEnabled() {
+  return ['127.0.0.1', 'localhost'].includes(window.location.hostname)
+    && new URLSearchParams(window.location.search).get('recommend') === 'on';
+}
+
 function loadClockOffset() {
   let offset = Number(window.localStorage.getItem(DEBUG_CLOCK_KEY)) || 0;
   const raw = new URLSearchParams(window.location.search).get('clock');
@@ -101,6 +112,26 @@ let featureFlags = { ...DEFAULT_FEATURE_FLAGS };
 let timerSession = createReadingSession({ timerEnabled: false });
 let interruptedReadingPrompt = null;
 const nextEventId = createEventIdFactory(`local-${getNow()}`);
+const recommendationProvider = new FixtureRecommendationProvider();
+
+// Ask the deterministic fixture provider for a visiting-creature recommendation from the
+// player's recent broad categories. Provider failure or no result leaves the core loop
+// intact and simply shows no visitor. Gated by the recommendationVisitors flag.
+function requestRecommendationFlow() {
+  if (!featureFlags.recommendationVisitors) return { ok: false, reason: 'disabled' };
+  const now = getNow();
+  const requestId = `recommendation:${nextEventId('recommendation', now)}`;
+  const built = buildRecommendationInput(state, { requestId });
+  if (!built.ok) return { ok: false, reason: built.reason };
+  commit(recommendationRequested(built.input, now));
+  let result;
+  try { result = recommendationProvider.recommend(built.input, now); }
+  catch { return { ok: false, reason: 'providerError', requestId }; }
+  const delivered = deliveredFromResult(result);
+  if (!delivered.ok) return { ok: false, reason: 'unavailable', requestId };
+  commit(recommendationDelivered(delivered.delivered, now));
+  return { ok: true, requestId, recommendationId: delivered.delivered.recommendationId };
+}
 
 function removeInterruptedReadingIntent() {
   try { window.localStorage.removeItem(INTERRUPTED_READING_KEY); } catch { /* optional recovery only */ }
@@ -360,14 +391,34 @@ const ui = createUI(document.querySelector('#app'), content, {
     });
     return result.ok && commitReadingRecord(result.record);
   },
-  canPerform: (actionId) => care.canPerform(state, actionId)
+  canPerform: (actionId) => care.canPerform(state, actionId),
+  isRecommendationVisitorsEnabled: () => featureFlags.recommendationVisitors === true,
+  onRequestRecommendation: () => requestRecommendationFlow(),
+  // Save/dismiss/reset are gated by the same flag as the request flow, so the whole
+  // recommendation surface stays fully inert (emits nothing) when the flag is OFF.
+  onSaveRecommendation: (recommendationId) => {
+    if (!featureFlags.recommendationVisitors) return;
+    if (typeof recommendationId === 'string' && recommendationId.length) commit(recommendationSaved(recommendationId, getNow()));
+  },
+  onDismissRecommendation: (recommendationId) => {
+    if (!featureFlags.recommendationVisitors) return;
+    if (typeof recommendationId === 'string' && recommendationId.length) commit(recommendationDismissed(recommendationId, getNow()));
+  },
+  onResetRecommendations: () => {
+    if (!featureFlags.recommendationVisitors) return;
+    commit(recommendationReset(getNow()));
+  }
 });
 
 (function boot() {
   document.title = content.copy.title;
   const saved = persistence.load(getNow());
   state = saved.state;
-  featureFlags = { ...saved.featureFlags, timer: saved.featureFlags.timer || localTimerPreviewEnabled() };
+  featureFlags = {
+    ...saved.featureFlags,
+    timer: saved.featureFlags.timer || localTimerPreviewEnabled(),
+    recommendationVisitors: saved.featureFlags.recommendationVisitors || localRecommendationPreviewEnabled()
+  };
   const restoredTimer = restoreReadingSession({
     timerEnabled: featureFlags.timer,
     interruptedIntent: consumeInterruptedReadingIntent()
