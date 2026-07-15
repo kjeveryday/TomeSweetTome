@@ -174,6 +174,10 @@ test('current envelope enforces one creature per work and valid collection IDs',
   const original = base.state.collection.creatures['creature:legacy:original'];
   base.state.collection.creatures['creature:duplicate'] = { ...structuredClone(original), id: 'creature:duplicate' };
   assert.equal(isCurrentEnvelope(base), false);
+  base.state.collection.reconciledDuplicateWorkIds = [original.workId];
+  assert.equal(isCurrentEnvelope(base), true);
+  delete base.state.collection.creatures['creature:duplicate'];
+  assert.equal(isCurrentEnvelope(base), false);
 
   const duplicateVisible = migrateSave({ state: legacyCare(), lastSeen: 1 }).envelope;
   duplicateVisible.state.collection.visibleCreatureIds.push('creature:legacy:original');
@@ -231,6 +235,23 @@ test('root care is the active-record compatibility projection after every preser
     });
   }
   assert.equal(isCurrentEnvelope(JSON.parse(adapter.export())), true);
+});
+
+test('invalid current book data is refused without replacing migrated care and collection state', () => {
+  const storage = new FakeStorage();
+  const original = legacyCare({ cp: 27, stickers: ['leaf', 'star'] });
+  storage.setItem(LEGACY_SAVE_KEY, JSON.stringify({ state: original, lastSeen: 1000 }));
+  const adapter = new LocalStorageAdapter(storage);
+  const before = adapter.load(1000);
+  const invalid = structuredClone(before.state);
+  invalid.books.works['work:legacy:unlinked'].editionIds.push('edition:missing');
+
+  assert.throws(() => adapter.save(invalid, 1100), /invalid Stacklings state/);
+  const after = adapter.load(1100);
+  assert.equal(after.state.cp, 27);
+  assert.deepEqual(after.state.stickers, ['leaf', 'star']);
+  assert.equal(after.state.collection.activeCreatureId, before.state.collection.activeCreatureId);
+  assert.equal(after.lastSeen, before.lastSeen);
 });
 
 test('formal reading days equal the distinct canonical day keys in accepted reading records', () => {

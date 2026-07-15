@@ -940,6 +940,10 @@ button:focus-visible {
   user-select: text;
 }
 .isbn-input:focus { outline: 4px solid #d8ebff; border-color: var(--sky-btn-deep); }
+.book-search-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+.book-search-grid { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 8px; align-items: center; }
+.book-search-grid .isbn-label { margin: 0; }
+.book-search-submit { min-height: 48px; }
 .isbn-submit, .book-use {
   border-radius: 15px;
   background: linear-gradient(180deg, #fff, var(--gold));
@@ -951,7 +955,8 @@ button:focus-visible {
 }
 .scan-status { min-height: 18px; margin: 10px 0 0; color: #9b5573; font-size: 12px; font-weight: 800; }
 .book-modal[data-busy="true"] .photo-btn,
-.book-modal[data-busy="true"] .isbn-form { filter: grayscale(0.6) opacity(0.55); }
+.book-modal[data-busy="true"] .isbn-form,
+.book-modal[data-busy="true"] .book-search-form { filter: grayscale(0.6) opacity(0.55); }
 .book-result {
   position: relative;
   margin-top: 12px;
@@ -1093,6 +1098,7 @@ button:focus-visible {
   .book-open-label { display: none; }
   .book-card { padding: 20px 16px; }
   .isbn-row { grid-template-columns: 1fr; }
+  .book-search-form, .book-search-grid { grid-template-columns: 1fr; }
   .book-result { grid-template-columns: 78px 1fr; padding: 11px; }
   .book-orb { scale: 0.82; }
 }

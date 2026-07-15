@@ -3,6 +3,7 @@
 // must never reroll this base identity.
 
 import content from '../content.json' with { type: 'json' };
+import { PROVIDER_WORK_IDENTITY_VERSION } from '../contracts.js';
 import { canonicalizeIsbn } from './isbn.js';
 
 function readUint32(bytes, offset) {
@@ -43,12 +44,25 @@ function generatedName(bytes) {
 }
 
 export async function generateCreature(input, cryptoProvider = globalThis.crypto) {
-  const parsed = canonicalizeIsbn(input);
-  if (!parsed.ok) return parsed;
+  const identity = input && typeof input === 'object' && !Array.isArray(input)
+    ? input
+    : { identityVersion: content.generation.seedVersion, identityKey: input };
+  const isLegacyIsbn = identity.identityVersion === content.generation.seedVersion;
+  const isProviderWork = identity.identityVersion === PROVIDER_WORK_IDENTITY_VERSION;
+  if (!isLegacyIsbn && !isProviderWork) {
+    return { ok: false, reason: 'unsupportedIdentityVersion' };
+  }
+  const parsed = isLegacyIsbn ? canonicalizeIsbn(identity.identityKey) : null;
+  if (isLegacyIsbn && !parsed.ok) return parsed;
+  if (isProviderWork && (typeof identity.identityKey !== 'string'
+    || !/^\/works\/OL\d+W$/.test(identity.identityKey))) {
+    return { ok: false, reason: 'invalidIdentityKey' };
+  }
   if (!cryptoProvider?.subtle) return { ok: false, reason: 'hashUnavailable' };
 
   const config = content.generation;
-  const encoded = new TextEncoder().encode(`${config.seedVersion}:${parsed.isbn}`);
+  const identityKey = isLegacyIsbn ? parsed.isbn : identity.identityKey;
+  const encoded = new TextEncoder().encode(`${identity.identityVersion}:${identityKey}`);
   const bytes = new Uint8Array(await cryptoProvider.subtle.digest('SHA-256', encoded));
   const speciesSeed = readUint32(bytes, 0);
   const individualSeed = readUint32(bytes, 4);
@@ -62,14 +76,14 @@ export async function generateCreature(input, cryptoProvider = globalThis.crypto
   const family = config.families[speciesSeed % config.families.length];
   const palette = config.palettes[paletteIndex % config.palettes.length];
   const pattern = config.patterns[(speciesSeed >>> 8) % config.patterns.length];
-  const publisher = publisherFor(parsed.isbn);
+  const publisher = isLegacyIsbn ? publisherFor(parsed.isbn) : config.defaultPublisher;
   const rarityRoll = raritySeed % config.rarityRollRange;
 
   const creature = {
     kind: 'book',
-    seedVersion: config.seedVersion,
+    seedVersion: identity.identityVersion,
     hashAlgorithm: config.hashAlgorithm,
-    isbn: parsed.isbn,
+    ...(isLegacyIsbn ? { isbn: parsed.isbn } : { identityKey }),
     seed: `${hex32(speciesSeed)}${hex32(individualSeed)}${hex32(raritySeed)}`,
     name: generatedName(bytes),
     family: { ...family },
@@ -86,8 +100,10 @@ export async function generateCreature(input, cryptoProvider = globalThis.crypto
     quirk: { ...config.quirks[quirkIndex % config.quirks.length] },
     rarity: { roll: rarityRoll, ...rarityFor(rarityRoll) },
     publisher: { ...publisher },
-    languageGroup: { ...languageGroupFor(parsed.isbn) }
+    languageGroup: { ...(isLegacyIsbn ? languageGroupFor(parsed.isbn) : config.defaultLanguageGroup) }
   };
 
-  return { ok: true, isbn: parsed.isbn, creature };
+  return isLegacyIsbn
+    ? { ok: true, isbn: parsed.isbn, creature }
+    : { ok: true, identity: { identityVersion: identity.identityVersion, identityKey }, creature };
 }

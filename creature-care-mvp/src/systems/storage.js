@@ -50,6 +50,11 @@ export class LocalStorageAdapter {
         };
     if (!isCurrentEnvelope(candidate) && !isCurrentEnvelope(stateOrEnvelope)) {
       const reconciled = migrateSave({ state: stateOrEnvelope, lastSeen: candidate.lastSeen }, { now });
+      if (reconciled.status === 'corrupt') throw new TypeError('Refusing to save an invalid Stacklings state');
+      if (Object.hasOwn(stateOrEnvelope ?? {}, 'books')
+        && JSON.stringify(stateOrEnvelope.books) !== JSON.stringify(reconciled.envelope.state.books)) {
+        throw new TypeError('Refusing to save an invalid Stacklings state');
+      }
       candidate = { ...reconciled.envelope, featureFlags: { ...previous.featureFlags } };
     }
     if (!isCurrentEnvelope(candidate)) throw new TypeError('Refusing to save an invalid Stacklings envelope');
@@ -106,6 +111,11 @@ export class SyncedStorageAdapter {
         };
     if (!isCurrentEnvelope(candidate) && !isCurrentEnvelope(stateOrEnvelope)) {
       const reconciled = migrateSave({ state: stateOrEnvelope, lastSeen: candidate.lastSeen }, { now });
+      if (reconciled.status === 'corrupt') throw new TypeError('Refusing to sync an invalid Stacklings state');
+      if (Object.hasOwn(stateOrEnvelope ?? {}, 'books')
+        && JSON.stringify(stateOrEnvelope.books) !== JSON.stringify(reconciled.envelope.state.books)) {
+        throw new TypeError('Refusing to sync an invalid Stacklings state');
+      }
       candidate = { ...reconciled.envelope, featureFlags: { ...previous.featureFlags } };
     }
     if (!isCurrentEnvelope(candidate)) throw new TypeError('Refusing to sync an invalid Stacklings envelope');

@@ -4,6 +4,7 @@
 
 import content from './content.json' with { type: 'json' };
 import { EventTypes } from './events.js';
+import { EVENT_PAYLOAD_VALIDATORS, createPlayerAccess } from './contracts.js';
 
 const STATS = content.stats;
 
@@ -15,6 +16,115 @@ export function dayKeyOf(ms) {
 
 export function clampStat(value) {
   return Math.min(STATS.max, Math.max(STATS.min, value));
+}
+
+function addBookRecords(state, payload) {
+  if (!EVENT_PAYLOAD_VALIDATORS.BookAdded(payload)) return state;
+  const existingEdition = state.books.editions[payload.editionId];
+  if (existingEdition && (existingEdition.workId !== payload.workId
+    || existingEdition.isbn13 !== payload.edition.isbn13)) return state;
+  for (const alias of payload.aliases) {
+    const routedWorkId = state.books.aliases[alias.key];
+    if (routedWorkId && routedWorkId !== payload.workId) return state;
+  }
+  for (const alias of payload.editionAliases) {
+    const routedEditionId = state.books.editionAliases?.[alias.key];
+    if (routedEditionId && routedEditionId !== payload.editionId) return state;
+  }
+
+  const existingWork = state.books.works[payload.workId];
+  const existingProvenance = state.books.provenance?.[payload.workId];
+  const rank = { unknown: 0, partial: 1, resolved: 2 };
+  const preferIncoming = !existingWork
+    || rank[payload.work.metadataStatus] > rank[existingWork.metadataStatus]
+    || (rank[payload.work.metadataStatus] === rank[existingWork.metadataStatus]
+      && (!existingProvenance || payload.provenance.fetchedAt >= existingProvenance.fetchedAt));
+  const work = {
+    ...(preferIncoming ? payload.work : existingWork),
+    editionIds: [...new Set([
+      ...(existingWork?.editionIds ?? []),
+      ...payload.work.editionIds,
+      payload.editionId
+    ])]
+  };
+  return {
+    ...state,
+    books: {
+      works: { ...state.books.works, [work.id]: structuredClone(work) },
+      editions: {
+        ...state.books.editions,
+        [payload.editionId]: structuredClone((preferIncoming || !existingEdition) ? payload.edition : existingEdition)
+      },
+      aliases: {
+        ...state.books.aliases,
+        ...Object.fromEntries(payload.aliases.map(({ key, workId }) => [key, workId]))
+      },
+      editionAliases: {
+        ...(state.books.editionAliases ?? {}),
+        ...Object.fromEntries(payload.editionAliases.map(({ key, editionId }) => [key, editionId]))
+      },
+      provenance: {
+        ...(state.books.provenance ?? {}),
+        [work.id]: structuredClone(preferIncoming ? payload.provenance : state.books.provenance?.[work.id] ?? payload.provenance)
+      }
+    }
+  };
+}
+
+function reconcileBookWork(state, payload) {
+  if (!EVENT_PAYLOAD_VALIDATORS.BookWorkReconciled(payload)) return state;
+  const canonical = state.books.works[payload.canonicalWorkId];
+  if (!canonical) return state;
+  const aliasedIds = payload.aliasedWorkIds.filter((id) => id !== canonical.id);
+  const suppliedEditionIds = new Set(payload.editionIds);
+  for (const workId of aliasedIds) {
+    const work = state.books.works[workId];
+    if (work && !work.editionIds.every((editionId) => suppliedEditionIds.has(editionId))) return state;
+  }
+
+  const works = structuredClone(state.books.works);
+  const editions = structuredClone(state.books.editions);
+  const aliases = structuredClone(state.books.aliases);
+  const provenance = structuredClone(state.books.provenance ?? {});
+  const editionIds = new Set(canonical.editionIds);
+  for (const workId of aliasedIds) {
+    const work = works[workId];
+    if (!work) continue;
+    for (const editionId of work.editionIds) {
+      if (!editions[editionId]) return state;
+      editions[editionId].workId = canonical.id;
+      editionIds.add(editionId);
+    }
+    for (const [key, routedWorkId] of Object.entries(aliases)) {
+      if (routedWorkId === workId) aliases[key] = canonical.id;
+    }
+    delete works[workId];
+    delete provenance[workId];
+  }
+  works[canonical.id] = { ...works[canonical.id], editionIds: [...editionIds] };
+
+  const creatures = Object.fromEntries(Object.entries(state.collection.creatures).map(([id, creature]) => [
+    id,
+    aliasedIds.includes(creature.workId) ? { ...structuredClone(creature), workId: canonical.id } : structuredClone(creature)
+  ]));
+  const readingRecords = Object.fromEntries(Object.entries(state.reading.records).map(([id, record]) => [
+    id,
+    aliasedIds.includes(record.workId) ? { ...structuredClone(record), workId: canonical.id } : structuredClone(record)
+  ]));
+  const counts = Object.values(creatures).reduce((result, creature) => {
+    result[creature.workId] = (result[creature.workId] ?? 0) + 1;
+    return result;
+  }, {});
+  const reconciledDuplicateWorkIds = (state.collection.reconciledDuplicateWorkIds ?? [])
+    .filter((id) => !aliasedIds.includes(id) && id !== canonical.id);
+  if (counts[canonical.id] > 1) reconciledDuplicateWorkIds.push(canonical.id);
+
+  return {
+    ...state,
+    books: { ...state.books, works, editions, aliases, provenance },
+    collection: { ...state.collection, creatures, reconciledDuplicateWorkIds },
+    reading: { ...state.reading, records: readingRecords }
+  };
 }
 
 export function initialState() {
@@ -29,7 +139,16 @@ export function initialState() {
     stickers: [],
     creature: null,
     creatureHistory: [],
-    tuckedIn: false
+    tuckedIn: false,
+    books: { works: {}, editions: {}, aliases: {}, editionAliases: {}, provenance: {} },
+    reading: { records: {}, formalDayKeys: [] },
+    collection: {
+      creatures: {}, activeCreatureId: null, visibleCreatureIds: [], archivedCreatureIds: [],
+      reconciledDuplicateWorkIds: []
+    },
+    playerAccess: createPlayerAccess(),
+    careItems: { inventory: [], grantDayKeys: [] },
+    recommendations: { requests: {}, results: {}, savedIds: [], dismissedIds: [] }
   };
 }
 
@@ -45,6 +164,15 @@ export function moodOf(state) {
 
 export function applyEvent(state, event) {
   switch (event.type) {
+    case EventTypes.BookAdded:
+      return addBookRecords(state, event.payload ?? event);
+
+    case EventTypes.BookMetadataResolved:
+      return addBookRecords(state, event.payload ?? event);
+
+    case EventTypes.BookWorkReconciled:
+      return reconcileBookWork(state, event.payload ?? event);
+
     case EventTypes.Hatched: {
       return {
         ...state,
@@ -119,7 +247,9 @@ export function applyEvent(state, event) {
 
     case EventTypes.CreatureGenerated: {
       if (!event.creature || event.creature.kind !== 'book') return state;
-      if (state.creature?.isbn === event.creature.isbn) {
+      const sameIdentity = state.creature?.seedVersion === event.creature.seedVersion
+        && (state.creature?.identityKey ?? state.creature?.isbn) === (event.creature.identityKey ?? event.creature.isbn);
+      if (sameIdentity) {
         return { ...state, creature: event.creature, name: event.creature.name };
       }
       const history = state.creature

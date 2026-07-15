@@ -48,3 +48,17 @@ test('new book identities keep prior generated identities and round-trip', async
   assert.deepEqual(createPersistence(storage).load().state, state);
 });
 
+test('provider-work identities deduplicate only the same searched work', async () => {
+  const first = (await generateCreature({
+    identityVersion: 'stacklings:work:v1', identityKey: '/works/OL123W'
+  })).creature;
+  const second = (await generateCreature({
+    identityVersion: 'stacklings:work:v1', identityKey: '/works/OL456W'
+  })).creature;
+  let state = applyEvent(initialState(), creatureGenerated(first, at(0)));
+  state = applyEvent(state, creatureGenerated(second, at(1)));
+  assert.deepEqual(state.creatureHistory.map((entry) => entry.identityKey), ['/works/OL123W']);
+  state = applyEvent(state, creatureGenerated(second, at(2)));
+  assert.deepEqual(state.creatureHistory.map((entry) => entry.identityKey), ['/works/OL123W']);
+  assert.equal(state.creature.identityKey, '/works/OL456W');
+});

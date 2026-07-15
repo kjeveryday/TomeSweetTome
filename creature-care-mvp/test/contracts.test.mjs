@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   EVENT_VERSIONS,
   EVENT_PAYLOAD_VALIDATORS,
+  PROVIDER_WORK_IDENTITY_VERSION,
   SharedEventTypes,
   createBookEdition,
   createBookWork,
@@ -34,6 +35,7 @@ import {
   AvailabilityStatuses,
   CatalogProvider,
   FixtureMetadataProvider,
+  MetadataProvider,
   PatronActionStatuses,
   ProviderSources,
   isAvailabilityResult,
@@ -57,6 +59,7 @@ test('shared record identifiers are stable and keep legacy ISBN identity keys un
   assert.equal(isbnAliasKey(isbn), `isbn13:${isbn}`);
   assert.equal(providerWorkAliasKey('open-library', 'OL1W'), 'provider-work:open-library:OL1W');
   assert.equal(providerEditionAliasKey('open-library', 'OL2M'), 'provider-edition:open-library:OL2M');
+  assert.equal(PROVIDER_WORK_IDENTITY_VERSION, 'stacklings:work:v1');
 });
 
 test('BookWork and BookEdition contracts validate required fields and unique edition aliases', () => {
@@ -136,9 +139,19 @@ test('all approved shared event names have version 1 and enforce a stable envelo
 });
 
 test('every shared event v1 payload has an acceptance and rejection contract', () => {
+  const bookWork = createBookWork({ id: 'work:1', metadataStatus: 'resolved', editionIds: ['edition:1'] });
+  const bookEdition = createBookEdition({ id: 'edition:1', workId: 'work:1', isbn13: '9780064400558' });
+  const bookRecordPayload = {
+    workId: 'work:1', editionId: 'edition:1', work: bookWork, edition: bookEdition,
+    aliases: [{ key: 'isbn13:9780064400558', workId: 'work:1' }],
+    editionAliases: [],
+    provenance: {
+      source: 'fixture', providerId: 'metadata:test', fetchedAt: '1970-01-01T00:00:00.000Z', fields: {}
+    }
+  };
   const payloads = {
-    BookAdded: { workId: 'work:1', editionId: 'edition:1' },
-    BookMetadataResolved: { workId: 'work:1', editionId: 'edition:1', metadataStatus: 'resolved', source: 'fixture' },
+    BookAdded: bookRecordPayload,
+    BookMetadataResolved: { ...bookRecordPayload, metadataStatus: 'resolved', source: 'fixture' },
     BookWorkReconciled: { canonicalWorkId: 'work:1', aliasedWorkIds: ['work:old'], editionIds: ['edition:1'] },
     ReadingRecorded: { readingRecordId: 'reading:1', workId: 'work:1' },
     ReadingDayRecorded: { readingRecordId: 'reading:1', localDayKey: '2026-7-15' },
@@ -167,6 +180,11 @@ test('every shared event v1 payload has an acceptance and rejection contract', (
     useId: 'use:2', itemId: 'item:1', creatureId: 'creature:1', actionId: 'play', cpGranted: 0
   }), false);
   assert.equal(EVENT_PAYLOAD_VALIDATORS.BookMetadataResolved({ ...payloads.BookMetadataResolved, source: 'mock' }), false);
+  assert.equal(EVENT_PAYLOAD_VALIDATORS.BookAdded({ ...payloads.BookAdded, workId: 'work:other' }), false);
+  assert.equal(EVENT_PAYLOAD_VALIDATORS.BookAdded({
+    ...payloads.BookAdded,
+    work: createBookWork({ id: 'work:1', editionIds: ['edition:1', 'edition:missing'] })
+  }), false);
   assert.equal(EVENT_PAYLOAD_VALIDATORS.RecommendationDelivered({ ...payloads.RecommendationDelivered, source: 'mock' }), false);
   assert.equal(EVENT_PAYLOAD_VALIDATORS.RecommendationDelivered({ ...payloads.RecommendationDelivered, source: 'unavailable' }), false);
   assert.equal(EVENT_PAYLOAD_VALIDATORS.CatalogAvailabilityResolved({
@@ -211,6 +229,7 @@ test('provider health and metadata fixture responses keep source, data, and unav
     work: createBookWork({ id: 'work:1', title: 'Fixture book', metadataStatus: 'partial', editionIds: ['edition:1'] }),
     edition: createBookEdition({ id: 'edition:1', workId: 'work:1', metadataSource: 'fixture' }),
     aliases: [{ key: 'isbn13:9780064400558', workId: 'work:1' }],
+    editionAliases: [],
     provenance: { title: 'fixture' }
   };
   const provider = new FixtureMetadataProvider({ 'stacklings:v1:9780064400558': record });
@@ -225,6 +244,29 @@ test('provider health and metadata fixture responses keep source, data, and unav
   assert.equal(isMetadataResult({ ...found, data: { ...record, work: { ...record.work, editionIds: [] } } }), false);
   assert.equal(isMetadataResult({ ...found, data: { ...record, aliases: [{ key: 'invented:key', workId: 'work:1' }] } }), false);
   assert.equal(isMetadataResult({ ...found, data: { ...record, aliases: [record.aliases[0], record.aliases[0]] } }), false);
+
+  const searchWork = createBookWork({
+    id: providerWorkId('open-library', '/works/OL123W'), title: 'The Book', authors: ['Ada Author'],
+    metadataStatus: 'resolved', editionIds: [providerEditionId('open-library', 'OL456M')]
+  });
+  const searchEdition = createBookEdition({
+    id: providerEditionId('open-library', 'OL456M'), workId: searchWork.id, metadataSource: 'fixture'
+  });
+  const searchData = {
+    work: searchWork,
+    edition: searchEdition,
+    aliases: [{ key: providerWorkAliasKey('open-library', '/works/OL123W'), workId: searchWork.id }],
+    editionAliases: [{ key: providerEditionAliasKey('open-library', 'OL456M'), editionId: searchEdition.id }],
+    provenance: { title: 'fixture' },
+    identity: { identityVersion: PROVIDER_WORK_IDENTITY_VERSION, identityKey: '/works/OL123W' }
+  };
+  const searchProvider = new FixtureMetadataProvider({}, 'metadata:search-fixture', {
+    'the book\u0000ada author': searchData
+  });
+  const searched = searchProvider.search({ comparisonKey: 'the book\u0000ada author' }, 0);
+  assert.equal(searched.source, 'fixture');
+  assert.equal(isMetadataResult(searched), true);
+  assert.equal(searchProvider.search({ comparisonKey: 'missing\u0000author' }, 0).source, 'unavailable');
 });
 
 test('local day keys use the existing canonical non-padded device-local representation', () => {
@@ -303,4 +345,7 @@ test('provider interfaces fail explicitly until a fixture or approved adapter im
   assert.throws(() => catalog.getAvailability('edition:1'), /not implemented/);
   assert.throws(() => catalog.getBranches(), /not implemented/);
   assert.throws(() => catalog.healthCheck(), /not implemented/);
+  const metadata = new MetadataProvider();
+  assert.throws(() => metadata.resolve({ identityVersion: 'stacklings:v1', identityKey: '9780064400558' }), /not implemented/);
+  assert.throws(() => metadata.search({ title: 'Book', author: 'Author' }), /not implemented/);
 });

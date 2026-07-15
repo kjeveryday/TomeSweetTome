@@ -11,15 +11,16 @@ The executable definitions and validators live in `creature-care-mvp/src/contrac
 - A work, edition, reading record, creature, and event has a stable, nonempty ID.
 - ISBN fallback IDs are `work:isbn:<isbn13>` and `edition:isbn:<isbn13>`. The ISBN must be canonical, checksum-valid, and start with 978 or 979.
 - Provider IDs are namespaced as `work:provider:<providerId>:<recordId>` and `edition:provider:<providerId>:<recordId>` with encoded components.
-- Alias keys identify an external or edition-level identifier and point directly to a canonical work ID. They never point to another alias, so alias cycles are invalid. Frozen key forms are `isbn13:<isbn13>`, `provider-work:<providerId>:<recordId>`, and `provider-edition:<providerId>:<recordId>`.
+- Alias keys identify an external work or edition identifier and point directly to the matching canonical record, never to another alias. Frozen key forms are `isbn13:<isbn13>`, `provider-work:<providerId>:<recordId>`, and `provider-edition:<providerId>:<recordId>`.
+- Work aliases (`isbn13` and `provider-work`) route to a canonical `BookWork`. Provider-edition aliases live in a separate index and route to a canonical `BookEdition`; they are never treated as work aliases.
+- Work-keyed metadata provenance stores provider source, provider ID, fetch timestamp, and a field-to-source map. It remains separate from reading progress and library availability.
 - An edition belongs to one work. Every work edition ID must resolve to an edition whose `workId` points back to that work. A canonical ISBN may identify only one edition record in a save.
-- A player has at most one `CreatureRecord` per canonical work. Reconciliation may update a creature's `workId`, but it never changes `identityVersion`, `identityKey`, or `baseTraits`.
+- A player normally has at most one `CreatureRecord` per canonical work. When later metadata reconciles two works that already have creatures, both remain and the canonical work ID is recorded in `collection.reconciledDuplicateWorkIds`. Validation permits duplicates only for those marked reconciliation exceptions. Reconciliation never changes `identityVersion`, `identityKey`, or `baseTraits`.
 - `CreatureRecord.careState` is either `{status: "uninitialized"}` for a migrated identity that has never owned separate care state, or a complete `{status: "ready", stats, stage, cp, actionsToday, dayKey, stickers, tuckedIn}` record. An empty object is invalid.
 - Existing ISBN creatures retain `identityVersion: "stacklings:v1"` and the 13 ISBN digits as `identityKey`. Provider reconciliation does not replace that generator input.
+- A non-ISBN search result uses `identityVersion: "stacklings:work:v1"` and the stable Open Library `/works/OL…W` key as `identityKey`. Query display text is NFKC-normalized, trimmed, and whitespace-collapsed; lowercase comparison never replaces the provider key. Generation uses the same SHA-256 trait-byte mapping with the existing neutral publisher and language defaults and does not fabricate an ISBN.
 - Active, visible, and archived collection IDs must reference existing creatures and contain no duplicates. The active creature cannot also be archived.
 - Visible and archived IDs are disjoint, and a non-null active creature is visible. Before an uninitialized migrated creature can become active, the collection package must initialize a complete nonpunitive care state through the active-selection event.
-
-The normalization rule for a title-and-author identity is not yet approved. Package 2 cannot generate a non-ISBN identity until that rule is frozen. The case where two already-owned edition creatures are later proven to be one work also remains a recorded product conflict; package 2 cannot implement that merge until retention behavior is approved.
 
 ## Reading time and local-day rules
 
@@ -34,6 +35,8 @@ The normalization rule for a title-and-author identity is not yet approved. Pack
 
 Shared events use `{id, type, version, timestamp, payload}`. IDs are supplied by the dispatching module and remain unchanged on replay. Version 1 payload validators are frozen for every event named in PRD section 5. The existing v1 constructors keep their top-level reducer fields for compatibility; the application dispatcher replaces their compatibility fallback ID with a session-sequenced ID before applying or logging the event.
 
+`BookAdded` version 1 carries the stable `workId` and `editionId` together with one complete validated `work`/`edition` pair, direct work aliases, direct edition aliases, and metadata provenance. The work in one event names exactly that supplied edition; the reducer unions it with editions already stored for the work. `BookMetadataResolved` carries the same self-contained records plus matching metadata status and provider source. The IDs and record relationships must agree. Replaying the same capture is idempotent; a dangling edition, conflicting edition, or conflicting alias route is rejected rather than silently rewriting an owned identity.
+
 `ActiveCreatureChanged` is the functional collection-selection event required to make care replay deterministic. `CareActionPerformed` version 1 targets the active creature at the point where the event is applied. Event order therefore selects the care target; a replay applies the preceding active-selection event before the care event. The root v1 care fields are a compatibility projection of the active creature's ready care state, and the storage boundary synchronizes and validates that projection after every event.
 
 `BookWorkReconciled` version 1 carries:
@@ -43,7 +46,7 @@ Shared events use `{id, type, version, timestamp, payload}`. IDs are supplied by
 - unique `editionIds`
 - optional `preservedCreatureId`
 
-The event is idempotent: applying it again with the same event ID makes no further change. It changes routing to the canonical work but cannot rewrite a preserved creature identity. It is not authorization to resolve the two-owned-creature conflict described above.
+The event is idempotent: applying it again with the same event ID makes no further change. It changes edition, alias, and creature routing to the canonical work but cannot rewrite a preserved creature identity. If more than one already-owned creature is affected, every identity remains and the reducer records the canonical work as a reconciled duplicate exception.
 
 ## Provider response rules
 
@@ -64,7 +67,7 @@ The catalog availability vocabulary beyond the three shared states, freshness ca
 - Migration reads `creatureCare.save.v1` only when a valid current save is unavailable. It is deterministic, independent of accounts and network services, and idempotent for a current envelope.
 - Migration preserves the legacy top-level state for v1 compatibility and creates explicit work, edition, and collection records. Valid v1 seeds and identity keys remain byte-for-byte unchanged.
 - A malformed optional legacy generator payload is retained inside an unlinked legacy creature record rather than allowed to create an invalid ISBN edition. Malformed required care state produces a fresh safe envelope.
-- Current-envelope validation rejects malformed records, duplicate formal days, dangling or mismatched work/edition/alias/reading/creature references, duplicate ISBN editions, duplicate creatures for one work, and invalid collection IDs.
+- Current-envelope validation rejects malformed records, duplicate formal days, dangling or mismatched work/edition/work-alias/edition-alias/provenance/reading/creature references, duplicate ISBN editions, unmarked duplicate creatures for one work, stale duplicate-exception markers, and invalid collection IDs. Earlier schema-2 saves deterministically receive empty edition-alias, provenance, and reconciled-duplicate indexes without changing care, collection, reading, or identity data.
 
 ## Feature flags
 

@@ -5,6 +5,8 @@ import {
   AvailabilityStatuses,
   ProviderSources,
   isAliasKey,
+  isEditionAliasKey,
+  isWorkAliasKey,
   isBookEdition,
   isBookWork
 } from './contracts.js';
@@ -77,8 +79,12 @@ export function isMetadataResult(value) {
     && data.edition.workId === data.work.id
     && data.work.editionIds.includes(data.edition.id)
     && Array.isArray(data.aliases)
-    && data.aliases.every((alias) => isObject(alias) && isAliasKey(alias.key) && alias.workId === data.work.id)
+    && data.aliases.every((alias) => isObject(alias) && isWorkAliasKey(alias.key) && alias.workId === data.work.id)
     && new Set(data.aliases.map((alias) => alias.key)).size === data.aliases.length
+    && Array.isArray(data.editionAliases)
+    && data.editionAliases.every((alias) => isObject(alias)
+      && isEditionAliasKey(alias.key) && alias.editionId === data.edition.id)
+    && new Set(data.editionAliases.map((alias) => alias.key)).size === data.editionAliases.length
     && isObject(data.provenance);
 }
 
@@ -126,14 +132,27 @@ export function isPatronActionResult(value) {
 }
 
 export class FixtureMetadataProvider {
-  constructor(records = {}, providerId = 'metadata:fixture') {
+  constructor(records = {}, providerId = 'metadata:fixture', searchRecords = {}) {
     this.records = structuredClone(records);
+    this.searchRecords = structuredClone(searchRecords);
     this.providerId = providerId;
   }
 
   resolve(identity, now = 0) {
     if (!isMetadataIdentity(identity)) throw new TypeError('Invalid metadata identity');
     const data = this.records[`${identity.identityVersion}:${identity.identityKey}`] ?? null;
+    return providerResponse({
+      source: data ? ProviderSources.Fixture : ProviderSources.Unavailable,
+      providerId: this.providerId,
+      fetchedAt: now,
+      data,
+      ...(data ? {} : { errorCode: 'not_found' })
+    });
+  }
+
+  search(query, now = 0) {
+    if (!isObject(query) || !isString(query.comparisonKey)) throw new TypeError('Invalid metadata search query');
+    const data = this.searchRecords[query.comparisonKey] ?? null;
     return providerResponse({
       source: data ? ProviderSources.Fixture : ProviderSources.Unavailable,
       providerId: this.providerId,
@@ -167,6 +186,7 @@ export class RecommendationProvider {
 
 export class MetadataProvider {
   resolve(_identity) { throw new Error('MetadataProvider.resolve is not implemented'); }
+  search(_query) { throw new Error('MetadataProvider.search is not implemented'); }
   healthCheck() { throw new Error('MetadataProvider.healthCheck is not implemented'); }
 }
 

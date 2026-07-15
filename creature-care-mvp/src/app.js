@@ -3,14 +3,26 @@
 
 import content from './content.json' with { type: 'json' };
 import { initialState, applyEvent } from './state.js';
-import { createEventIdFactory, creatureGenerated, hatched, resourceGranted } from './events.js';
+import {
+  bookAdded,
+  bookMetadataResolved,
+  createEventIdFactory,
+  creatureGenerated,
+  hatched,
+  resourceGranted
+} from './events.js';
 import * as clock from './systems/clock.js';
 import * as care from './systems/care.js';
 import * as growth from './systems/growth.js';
 import { LocalStorageAdapter } from './systems/storage.js';
 import { decodeBookBarcode } from './systems/barcode.js';
 import { generateCreature } from './systems/generation.js';
-import { enrichCreatureWithBookData } from './systems/book-metadata.js';
+import {
+  enrichCreatureWithMetadataResult,
+  lookupBookMetadataResult,
+  searchBookMetadataResult
+} from './systems/book-metadata.js';
+import { createIsbnBookRecords, createProviderWorkBookRecords } from './systems/book-records.js';
 import { createUI } from './ui.js';
 
 // ----- debug clock -----
@@ -51,6 +63,48 @@ const eventLog = [];
 let state = initialState();
 const nextEventId = createEventIdFactory(`local-${getNow()}`);
 
+async function prepareBookCreature(isbn, capture) {
+  const metadata = await lookupBookMetadataResult(isbn);
+  let resolvedRecords = createIsbnBookRecords(isbn, metadata);
+  if (!resolvedRecords.ok) resolvedRecords = createIsbnBookRecords(isbn);
+  if (!resolvedRecords.ok) return resolvedRecords;
+  const addedRecords = metadata.source === 'unavailable'
+    ? resolvedRecords
+    : createIsbnBookRecords(isbn);
+  const generated = await generateCreature(resolvedRecords.identity);
+  if (generated.ok) {
+    generated.creature = enrichCreatureWithMetadataResult({ ...generated.creature, capture }, metadata);
+    generated.bookRecords = {
+      added: addedRecords,
+      resolved: metadata.source === 'unavailable' ? null : resolvedRecords
+    };
+  }
+  return generated;
+}
+
+async function prepareSearchedBookCreature(query) {
+  const metadata = await searchBookMetadataResult(query);
+  const bookRecords = createProviderWorkBookRecords(metadata);
+  if (!bookRecords.ok) return bookRecords;
+  const generated = await generateCreature(bookRecords.identity);
+  if (generated.ok) {
+    generated.creature = enrichCreatureWithMetadataResult({
+      ...generated.creature,
+      capture: {
+        source: 'title-author-search',
+        decoder: 'Open Library search',
+        rawValues: [query.title, query.author],
+        formats: ['title-author'],
+        imageType: null,
+        imageWidth: null,
+        imageHeight: null
+      }
+    }, metadata);
+    generated.bookRecords = { added: bookRecords, resolved: null };
+  }
+  return generated;
+}
+
 function commit(inputEvent) {
   const event = inputEvent.compatibilityIdFallback
     ? { ...inputEvent, id: nextEventId(inputEvent.type, inputEvent.at), compatibilityIdFallback: false }
@@ -82,34 +136,24 @@ const ui = createUI(document.querySelector('#app'), content, {
   onScanFile: async (file) => {
     const decoded = await decodeBookBarcode(file);
     if (!decoded.ok) return decoded;
-    const generated = await generateCreature(decoded.isbn);
-    if (generated.ok) {
-      generated.creature = await enrichCreatureWithBookData({
-        ...generated.creature,
-        capture: decoded.capture
-      });
-    }
-    return generated;
+    return prepareBookCreature(decoded.isbn, decoded.capture);
   },
-  onManualIsbn: async (isbn) => {
-    const generated = await generateCreature(isbn);
-    if (generated.ok) {
-      generated.creature = await enrichCreatureWithBookData({
-        ...generated.creature,
-        capture: {
-          source: 'manual',
-          decoder: 'Manual entry',
-          rawValues: [String(isbn)],
-          formats: ['isbn'],
-          imageType: null,
-          imageWidth: null,
-          imageHeight: null
-        }
-      });
-    }
-    return generated;
+  onManualIsbn: (isbn) => prepareBookCreature(isbn, {
+    source: 'manual',
+    decoder: 'Manual entry',
+    rawValues: [String(isbn)],
+    formats: ['isbn'],
+    imageType: null,
+    imageWidth: null,
+    imageHeight: null
+  }),
+  onTitleAuthorSearch: (query) => prepareSearchedBookCreature(query),
+  onUseCreature: (creature, bookRecords) => {
+    const now = getNow();
+    commit(bookAdded(bookRecords.added, now));
+    if (bookRecords.resolved) commit(bookMetadataResolved(bookRecords.resolved, now));
+    commit(creatureGenerated(creature, now));
   },
-  onUseCreature: (creature) => commit(creatureGenerated(creature, getNow())),
   canPerform: (actionId) => care.canPerform(state, actionId)
 });
 

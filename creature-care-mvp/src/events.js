@@ -61,3 +61,34 @@ export const tuckedIn = (now, id) => compatibilityEvent(EventTypes.TuckedIn, now
 
 export const resourceGranted = (cp, now, id) =>
   compatibilityEvent(EventTypes.ResourceGranted, now, { cp }, id);
+
+export const bookAdded = ({ work, edition, aliases, editionAliases, provenance }, now, id) =>
+  compatibilityEvent(EventTypes.BookAdded, now, {
+    workId: work.id,
+    editionId: edition.id,
+    work: structuredClone(work),
+    edition: structuredClone(edition),
+    aliases: structuredClone(aliases),
+    editionAliases: structuredClone(editionAliases),
+    provenance: structuredClone(provenance)
+  }, id);
+
+export const bookMetadataResolved = ({ work, edition, aliases, editionAliases, provenance }, now, id) =>
+  compatibilityEvent(EventTypes.BookMetadataResolved, now, {
+    workId: work.id,
+    editionId: edition.id,
+    metadataStatus: work.metadataStatus,
+    source: provenance.source,
+    work: structuredClone(work),
+    edition: structuredClone(edition),
+    aliases: structuredClone(aliases),
+    editionAliases: structuredClone(editionAliases),
+    provenance: structuredClone(provenance)
+  }, id);
+
+export const bookWorkReconciled = ({ canonicalWorkId, aliasedWorkIds, editionIds }, now, id) =>
+  compatibilityEvent(EventTypes.BookWorkReconciled, now, {
+    canonicalWorkId,
+    aliasedWorkIds: [...aliasedWorkIds],
+    editionIds: [...editionIds]
+  }, id);

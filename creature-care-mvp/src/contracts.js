@@ -3,6 +3,7 @@
 
 export const CURRENT_SCHEMA_VERSION = 2;
 export const LEGACY_ISBN_IDENTITY_VERSION = 'stacklings:v1';
+export const PROVIDER_WORK_IDENTITY_VERSION = 'stacklings:work:v1';
 
 export const MetadataStatuses = Object.freeze({
   Unknown: 'unknown',
@@ -104,6 +105,15 @@ export function isAliasKey(value) {
   return /^provider-(?:work|edition):[^:]+:[^:]+$/.test(value);
 }
 
+export function isWorkAliasKey(value) {
+  return typeof value === 'string'
+    && (value.startsWith('isbn13:') ? isCanonicalIsbn13(value.slice('isbn13:'.length)) : /^provider-work:[^:]+:[^:]+$/.test(value));
+}
+
+export function isEditionAliasKey(value) {
+  return typeof value === 'string' && /^provider-edition:[^:]+:[^:]+$/.test(value);
+}
+
 export function isIsoTimestamp(value) {
   if (typeof value !== 'string') return false;
   const parsed = Date.parse(value);
@@ -194,11 +204,35 @@ export function isPlayerAccess(value) {
 const optionalString = (payload, key) => !Object.hasOwn(payload, key) || typeof payload[key] === 'string';
 const requiredStrings = (payload, keys) => keys.every((key) => hasString(payload, key));
 const uniqueStrings = (value) => isStringArray(value) && new Set(value).size === value.length;
+const isAliasCandidate = (value) => isObject(value) && isWorkAliasKey(value.key) && hasString(value, 'workId');
+const isEditionAliasCandidate = (value) => isObject(value)
+  && isEditionAliasKey(value.key) && hasString(value, 'editionId');
+const isProvenance = (value) => isObject(value)
+  && PROVIDER_SOURCES.has(value.source)
+  && hasString(value, 'providerId')
+  && isIsoTimestamp(value.fetchedAt)
+  && isObject(value.fields)
+  && Object.values(value.fields).every((fieldSource) => typeof fieldSource === 'string');
+const isBookRecordPayload = (payload) => isBookWork(payload.work)
+  && isBookEdition(payload.edition)
+  && payload.workId === payload.work.id
+  && payload.editionId === payload.edition.id
+  && payload.edition.workId === payload.work.id
+  && payload.work.editionIds.length === 1
+  && payload.work.editionIds[0] === payload.edition.id
+  && Array.isArray(payload.aliases)
+  && payload.aliases.every((alias) => isAliasCandidate(alias) && alias.workId === payload.work.id)
+  && new Set(payload.aliases.map((alias) => alias.key)).size === payload.aliases.length
+  && Array.isArray(payload.editionAliases)
+  && payload.editionAliases.every((alias) => isEditionAliasCandidate(alias) && alias.editionId === payload.edition.id)
+  && new Set(payload.editionAliases.map((alias) => alias.key)).size === payload.editionAliases.length
+  && isProvenance(payload.provenance);
 
 export const EVENT_PAYLOAD_VALIDATORS = Object.freeze({
-  [SharedEventTypes.BookAdded]: (p) => requiredStrings(p, ['workId', 'editionId']),
+  [SharedEventTypes.BookAdded]: (p) => requiredStrings(p, ['workId', 'editionId']) && isBookRecordPayload(p),
   [SharedEventTypes.BookMetadataResolved]: (p) => requiredStrings(p, ['workId', 'editionId', 'metadataStatus', 'source'])
-    && METADATA_STATUSES.has(p.metadataStatus) && PROVIDER_SOURCES.has(p.source),
+    && METADATA_STATUSES.has(p.metadataStatus) && PROVIDER_SOURCES.has(p.source) && isBookRecordPayload(p)
+    && p.metadataStatus === p.work.metadataStatus && p.source === p.provenance.source,
   [SharedEventTypes.BookWorkReconciled]: (p) => requiredStrings(p, ['canonicalWorkId'])
     && uniqueStrings(p.aliasedWorkIds) && uniqueStrings(p.editionIds) && optionalString(p, 'preservedCreatureId'),
   [SharedEventTypes.ReadingRecorded]: (p) => requiredStrings(p, ['readingRecordId', 'workId']),

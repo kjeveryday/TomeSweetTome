@@ -95,6 +95,16 @@ export function createUI(root, content, handlers) {
             <button class="isbn-submit" type="submit"></button>
           </div>
         </form>
+        <div class="manual-divider"><span class="search-divider"></span></div>
+        <form class="book-search-form" novalidate>
+          <div class="book-search-grid">
+            <label class="isbn-label" for="book-search-title"></label>
+            <input id="book-search-title" class="isbn-input book-search-title" type="text" autocomplete="off" maxlength="200" />
+            <label class="isbn-label" for="book-search-author"></label>
+            <input id="book-search-author" class="isbn-input book-search-author" type="text" autocomplete="off" maxlength="200" />
+          </div>
+          <button class="isbn-submit book-search-submit" type="submit"></button>
+        </form>
         <p class="scan-status" role="status" aria-live="polite"></p>
         <section class="book-result" aria-label="" hidden>
           <button class="preview-debug" type="button"><span aria-hidden="true">⚙️</span></button>
@@ -186,6 +196,11 @@ export function createUI(root, content, handlers) {
     isbnLabel: q('.isbn-label'),
     isbnInput: q('.isbn-input'),
     isbnSubmit: q('.isbn-submit'),
+    searchDivider: q('.search-divider'),
+    bookSearchForm: q('.book-search-form'),
+    bookSearchTitle: q('.book-search-title'),
+    bookSearchAuthor: q('.book-search-author'),
+    bookSearchSubmit: q('.book-search-submit'),
     scanStatus: q('.scan-status'),
     bookResult: q('.book-result'),
     bookOrb: q('.book-orb'),
@@ -245,6 +260,7 @@ export function createUI(root, content, handlers) {
   // ----- local book scanner + deterministic preview -----
   let latestState = null;
   let pendingCreature = null;
+  let pendingBookRecords = null;
   let scanRequest = 0;
   let debugReturnFocus = null;
 
@@ -258,6 +274,12 @@ export function createUI(root, content, handlers) {
   el.isbnLabel.textContent = copy.isbnLabel;
   el.isbnInput.placeholder = copy.isbnPlaceholder;
   el.isbnSubmit.textContent = copy.makeCreature;
+  el.searchDivider.textContent = copy.searchDivider;
+  el.bookSearchTitle.previousElementSibling.textContent = copy.searchTitleLabel;
+  el.bookSearchTitle.placeholder = copy.searchTitlePlaceholder;
+  el.bookSearchAuthor.previousElementSibling.textContent = copy.searchAuthorLabel;
+  el.bookSearchAuthor.placeholder = copy.searchAuthorPlaceholder;
+  el.bookSearchSubmit.textContent = copy.searchButton;
   el.bookResult.setAttribute('aria-label', copy.bookReady);
   el.creatureDebug.setAttribute('aria-label', copy.debugGear);
   el.previewDebug.setAttribute('aria-label', copy.debugGear);
@@ -298,7 +320,7 @@ export function createUI(root, content, handlers) {
       formats: capture.formats?.join(', ') ?? '—',
       imageType: capture.imageType ?? '—',
       imageSize: size,
-      isbn: creature.isbn
+      isbn: creature.isbn ?? '—'
     });
     const book = creature.book ?? {};
     renderDebugRows(el.debugBookValues, content.generation.debugFields.book, {
@@ -370,7 +392,9 @@ export function createUI(root, content, handlers) {
   });
 
   function openBookModal() {
+    setScanBusy(false);
     pendingCreature = null;
+    pendingBookRecords = null;
     el.bookResult.hidden = true;
     showScanStatus('');
     el.bookModal.hidden = false;
@@ -379,6 +403,7 @@ export function createUI(root, content, handlers) {
 
   function closeBookModal() {
     scanRequest += 1;
+    setScanBusy(false);
     el.bookModal.hidden = true;
     el.bookOpen.focus();
   }
@@ -409,6 +434,9 @@ export function createUI(root, content, handlers) {
     el.photoInput.disabled = busy;
     el.isbnInput.disabled = busy;
     el.isbnSubmit.disabled = busy;
+    el.bookSearchTitle.disabled = busy;
+    el.bookSearchAuthor.disabled = busy;
+    el.bookSearchSubmit.disabled = busy;
   }
 
   const errorCopy = {
@@ -421,7 +449,16 @@ export function createUI(root, content, handlers) {
     detectorUnavailable: copy.scanUnavailable,
     notImage: copy.scanNotImage,
     scanFailed: copy.scanFailed,
-    hashUnavailable: copy.scanHashFailed
+    hashUnavailable: copy.scanHashFailed,
+    missingTitle: copy.searchInvalid,
+    missingAuthor: copy.searchInvalid,
+    invalidQuery: copy.searchInvalid,
+    invalidBookSearch: copy.searchInvalid,
+    metadataUnavailable: copy.searchUnavailable,
+    notFound: copy.searchUnavailable,
+    not_found: copy.searchUnavailable,
+    malformed_result: copy.searchUnavailable,
+    provider_unavailable: copy.searchUnavailable
   };
 
   function showScanStatus(text, isError = false) {
@@ -458,7 +495,9 @@ export function createUI(root, content, handlers) {
       icon: creature.publisher.icon,
       publisher: creature.publisher.label
     });
-    el.bookIsbnLine.textContent = interpolate(copy.bookEditionLine, { isbn: creature.isbn });
+    el.bookIsbnLine.textContent = creature.isbn
+      ? interpolate(copy.bookEditionLine, { isbn: creature.isbn })
+      : copy.bookSearchEditionLine;
     el.bookUse.textContent = latestState?.hatched
       ? interpolate(copy.useLook, { name: latestState.name })
       : copy.useEgg;
@@ -480,7 +519,10 @@ export function createUI(root, content, handlers) {
     try {
       const result = await task();
       if (request !== scanRequest) return;
-      if (result.ok) showCreaturePreview(result.creature);
+      if (result.ok) {
+        pendingBookRecords = result.bookRecords;
+        showCreaturePreview(result.creature);
+      }
       else showScanStatus(errorCopy[result.reason] ?? copy.scanFailed, true);
     } catch {
       if (request === scanRequest) showScanStatus(copy.scanFailed, true);
@@ -500,11 +542,20 @@ export function createUI(root, content, handlers) {
     runScan(() => handlers.onManualIsbn(el.isbnInput.value));
   });
 
+  el.bookSearchForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    runScan(() => handlers.onTitleAuthorSearch({
+      title: el.bookSearchTitle.value,
+      author: el.bookSearchAuthor.value
+    }));
+  });
+
   el.bookUse.addEventListener('click', () => {
     if (!pendingCreature) return;
     const wasHatched = Boolean(latestState?.hatched);
-    handlers.onUseCreature(pendingCreature);
+    handlers.onUseCreature(pendingCreature, pendingBookRecords);
     pendingCreature = null;
+    pendingBookRecords = null;
     el.bookModal.hidden = true;
     if (wasHatched) el.bookOpen.focus();
     else el.egg.focus();

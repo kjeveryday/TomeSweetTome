@@ -32,7 +32,9 @@ This backlog follows the dependency order in PRD section 9. Phase 1 packages are
 - **Feature-off behavior:** The app boots with every optional flag off and uses local storage without accounts or network services.
 - **Acceptance criteria:** Shared-contract and migration tests pass; the complete suite is green; no v1 identity or care behavior changes; corrupted saves fail safely; repeated migration produces the same current envelope.
 
-## 2. Book records and identity reconciliation
+## 2. Book records and identity reconciliation — complete
+
+**Implementation status (2026-07-15):** Complete and green at 240 tests. Manual and image ISBN input converge on frozen v1 identities. Title-and-author search normalizes the query, uses stable Open Library work and edition IDs, and generates a deterministic `stacklings:work:v1` identity with neutral ISBN-only traits. Fixture/live enrichment persists source and field provenance; work aliases and edition aliases have separate validated targets; missing or unavailable metadata fails safely; repeated capture upgrades metadata without duplicating the edition; and invalid routing cannot erase care or collection state. Late reconciliation is idempotent, retargets existing reading records without changing the distinct-day ledger, and preserves both already-owned creatures as a validated exception without changing either identity. Browser checks passed for live title-and-author search, search failure recovery, pinned metadata, unavailable-provider ISBN fallback, repeated capture, reload persistence, and all optional flags off. The Open Library work/edition field assumptions were checked against the [official Search API documentation](https://openlibrary.org/dev/docs/api/search).
 
 - **Objective and PRD references:** Add explicit works, editions, identity inputs, metadata normalization, and aliases while preserving v1 ISBN identities (PRD 2-3, 5, 6.3, 7, 11.6, 11.8).
 - **Owned files:** Book-record module, metadata adapter and fixture, book reducer slice, book UI surface, and book tests. Shared contract files remain coordinator-owned.
@@ -43,7 +45,7 @@ This backlog follows the dependency order in PRD section 9. Phase 1 packages are
 - **Migration impact:** Read migrated ISBN works/editions and preserve their identity keys. Do not rewrite legacy generator inputs.
 - **Dependencies:** Package 1.
 - **Tests:** ISBN/manual/image convergence; missing metadata; deterministic title-author fallback after its normalization rule is frozen; edition aliases; repeated capture; reconciliation idempotency; v1 frozen identities; malformed/dangling aliases fail safely.
-- **Browser checks:** Manual ISBN and barcode-image capture with pinned, unavailable, and missing metadata.
+- **Browser checks:** Manual ISBN, barcode-image capture, title-and-author search, repeated search, pinned metadata, unavailable search, and missing metadata.
 - **Feature-off behavior:** With all optional services off and network unavailable, a guest can still add an ISBN work and continue to reading.
 - **Acceptance criteria:** Every captured edition resolves to one work record; metadata failure never blocks an honor-based reading record; owned identities never reroll.
 
@@ -75,7 +77,7 @@ This backlog follows the dependency order in PRD section 9. Phase 1 packages are
 - **Tests:** Scan-only preview; first-reading reveal; repeated scans; A-to-B-to-A deduplication; several same-day reveals; edition aliases; active switching; returned books retained; migration compatibility.
 - **Browser checks:** Add, preview, read, reveal, switch active creature, repeat scan, close, and reopen.
 - **Feature-off behavior:** Every optional service off still supports the entire preview/reveal/collection loop.
-- **Acceptance criteria:** One work has one creature; repeated capture opens the existing record; several works can reveal in one compact group; every creature remains in the collection.
+- **Acceptance criteria:** One work normally has one creature; an approved late-reconciliation exception may retain multiple already-owned identities for the canonical work. Repeated capture opens the existing record; several works can reveal in one compact group; every creature remains in the collection.
 
 ## 5. Book relationship development and optional treats
 
@@ -167,15 +169,18 @@ This backlog follows the dependency order in PRD section 9. Phase 1 packages are
 - **Feature-off behavior:** No event/admin surface; personal reading and collection state remain unchanged.
 - **Acceptance criteria:** No rankings, public individual totals, chat, messaging, friend list, trading, ordinary-user search, or private reading disclosure.
 
-## Product questions carried by the backlog
+## Product decisions and remaining questions
 
-These are not blockers for package 1, but they must be resolved before the named dependent package is implemented.
+Resolved for package 2:
 
-1. **Non-ISBN identity:** Freeze normalization and versioning for title-and-author fallback before package 2 generates those identities.
-2. **Late reconciliation:** Decide how to retain two already-owned edition creatures when later metadata proves they are one work, without rerolling or deleting either identity, before package 2 implements that merge case.
-3. **Timer recovery:** Decide whether an unconfirmed private timer survives reload and define its validation bounds before package 3.
-4. **Program registration/window:** Define standalone `registered` semantics and any program-goal/window record before program-specific configuration is added.
-5. **Care scope after switching:** The active-target event and compatibility projection are frozen, but product approval is still required for how inactive creatures experience drift/absence and whether the daily care cap is player-wide or per-creature before package 5.
-6. **Relationship content:** Approve response IDs/order and whether reveal day is the first relationship day before package 5.
-7. **Treat cadence/content:** Clarify first-ever versus one-per-reading-day grant cadence, category-to-treat mapping, and whether use consumes a normal daily care action before enabling `careItems`.
-8. **Availability vocabulary:** Freeze confirmed availability states, freshness rules, and official-search fallback shape before package 9.
+- **Non-ISBN identity:** `stacklings:work:v1` hashes the stable provider work key. Title and author are NFKC-normalized, trimmed, and whitespace-collapsed for search; comparison is case-insensitive without changing display text. ISBN-only publisher and language inputs use the existing neutral defaults.
+- **Late reconciliation:** Both already-owned creatures remain. Their identities and traits do not change; both route to the canonical work through a validated `reconciledDuplicateWorkIds` exception.
+
+Remaining questions:
+
+1. **Timer recovery:** Decide whether an unconfirmed private timer survives reload and define its validation bounds before package 3.
+2. **Program registration/window:** Define standalone `registered` semantics and any program-goal/window record before program-specific configuration is added.
+3. **Care scope after switching:** The active-target event and compatibility projection are frozen, but product approval is still required for how inactive creatures experience drift/absence and whether the daily care cap is player-wide or per-creature before package 5.
+4. **Relationship content:** Approve response IDs/order and whether reveal day is the first relationship day before package 5.
+5. **Treat cadence/content:** Clarify first-ever versus one-per-reading-day grant cadence, category-to-treat mapping, and whether use consumes a normal daily care action before enabling `careItems`.
+6. **Availability vocabulary:** Freeze confirmed availability states, freshness rules, and official-search fallback shape before package 9.

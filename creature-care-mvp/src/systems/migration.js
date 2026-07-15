@@ -12,13 +12,14 @@ import {
   editionIdForIsbn,
   isBookEdition,
   isBookWork,
-  isAliasKey,
+  isEditionAliasKey,
   isCanonicalIsbn13,
   isCreatureRecord,
   isbnAliasKey,
   isLocalDayKey,
   isPlayerAccess,
   isReadingRecord,
+  isWorkAliasKey,
   workIdForIsbn
 } from '../contracts.js';
 import { DEFAULT_FEATURE_FLAGS, isFeatureFlagSet } from '../feature-flags.js';
@@ -33,9 +34,12 @@ const isTimestamp = (value) => Number.isFinite(value) && value >= 0;
 
 function emptyModuleState() {
   return {
-    books: { works: {}, editions: {}, aliases: {} },
+    books: { works: {}, editions: {}, aliases: {}, editionAliases: {}, provenance: {} },
     reading: { records: {}, formalDayKeys: [] },
-    collection: { creatures: {}, activeCreatureId: null, visibleCreatureIds: [], archivedCreatureIds: [] },
+    collection: {
+      creatures: {}, activeCreatureId: null, visibleCreatureIds: [], archivedCreatureIds: [],
+      reconciledDuplicateWorkIds: []
+    },
     playerAccess: createPlayerAccess(),
     careItems: { inventory: [], grantDayKeys: [] },
     recommendations: { requests: {}, results: {}, savedIds: [], dismissedIds: [] }
@@ -44,11 +48,21 @@ function emptyModuleState() {
 
 function withModuleState(legacyState) {
   const modules = emptyModuleState();
+  const legacyBooks = legacyState.books ?? {};
   return {
     ...clone(legacyState),
-    books: clone(legacyState.books ?? modules.books),
+    books: {
+      ...clone(modules.books),
+      ...clone(legacyBooks),
+      editionAliases: clone(legacyBooks.editionAliases ?? {}),
+      provenance: clone(legacyBooks.provenance ?? {})
+    },
     reading: clone(legacyState.reading ?? modules.reading),
-    collection: clone(legacyState.collection ?? modules.collection),
+    collection: {
+      ...clone(modules.collection),
+      ...clone(legacyState.collection ?? {}),
+      reconciledDuplicateWorkIds: clone(legacyState.collection?.reconciledDuplicateWorkIds ?? [])
+    },
     playerAccess: clone(legacyState.playerAccess ?? modules.playerAccess),
     careItems: clone(legacyState.careItems ?? modules.careItems),
     recommendations: clone(legacyState.recommendations ?? modules.recommendations)
@@ -178,7 +192,18 @@ export function isCurrentState(value) {
   const works = value.books.works;
   const editions = value.books.editions;
   if (!isObject(value.books.aliases)
-    || !Object.entries(value.books.aliases).every(([key, id]) => isAliasKey(key) && Object.hasOwn(works, id))) return false;
+    || !Object.entries(value.books.aliases).every(([key, id]) => isWorkAliasKey(key) && Object.hasOwn(works, id))) return false;
+  if (!isObject(value.books.editionAliases)
+    || !Object.entries(value.books.editionAliases).every(([key, id]) => isEditionAliasKey(key) && Object.hasOwn(editions, id))) return false;
+  if (!isObject(value.books.provenance)
+    || !Object.entries(value.books.provenance).every(([workId, provenance]) => Object.hasOwn(works, workId)
+      && isObject(provenance)
+      && ['fixture', 'live', 'unavailable'].includes(provenance.source)
+      && typeof provenance.providerId === 'string' && provenance.providerId.length > 0
+      && typeof provenance.fetchedAt === 'string' && Number.isFinite(Date.parse(provenance.fetchedAt))
+      && new Date(Date.parse(provenance.fetchedAt)).toISOString() === provenance.fetchedAt
+      && isObject(provenance.fields)
+      && Object.values(provenance.fields).every((entry) => typeof entry === 'string'))) return false;
   const isbnEditionIds = new Set();
   for (const edition of Object.values(editions)) {
     if (!Object.hasOwn(works, edition.workId) || !works[edition.workId].editionIds.includes(edition.id)) return false;
@@ -199,7 +224,6 @@ export function isCurrentState(value) {
   if (!isObject(value.collection) || !isRecordMap(value.collection.creatures, isCreatureRecord)) return false;
   const creatures = value.collection.creatures;
   if (!Object.values(creatures).every((creature) => Object.hasOwn(works, creature.workId))) return false;
-  if (new Set(Object.values(creatures).map((creature) => creature.workId)).size !== Object.keys(creatures).length) return false;
   if (value.collection.activeCreatureId !== null && typeof value.collection.activeCreatureId !== 'string') return false;
   if (value.collection.activeCreatureId !== null && !Object.hasOwn(creatures, value.collection.activeCreatureId)) return false;
   for (const ids of [value.collection.visibleCreatureIds, value.collection.archivedCreatureIds]) {
@@ -208,6 +232,16 @@ export function isCurrentState(value) {
   if (value.collection.activeCreatureId && value.collection.archivedCreatureIds.includes(value.collection.activeCreatureId)) return false;
   if (value.collection.activeCreatureId && !value.collection.visibleCreatureIds.includes(value.collection.activeCreatureId)) return false;
   if (value.collection.visibleCreatureIds.some((id) => value.collection.archivedCreatureIds.includes(id))) return false;
+  if (!Array.isArray(value.collection.reconciledDuplicateWorkIds)
+    || !value.collection.reconciledDuplicateWorkIds.every((id) => Object.hasOwn(works, id))
+    || new Set(value.collection.reconciledDuplicateWorkIds).size !== value.collection.reconciledDuplicateWorkIds.length) return false;
+  const creatureCountsByWork = Object.values(creatures).reduce((counts, creature) => {
+    counts[creature.workId] = (counts[creature.workId] ?? 0) + 1;
+    return counts;
+  }, {});
+  if (!Object.entries(creatureCountsByWork).every(([workId, count]) => count === 1
+    || value.collection.reconciledDuplicateWorkIds.includes(workId))) return false;
+  if (!value.collection.reconciledDuplicateWorkIds.every((workId) => creatureCountsByWork[workId] > 1)) return false;
   if (value.collection.activeCreatureId) {
     const activeCare = creatures[value.collection.activeCreatureId].careState;
     if (activeCare.status !== 'ready' || JSON.stringify(activeCare) !== JSON.stringify(captureCareState(value))) return false;
@@ -256,7 +290,12 @@ export function migrateSave(input, { now = 0 } = {}) {
   const parsed = parseInput(input?.envelope ?? input);
   if (parsed == null) return { status: 'fresh', envelope: freshEnvelope(now) };
   if (parsed === Symbol.for('corrupt-save')) return { status: 'corrupt', envelope: freshEnvelope(now) };
-  if (isCurrentEnvelope(parsed)) return { status: 'current', envelope: clone(parsed) };
+  const normalizedCurrent = isObject(parsed)
+    && parsed.schemaVersion === CURRENT_SCHEMA_VERSION
+    && isObject(parsed.state)
+    ? { ...clone(parsed), state: withModuleState(parsed.state) }
+    : parsed;
+  if (isCurrentEnvelope(normalizedCurrent)) return { status: 'current', envelope: normalizedCurrent };
 
   if (isObject(parsed) && looksLikeGameState(parsed.state)) {
     const lastSeen = Object.hasOwn(parsed, 'lastSeen') ? parsed.lastSeen : 0;
