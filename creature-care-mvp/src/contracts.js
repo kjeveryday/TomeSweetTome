@@ -198,6 +198,22 @@ export function isCareState(value) {
     && typeof value.tuckedIn === 'boolean';
 }
 
+// The root v1 care fields (stats/stage/cp/actionsToday/dayKey/stickers/tuckedIn)
+// are the single live copy of "current care"; a CreatureRecord's careState is a
+// snapshot of them for whichever creature is (or was) active. This is that snapshot.
+export function captureCareState(state) {
+  return {
+    status: 'ready',
+    stats: structuredClone(state.stats),
+    stage: state.stage,
+    cp: state.cp,
+    actionsToday: state.actionsToday,
+    dayKey: state.dayKey,
+    stickers: structuredClone(state.stickers),
+    tuckedIn: state.tuckedIn === true
+  };
+}
+
 export function createPlayerAccess() {
   return { accountStatus: AccountStatuses.Guest, libraryStatus: LibraryStatuses.Disconnected };
 }

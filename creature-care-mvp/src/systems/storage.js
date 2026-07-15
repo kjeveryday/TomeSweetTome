@@ -1,7 +1,7 @@
 // Versioned storage adapters. LocalStorageAdapter is the guest implementation;
 // SyncedStorageAdapter is a deterministic in-memory fixture for the later account phase.
 
-import { CURRENT_SCHEMA_VERSION } from '../contracts.js';
+import { CURRENT_SCHEMA_VERSION, captureCareState } from '../contracts.js';
 import { DEFAULT_FEATURE_FLAGS } from '../feature-flags.js';
 import {
   CURRENT_SAVE_KEY,
@@ -11,6 +11,35 @@ import {
 } from './migration.js';
 
 const isTimestamp = (value) => Number.isFinite(value) && value >= 0;
+const isPlainObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+// The root care fields are the single live copy of "current care"; a CreatureRecord's
+// careState is only ever a projection of them for the active creature. Every save is
+// the boundary that keeps that projection in sync, so switching active creatures (or
+// simply reloading) always finds a consistent, already-synced snapshot.
+function withActiveCareProjection(state) {
+  const activeId = isPlainObject(state?.collection) ? state.collection.activeCreatureId : null;
+  const creature = activeId ? state.collection.creatures?.[activeId] : null;
+  if (!isPlainObject(creature) || creature.careState?.status !== 'ready') return state;
+  const projected = captureCareState(state);
+  if (JSON.stringify(creature.careState) === JSON.stringify(projected)) return state;
+  return {
+    ...state,
+    collection: {
+      ...state.collection,
+      creatures: { ...state.collection.creatures, [activeId]: { ...creature, careState: projected } }
+    }
+  };
+}
+
+function withProjectedInput(stateOrEnvelope) {
+  if (isCurrentEnvelope(stateOrEnvelope)) {
+    return { ...stateOrEnvelope, state: withActiveCareProjection(stateOrEnvelope.state) };
+  }
+  return isPlainObject(stateOrEnvelope) && isPlainObject(stateOrEnvelope.collection)
+    ? withActiveCareProjection(stateOrEnvelope)
+    : stateOrEnvelope;
+}
 
 export class LocalStorageAdapter {
   constructor(storage, { key = CURRENT_SAVE_KEY, legacyKey = LEGACY_SAVE_KEY } = {}) {
@@ -38,6 +67,7 @@ export class LocalStorageAdapter {
   }
 
   save(stateOrEnvelope, now = 0) {
+    stateOrEnvelope = withProjectedInput(stateOrEnvelope);
     const previous = this.current ?? this.load(now);
     let candidate = isCurrentEnvelope(stateOrEnvelope)
       ? structuredClone(stateOrEnvelope)
@@ -100,6 +130,7 @@ export class SyncedStorageAdapter {
   }
 
   save(stateOrEnvelope, now = 0) {
+    stateOrEnvelope = withProjectedInput(stateOrEnvelope);
     const previous = this.load(now);
     let candidate = isCurrentEnvelope(stateOrEnvelope)
       ? structuredClone(stateOrEnvelope)

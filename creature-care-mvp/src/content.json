@@ -56,6 +56,9 @@
       "not_for_me": "Not for me"
     }
   },
+  "collection": {
+    "visibleCreatureLimit": 3
+  },
   "generation": {
     "seedVersion": "stacklings:v1",
     "hashAlgorithm": "SHA-256",
@@ -317,6 +320,12 @@
     "shelfLabel": "Sticker shelf",
     "statsLabel": "How {name} feels",
     "actionsLabel": "Care actions",
-    "eggLabel": "A mystery egg"
+    "eggLabel": "A mystery egg",
+    "collectionTitle": "Your creatures",
+    "collectionActiveBadge": "Active creature",
+    "creatureRevealedOne": "{name} woke up! ✨",
+    "creatureRevealedMany": "{count} creatures woke up! ✨",
+    "activeSwitched": "Now caring for {name} 💖",
+    "collectionActivateLabel": "Care for {name}"
   }
 }

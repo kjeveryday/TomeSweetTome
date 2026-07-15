@@ -4,7 +4,14 @@
 
 import content from './content.json' with { type: 'json' };
 import { EventTypes } from './events.js';
-import { EVENT_PAYLOAD_VALIDATORS, createPlayerAccess } from './contracts.js';
+import {
+  EVENT_PAYLOAD_VALIDATORS,
+  captureCareState,
+  createPlayerAccess,
+  creatureIdForIdentity,
+  isCreatureRecord
+} from './contracts.js';
+import { freshCareState, selectActiveCreature } from './systems/collection.js';
 
 const STATS = content.stats;
 
@@ -176,6 +183,147 @@ function changeBookStatus(state, payload) {
   };
 }
 
+// A preview is a hidden, unrevealed CreatureRecord: one work has one deterministic
+// identity, so this is a no-op (never rerolls) whenever that identity is already
+// present, whether still unrevealed or long since collected.
+function createPreview(state, payload) {
+  if (!EVENT_PAYLOAD_VALIDATORS.CreaturePreviewCreated(payload)) return state;
+  if (!state.books.works[payload.workId]) return state;
+  if (typeof payload.identityVersion !== 'string' || payload.identityVersion.length === 0) return state;
+  if (typeof payload.identityKey !== 'string' || payload.identityKey.length === 0) return state;
+  if (!payload.baseTraits || typeof payload.baseTraits !== 'object' || Array.isArray(payload.baseTraits)) return state;
+  if (creatureIdForIdentity(payload.identityVersion, payload.identityKey) !== payload.creatureId) return state;
+  if (state.collection.creatures[payload.creatureId]) return state;
+
+  const record = {
+    id: payload.creatureId,
+    workId: payload.workId,
+    identityVersion: payload.identityVersion,
+    identityKey: payload.identityKey,
+    baseTraits: structuredClone(payload.baseTraits),
+    revealed: false,
+    relationshipDayKeys: [],
+    finished: false,
+    careState: { status: 'uninitialized' }
+  };
+  if (!isCreatureRecord(record)) return state;
+  return {
+    ...state,
+    collection: { ...state.collection, creatures: { ...state.collection.creatures, [record.id]: record } }
+  };
+}
+
+// The first accepted reading for a work reveals its preview. Reveal only ever marks
+// the record visible and files it into the unbounded archive; becoming active (and
+// therefore occupying a visible slot) is always a separate, explicit ActiveCreatureChanged
+// so a later reveal can never silently steal the active slot from what the player is caring for.
+function revealCreature(state, payload) {
+  if (!EVENT_PAYLOAD_VALIDATORS.CreatureRevealed(payload)) return state;
+  const creature = state.collection.creatures[payload.creatureId];
+  if (!creature || creature.workId !== payload.workId) return state;
+  if (creature.revealed) return state;
+  const record = state.reading.records[payload.readingRecordId];
+  if (!record || record.workId !== payload.workId) return state;
+
+  const alreadyPlaced = state.collection.visibleCreatureIds.includes(payload.creatureId)
+    || state.collection.archivedCreatureIds.includes(payload.creatureId);
+  return {
+    ...state,
+    collection: {
+      ...state.collection,
+      creatures: {
+        ...state.collection.creatures,
+        [payload.creatureId]: { ...creature, revealed: true }
+      },
+      archivedCreatureIds: alreadyPlaced
+        ? state.collection.archivedCreatureIds
+        : [...state.collection.archivedCreatureIds, payload.creatureId]
+    }
+  };
+}
+
+// Switching the active creature snapshots the outgoing creature's ready care state
+// (so it can resume exactly where it left off later), initializes a nonpunitive
+// fresh care state the first time an uninitialized (migrated-history or newly
+// revealed) creature becomes active, and projects that care state onto the legacy
+// root fields every other system already reads/writes.
+function changeActiveCreature(state, payload) {
+  if (!EVENT_PAYLOAD_VALIDATORS.ActiveCreatureChanged(payload)) return state;
+  const target = state.collection.creatures[payload.creatureId];
+  if (!target) return state;
+
+  const selection = selectActiveCreature({
+    creatureId: payload.creatureId,
+    activeCreatureId: state.collection.activeCreatureId,
+    visibleCreatureIds: state.collection.visibleCreatureIds,
+    archivedCreatureIds: state.collection.archivedCreatureIds
+  }, content.collection.visibleCreatureLimit);
+  if (!selection.ok || !selection.changed) return state;
+
+  const creatures = { ...state.collection.creatures };
+  const previousActiveId = state.collection.activeCreatureId;
+  if (previousActiveId && creatures[previousActiveId]) {
+    creatures[previousActiveId] = { ...creatures[previousActiveId], careState: captureCareState(state) };
+  }
+  // Care-state the incoming creature will own once active:
+  //  - a creature that already owns ready care resumes exactly where it left off;
+  //  - the FIRST activation of a hatched native game has no prior active creature,
+  //    so the hatched starter's accumulated care lives only in the root fields —
+  //    adopt it, so a first reveal takes on the identity WITHOUT discarding the CP,
+  //    stage, stickers, or daily-cap progress already earned (this mirrors v1, where
+  //    applying a book preserved the creature's ongoing care). Never-punish.
+  //  - every other uninitialized activation (later migrated-history creatures, or a
+  //    reveal while still unhatched) gets a fresh nonpunitive start.
+  let targetCareState;
+  if (target.careState.status === 'ready') {
+    targetCareState = target.careState;
+  } else if (previousActiveId === null && state.hatched) {
+    targetCareState = captureCareState(state);
+  } else {
+    targetCareState = freshCareState();
+  }
+  creatures[payload.creatureId] = { ...target, careState: targetCareState };
+
+  // The active creature is also the hero the scene renders, so project its look and
+  // name onto the v1 `creature`/`name` fields `applyCreatureLook`/the nameplate read —
+  // the visual analogue of the careState projection above. A book creature shows its
+  // generated look; a migrated legacy creature restores its stored book look if it had
+  // one; a plain starter falls back to the generic species look and name.
+  const traits = target.baseTraits;
+  let creature = state.creature;
+  let name = state.name;
+  if (traits && traits.kind === 'book') {
+    creature = structuredClone(traits);
+    name = typeof traits.name === 'string' ? traits.name : name;
+  } else if (traits && traits.legacyCreature && traits.legacyCreature.kind === 'book') {
+    creature = structuredClone(traits.legacyCreature);
+    name = typeof traits.name === 'string' ? traits.name : name;
+  } else {
+    creature = null;
+    name = traits && typeof traits.name === 'string' && traits.name.length > 0 ? traits.name : content.species.name;
+  }
+
+  return {
+    ...state,
+    creature,
+    name,
+    stats: structuredClone(targetCareState.stats),
+    stage: targetCareState.stage,
+    cp: targetCareState.cp,
+    actionsToday: targetCareState.actionsToday,
+    dayKey: targetCareState.dayKey,
+    stickers: structuredClone(targetCareState.stickers),
+    tuckedIn: targetCareState.tuckedIn,
+    collection: {
+      ...state.collection,
+      creatures,
+      activeCreatureId: payload.creatureId,
+      visibleCreatureIds: selection.visibleCreatureIds,
+      archivedCreatureIds: selection.archivedCreatureIds
+    }
+  };
+}
+
 export function initialState() {
   return {
     hatched: false,
@@ -236,6 +384,15 @@ export function applyEvent(state, event) {
 
     case EventTypes.BookStatusChanged:
       return changeBookStatus(state, event.payload ?? event);
+
+    case EventTypes.CreaturePreviewCreated:
+      return createPreview(state, event.payload ?? event);
+
+    case EventTypes.CreatureRevealed:
+      return revealCreature(state, event.payload ?? event);
+
+    case EventTypes.ActiveCreatureChanged:
+      return changeActiveCreature(state, event.payload ?? event);
 
     case EventTypes.Hatched: {
       return {

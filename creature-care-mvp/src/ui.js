@@ -97,6 +97,10 @@ export function createUI(root, content, handlers) {
     </section>
     <section class="meters"></section>
     <section class="actions"></section>
+    <section class="collection" aria-labelledby="collection-title" hidden>
+      <h2 id="collection-title" class="collection-title"></h2>
+      <div class="collection-list" role="list"></div>
+    </section>
     <button class="tuck-btn" type="button">
       <span class="a-icon"></span><span class="t-label"></span>
     </button>
@@ -248,6 +252,9 @@ export function createUI(root, content, handlers) {
     tuckText: q('.tuck-text'),
     toast: q('.toast'),
     shelf: q('.shelf'),
+    collection: q('.collection'),
+    collectionTitle: q('.collection-title'),
+    collectionList: q('.collection-list'),
     welcome: q('.welcome'),
     welcomeTitle: q('.welcome-title'),
     welcomeBody: q('.welcome-body'),
@@ -425,6 +432,7 @@ export function createUI(root, content, handlers) {
     star.textContent = icons.sparkle;
   }
   el.shelf.setAttribute('aria-label', copy.shelfLabel);
+  el.collectionTitle.textContent = copy.collectionTitle;
   el.welcomeTitle.textContent = copy.welcomeTitle;
   el.giftLine.textContent = copy.giftLine;
   el.welcomeBtn.textContent = copy.giftButton;
@@ -441,6 +449,8 @@ export function createUI(root, content, handlers) {
 
   // ----- local book scanner + deterministic preview -----
   let latestState = null;
+  let pendingReveals = [];
+  let revealFlushScheduled = false;
   let pendingCreature = null;
   let pendingBookRecords = null;
   let scanRequest = 0;
@@ -660,6 +670,34 @@ export function createUI(root, content, handlers) {
     });
   }
 
+  // Paint an existing .book-orb element from a creature look (baseTraits shape).
+  // Reused by the book preview AND the collection chips so they share one look.
+  function paintMiniOrb(orb, creature) {
+    if (!orb || !creature || !creature.family || !creature.pattern || !creature.palette) return;
+    orb.dataset.body = creature.family.body;
+    orb.dataset.pattern = creature.pattern.id;
+    orb.style.setProperty('--hue', String(creature.palette.hue));
+    orb.style.setProperty('--accent', String(creature.palette.accentHue));
+    positionMarks([...orb.querySelectorAll('.mini-mark')], creature.pattern.placements ?? []);
+  }
+
+  // Build a fresh .book-orb mini-creature element (same markup as the preview orb).
+  function buildMiniOrb() {
+    const orb = document.createElement('div');
+    orb.className = 'book-orb';
+    orb.setAttribute('aria-hidden', 'true');
+    for (const n of [1, 2, 3, 4]) {
+      const mark = document.createElement('span');
+      mark.className = `mini-mark mm${n}`;
+      orb.append(mark);
+    }
+    const face = document.createElement('span');
+    face.className = 'mini-face';
+    face.textContent = '•ᴗ•';
+    orb.append(face);
+    return orb;
+  }
+
   function showCreaturePreview(creature) {
     pendingCreature = creature;
     el.bookResult.hidden = false;
@@ -683,11 +721,7 @@ export function createUI(root, content, handlers) {
     el.bookUse.textContent = latestState?.hatched
       ? interpolate(copy.useLook, { name: latestState.name })
       : copy.useEgg;
-    el.bookOrb.dataset.body = creature.family.body;
-    el.bookOrb.dataset.pattern = creature.pattern.id;
-    el.bookOrb.style.setProperty('--hue', String(creature.palette.hue));
-    el.bookOrb.style.setProperty('--accent', String(creature.palette.accentHue));
-    positionMarks([...el.bookOrb.querySelectorAll('.mini-mark')], creature.pattern.placements);
+    paintMiniOrb(el.bookOrb, creature);
     showScanStatus(copy.bookReady);
     el.bookUse.focus();
   }
@@ -834,6 +868,22 @@ export function createUI(root, content, handlers) {
     flash(el.toast, 'show', 'toast-life');
   }
 
+  // Grouped reveal celebration: several CreatureRevealed events fire in one
+  // synchronous burst; buffer them and present a single cozy celebration.
+  function flushReveals() {
+    revealFlushScheduled = false;
+    const revealed = pendingReveals;
+    pendingReveals = [];
+    if (revealed.length === 0) return;
+    spawnSparks(icons.sparkle);
+    if (revealed.length === 1) {
+      const name = revealed[0]?.baseTraits?.name ?? '';
+      toast(interpolate(copy.creatureRevealedOne, { name }));
+    } else {
+      toast(interpolate(copy.creatureRevealedMany, { count: revealed.length }));
+    }
+  }
+
   const fill = (template, state) => interpolate(template, {
     name: state.name ?? content.species.name
   });
@@ -909,6 +959,7 @@ export function createUI(root, content, handlers) {
     renderGrowth(state, stage);
 
     renderShelf(state);
+    renderCollection(state);
 
     for (const meter of content.stats.meters) {
       const value = state.stats[meter.id];
@@ -988,6 +1039,86 @@ export function createUI(root, content, handlers) {
       }
       el.shelf.append(slot);
     }
+  }
+
+  // ----- collection panel: the shelf of revealed creatures -----
+  // Order: active first, then remaining visible, then archived. Only revealed
+  // creatures appear; each chip is painted from its OWN baseTraits (never
+  // state.creature, which only reflects the active creature).
+  function renderCollection(state) {
+    el.collectionList.replaceChildren();
+    const collection = state.collection;
+    const creatures = collection?.creatures;
+    if (!collection || !creatures) {
+      el.collection.hidden = true;
+      return;
+    }
+    const activeId = collection.activeCreatureId ?? null;
+    const visibleIds = Array.isArray(collection.visibleCreatureIds) ? collection.visibleCreatureIds : [];
+    const archivedIds = Array.isArray(collection.archivedCreatureIds) ? collection.archivedCreatureIds : [];
+
+    const ordered = [];
+    const seen = new Set();
+    const push = (id) => {
+      if (id == null || seen.has(id)) return;
+      const record = creatures[id];
+      if (!record || record.revealed !== true) return;
+      seen.add(id);
+      ordered.push(record);
+    };
+    push(activeId);
+    for (const id of visibleIds) push(id);
+    for (const id of archivedIds) push(id);
+
+    for (const record of ordered) {
+      const traits = record.baseTraits ?? {};
+      const isActive = record.id === activeId;
+      const name = traits.name ?? '';
+
+      const item = document.createElement('div');
+      item.className = 'collection-item';
+      item.setAttribute('role', 'listitem');
+
+      const chip = document.createElement(isActive ? 'div' : 'button');
+      chip.className = 'collection-chip';
+      chip.dataset.creatureId = record.id;
+      chip.dataset.active = String(isActive);
+      if (isActive) {
+        chip.setAttribute('aria-current', 'true');
+      } else {
+        chip.type = 'button';
+        chip.setAttribute('aria-label', interpolate(copy.collectionActivateLabel, { name }));
+        chip.addEventListener('click', () => handlers.onActivateCreature(record.id));
+      }
+
+      const orb = buildMiniOrb();
+      paintMiniOrb(orb, traits);
+      chip.append(orb);
+
+      const meta = document.createElement('div');
+      meta.className = 'collection-meta';
+      const nameEl = document.createElement('span');
+      nameEl.className = 'collection-name';
+      nameEl.textContent = name;
+      const subEl = document.createElement('span');
+      subEl.className = 'collection-sub';
+      subEl.textContent = [traits.rarity?.label, traits.quirk?.label].filter(Boolean).join(' · ');
+      meta.append(nameEl, subEl);
+      chip.append(meta);
+
+      if (isActive) {
+        const badge = document.createElement('span');
+        badge.className = 'collection-badge';
+        badge.textContent = '✓';
+        badge.setAttribute('aria-label', copy.collectionActiveBadge);
+        chip.append(badge);
+      }
+
+      item.append(chip);
+      el.collectionList.append(item);
+    }
+
+    el.collection.hidden = ordered.length === 0;
   }
 
   // The stage pill doubles as the gentle daily stopping point: three small
@@ -1098,6 +1229,25 @@ export function createUI(root, content, handlers) {
       }
       case EventTypes.TuckedIn: {
         spawnSparks(icons.moon);
+        break;
+      }
+      case EventTypes.CreatureRevealed: {
+        const creatureId = event.payload?.creatureId ?? event.creatureId;
+        const record = state.collection?.creatures?.[creatureId];
+        if (record) pendingReveals.push(record);
+        if (!revealFlushScheduled) {
+          revealFlushScheduled = true;
+          queueMicrotask(flushReveals);
+        }
+        break;
+      }
+      case EventTypes.ActiveCreatureChanged: {
+        const creatureId = event.payload?.creatureId ?? event.creatureId;
+        const record = state.collection?.creatures?.[creatureId];
+        // The hero swaps to the newly active creature — a gentle poof sells the change.
+        if (state.hatched) flash(el.creature, 'poof', 'poof');
+        spawnSparks(icons.sparkle);
+        toast(interpolate(copy.activeSwitched, { name: record?.baseTraits?.name ?? '' }));
         break;
       }
       default:

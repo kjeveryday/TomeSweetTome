@@ -5,6 +5,7 @@ import { initialState } from '../state.js';
 import {
   CURRENT_SCHEMA_VERSION,
   LEGACY_ISBN_IDENTITY_VERSION,
+  captureCareState,
   createBookEdition,
   createBookWork,
   createPlayerAccess,
@@ -81,19 +82,6 @@ function withModuleState(legacyState) {
     playerAccess: clone(legacyState.playerAccess ?? modules.playerAccess),
     careItems: clone(legacyState.careItems ?? modules.careItems),
     recommendations: clone(legacyState.recommendations ?? modules.recommendations)
-  };
-}
-
-function captureCareState(state) {
-  return {
-    status: 'ready',
-    stats: clone(state.stats),
-    stage: state.stage,
-    cp: state.cp,
-    actionsToday: state.actionsToday,
-    dayKey: state.dayKey,
-    stickers: clone(state.stickers),
-    tuckedIn: state.tuckedIn === true
   };
 }
 

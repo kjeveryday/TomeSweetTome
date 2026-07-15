@@ -4,11 +4,13 @@
 import content from './content.json' with { type: 'json' };
 import { initialState, applyEvent } from './state.js';
 import {
+  activeCreatureChanged,
   bookAdded,
   bookStatusChanged,
   bookMetadataResolved,
   createEventIdFactory,
-  creatureGenerated,
+  creaturePreviewCreated,
+  creatureRevealed,
   hatched,
   readingChallengeStarted,
   readingDayRecorded,
@@ -16,6 +18,7 @@ import {
   resourceGranted
 } from './events.js';
 import { SharedEventTypes } from './contracts.js';
+import { previewForBook, revealForReading } from './systems/collection.js';
 import { DEFAULT_FEATURE_FLAGS } from './feature-flags.js';
 import * as clock from './systems/clock.js';
 import * as care from './systems/care.js';
@@ -180,6 +183,18 @@ function commitReadingRecord(record) {
     else if (type === SharedEventTypes.ReadingDayRecorded) commit(readingDayRecorded(record, at));
     else if (type === SharedEventTypes.BookStatusChanged) commit(bookStatusChanged(payload.workId, payload.status, at));
   }
+  // The first accepted reading for a work reveals its (already-previewed) creature.
+  // Several books read in one session each reveal independently here; ui.react groups
+  // the resulting toasts into one compact presentation.
+  const reveal = revealForReading({ workId: record.workId, readingRecordId: record.id }, state.collection.creatures);
+  if (reveal.ok) {
+    for (const { creatureId, workId, readingRecordId } of reveal.reveals) {
+      commit(creatureRevealed({ creatureId, workId, readingRecordId }, at));
+      // A first-ever reveal becomes active automatically; a later reveal never
+      // silently steals the active slot from what the player is already caring for.
+      if (!state.collection.activeCreatureId) commit(activeCreatureChanged({ creatureId }, at));
+    }
+  }
   return true;
 }
 
@@ -229,7 +244,24 @@ const ui = createUI(document.querySelector('#app'), content, {
     const now = getNow();
     commit(bookAdded(bookRecords.added, now));
     if (bookRecords.resolved) commit(bookMetadataResolved(bookRecords.resolved, now));
-    commit(creatureGenerated(creature, now));
+    const { identityVersion, identityKey } = bookRecords.added.identity;
+    const workId = bookRecords.added.work.id;
+    const preview = previewForBook(
+      { workId, identityVersion, identityKey, baseTraits: creature },
+      state.collection.creatures
+    );
+    if (preview.ok && !preview.alreadyExists) {
+      commit(creaturePreviewCreated(
+        { creatureId: preview.creatureId, workId, identityVersion, identityKey, baseTraits: creature },
+        now
+      ));
+    }
+  },
+  onActivateCreature: (creatureId) => {
+    if (!state.collection.creatures[creatureId]) return false;
+    if (state.collection.activeCreatureId === creatureId) return true;
+    commit(activeCreatureChanged({ creatureId }, getNow()));
+    return true;
   },
   onStartReadingChallenge: () => {
     const now = getNow();

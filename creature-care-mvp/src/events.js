@@ -111,3 +111,18 @@ export const readingDayRecorded = (record, now, id) =>
 
 export const bookStatusChanged = (workId, status, now, id) =>
   compatibilityEvent(EventTypes.BookStatusChanged, now, { workId, status }, id);
+
+export const creaturePreviewCreated = ({ creatureId, workId, identityVersion, identityKey, baseTraits }, now, id) =>
+  compatibilityEvent(EventTypes.CreaturePreviewCreated, now, {
+    creatureId,
+    workId,
+    identityVersion,
+    identityKey,
+    baseTraits: structuredClone(baseTraits)
+  }, id);
+
+export const creatureRevealed = ({ creatureId, workId, readingRecordId }, now, id) =>
+  compatibilityEvent(EventTypes.CreatureRevealed, now, { creatureId, workId, readingRecordId }, id);
+
+export const activeCreatureChanged = ({ creatureId }, now, id) =>
+  compatibilityEvent(EventTypes.ActiveCreatureChanged, now, { creatureId }, id);
