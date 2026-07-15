@@ -1,0 +1,276 @@
+{
+  "species": {
+    "name": "Pip",
+    "stages": [
+      { "stage": 1, "label": "Hatchling", "cpRequired": 0, "theme": { "scale": "0.74", "hue": "150", "hueShift": 0 } },
+      { "stage": 2, "label": "Sprout", "cpRequired": 12, "theme": { "scale": "0.94", "hue": "200", "hueShift": 12 } },
+      { "stage": 3, "label": "Bloom", "cpRequired": 30, "theme": { "scale": "1.14", "hue": "268", "hueShift": 24 } }
+    ]
+  },
+  "stats": {
+    "min": 0,
+    "max": 100,
+    "initial": { "fullness": 80, "spirit": 80, "energy": 100 },
+    "decayPerHour": { "fullness": 4, "spirit": 2 },
+    "energyRegenPerHourClosed": 5,
+    "meters": [
+      { "id": "fullness", "icon": "🍎", "label": "Fullness" },
+      { "id": "spirit", "icon": "✨", "label": "Spirit" },
+      { "id": "energy", "icon": "⚡", "label": "Energy" }
+    ]
+  },
+  "care": {
+    "dailyCpCap": 3,
+    "cpPerAction": 1,
+    "actions": [
+      { "id": "feed", "icon": "🍎", "label": "Feed", "burst": "Yum!", "effects": { "fullness": 45 } },
+      { "id": "play", "icon": "🪀", "label": "Play", "burst": "Wheee!", "effects": { "spirit": 25, "energy": -10 }, "minEnergy": 10 },
+      { "id": "tidy", "icon": "🧹", "label": "Tidy", "burst": "So fresh!", "effects": { "spirit": 20 } }
+    ]
+  },
+  "mood": {
+    "beamingMin": 70,
+    "contentMin": 40,
+    "moods": {
+      "beaming": { "label": "Beaming!", "icon": "😄" },
+      "content": { "label": "Content", "icon": "😊" },
+      "peckish": { "label": "Peckish", "icon": "😋" },
+      "sleepy": { "label": "Sleepy", "icon": "😴" }
+    }
+  },
+  "time": { "msPerHour": 3600000, "maxElapsedHours": 72 },
+  "absence": { "thresholdHours": 36, "statFloor": 60 },
+  "generation": {
+    "seedVersion": "stacklings:v1",
+    "hashAlgorithm": "SHA-256",
+    "rarityRollRange": 1000,
+    "markingCount": 4,
+    "bitsPerMarking": 4,
+    "markingMask": 15,
+    "markingLayout": {
+      "bases": [
+        { "x": 18, "y": 18 }, { "x": 56, "y": 20 },
+        { "x": 20, "y": 58 }, { "x": 58, "y": 56 }
+      ],
+      "positionStep": 5,
+      "rotationStep": 12
+    },
+    "scan": { "contrastMin": 36, "maxImageSide": 1400 },
+    "debugFields": {
+      "captured": [
+        { "key": "source", "label": "Input source" },
+        { "key": "decoder", "label": "Decoder" },
+        { "key": "rawValues", "label": "Raw barcode value" },
+        { "key": "formats", "label": "Detected format" },
+        { "key": "imageType", "label": "Image type" },
+        { "key": "imageSize", "label": "Image dimensions" },
+        { "key": "isbn", "label": "Normalized ISBN" }
+      ],
+      "book": [
+        { "key": "lookupStatus", "label": "Lookup status / source" },
+        { "key": "title", "label": "Book title" },
+        { "key": "authors", "label": "Author(s)" },
+        { "key": "publishers", "label": "Publisher(s)" },
+        { "key": "years", "label": "Publication year(s)" },
+        { "key": "pageCount", "label": "Page count" },
+        { "key": "format", "label": "Physical format" },
+        { "key": "genres", "label": "Genre(s)" },
+        { "key": "subjects", "label": "Subject headings" },
+        { "key": "series", "label": "Series" }
+      ],
+      "derived": [
+        { "key": "seedVersion", "label": "Seed version" },
+        { "key": "hashAlgorithm", "label": "Hash algorithm" },
+        { "key": "seed", "label": "Seed bytes" },
+        { "key": "name", "label": "Name" },
+        { "key": "family", "label": "Family" },
+        { "key": "body", "label": "Body shape" },
+        { "key": "appendage", "label": "Appendage" },
+        { "key": "palette", "label": "Palette" },
+        { "key": "hues", "label": "Body / accent hue" },
+        { "key": "pattern", "label": "Pattern" },
+        { "key": "patternBits", "label": "Pattern bits" },
+        { "key": "placements", "label": "Mark placements" },
+        { "key": "voice", "label": "Voice" },
+        { "key": "idle", "label": "Idle animation" },
+        { "key": "quirk", "label": "Quirk" },
+        { "key": "rarity", "label": "Rarity / roll" },
+        { "key": "publisher", "label": "Publisher birthmark" },
+        { "key": "language", "label": "Language coat" }
+      ]
+    },
+    "families": [
+      { "id": "motelet", "label": "Motelet", "body": "round", "appendage": "antennae", "width": "168px", "height": "150px", "radius": "47% 53% 55% 45% / 58% 58% 43% 42%" },
+      { "id": "quillkin", "label": "Quillkin", "body": "tall", "appendage": "ears", "width": "140px", "height": "176px", "radius": "45% 55% 48% 52% / 66% 62% 38% 34%" },
+      { "id": "puffkin", "label": "Puffkin", "body": "wide", "appendage": "nubs", "width": "190px", "height": "132px", "radius": "52% 48% 46% 54% / 58% 60% 40% 42%" },
+      { "id": "dewling", "label": "Dewling", "body": "pear", "appendage": "leaf", "width": "158px", "height": "170px", "radius": "58% 42% 46% 54% / 38% 40% 60% 62%" },
+      { "id": "bookle", "label": "Bookle", "body": "bean", "appendage": "horns", "width": "174px", "height": "148px", "radius": "62% 38% 56% 44% / 48% 64% 36% 52%" },
+      { "id": "riffin", "label": "Riffin", "body": "squat", "appendage": "fin", "width": "184px", "height": "126px", "radius": "48% 52% 42% 58% / 64% 60% 40% 36%" },
+      { "id": "glimmer", "label": "Glimmer", "body": "drop", "appendage": "crown", "width": "150px", "height": "174px", "radius": "52% 48% 58% 42% / 72% 70% 30% 28%" },
+      { "id": "niblet", "label": "Niblet", "body": "pebble", "appendage": "ears", "width": "162px", "height": "138px", "radius": "56% 44% 52% 48% / 50% 56% 44% 50%" },
+      { "id": "wispin", "label": "Wispin", "body": "tall", "appendage": "antennae", "width": "146px", "height": "180px", "radius": "50% 50% 42% 58% / 70% 66% 34% 30%" },
+      { "id": "tumble", "label": "Tumble", "body": "wide", "appendage": "horns", "width": "194px", "height": "136px", "radius": "44% 56% 58% 42% / 54% 48% 52% 46%" },
+      { "id": "loomkin", "label": "Loomkin", "body": "round", "appendage": "leaf", "width": "170px", "height": "158px", "radius": "50% 50% 50% 50% / 55% 55% 45% 45%" },
+      { "id": "inklit", "label": "Inklit", "body": "bean", "appendage": "fin", "width": "178px", "height": "152px", "radius": "40% 60% 48% 52% / 62% 46% 54% 38%" }
+    ],
+    "palettes": [
+      { "id": "mint", "label": "Mint meadow", "hue": 150, "accentHue": 42 },
+      { "id": "lagoon", "label": "Blue lagoon", "hue": 196, "accentHue": 332 },
+      { "id": "lavender", "label": "Lavender dusk", "hue": 268, "accentHue": 48 },
+      { "id": "peach", "label": "Peach sunrise", "hue": 18, "accentHue": 188 },
+      { "id": "berry", "label": "Berry jam", "hue": 326, "accentHue": 54 },
+      { "id": "lemon", "label": "Lemon glow", "hue": 52, "accentHue": 282 },
+      { "id": "coral", "label": "Coral reef", "hue": 8, "accentHue": 176 },
+      { "id": "sky", "label": "Cloudy sky", "hue": 210, "accentHue": 32 },
+      { "id": "moss", "label": "Mossy stone", "hue": 104, "accentHue": 26 },
+      { "id": "plum", "label": "Plum velvet", "hue": 296, "accentHue": 160 },
+      { "id": "apricot", "label": "Apricot fizz", "hue": 30, "accentHue": 220 },
+      { "id": "aqua", "label": "Aqua glass", "hue": 174, "accentHue": 316 },
+      { "id": "rose", "label": "Dusty rose", "hue": 346, "accentHue": 190 },
+      { "id": "indigo", "label": "Indigo ink", "hue": 238, "accentHue": 46 },
+      { "id": "fern", "label": "Fern shade", "hue": 132, "accentHue": 300 },
+      { "id": "amber", "label": "Amber lantern", "hue": 38, "accentHue": 204 }
+    ],
+    "patterns": [
+      { "id": "spots", "label": "Moon spots" },
+      { "id": "diamonds", "label": "Kite diamonds" },
+      { "id": "rings", "label": "Story rings" },
+      { "id": "petals", "label": "Petal marks" },
+      { "id": "stars", "label": "Tiny stars" },
+      { "id": "patches", "label": "Patchwork" }
+    ],
+    "voices": [
+      { "id": "chirp", "label": "Sunny chirp" },
+      { "id": "hum", "label": "Cozy hum" },
+      { "id": "peep", "label": "Tiny peep" },
+      { "id": "creak", "label": "Storybook creak" },
+      { "id": "trill", "label": "Silver trill" },
+      { "id": "purr", "label": "Velvet purr" },
+      { "id": "whistle", "label": "Breezy whistle" },
+      { "id": "chime", "label": "Pocket chime" }
+    ],
+    "idles": [
+      { "id": "bounce", "label": "Happy bounce" },
+      { "id": "sway", "label": "Page-turn sway" },
+      { "id": "doze", "label": "Cozy doze" },
+      { "id": "wiggle", "label": "Curious wiggle" }
+    ],
+    "quirks": [
+      { "id": "bookmark", "label": "Collects tiny bookmarks" },
+      { "id": "rhyme", "label": "Hums in little rhymes" },
+      { "id": "crumbs", "label": "Hides snack crumbs" },
+      { "id": "corners", "label": "Straightens page corners" },
+      { "id": "clouds", "label": "Counts cloud shapes" },
+      { "id": "mysteries", "label": "Sniffs out mysteries" },
+      { "id": "doodles", "label": "Draws sleepy doodles" },
+      { "id": "words", "label": "Saves favorite words" },
+      { "id": "echo", "label": "Echoes funny sounds" },
+      { "id": "nest", "label": "Builds blanket nests" },
+      { "id": "stars", "label": "Names every star" },
+      { "id": "dance", "label": "Dances at chapter ends" },
+      { "id": "socks", "label": "Misplaces one sock" },
+      { "id": "tea", "label": "Pretends to pour tea" },
+      { "id": "maps", "label": "Folds imaginary maps" },
+      { "id": "compliments", "label": "Whispers kind words" }
+    ],
+    "rarities": [
+      { "id": "common", "label": "Cozy" , "maxExclusive": 700 },
+      { "id": "uncommon", "label": "Glimmer", "maxExclusive": 900 },
+      { "id": "rare", "label": "Radiant", "maxExclusive": 980 },
+      { "id": "luminous", "label": "Luminous", "maxExclusive": 1000 }
+    ],
+    "namePrefixes": ["Pip", "Mim", "Twi", "Bram", "Lumi", "Nim", "Fable", "Quil", "Moss", "Tink", "Dew", "Pock", "Roo", "Bim", "Clover", "Wim"],
+    "nameSuffixes": ["kin", "ble", "let", "lo", "wick", "sy", "bit", "bloom", "bell", "mop", "whisp", "berry", "dle", "fin", "sprig", "bun"],
+    "publishers": [
+      { "prefix": "97807636", "label": "Candlewick", "icon": "🕯️" },
+      { "prefix": "9780590", "label": "Scholastic", "icon": "⭐" },
+      { "prefix": "9780399", "label": "Putnam / Philomel", "icon": "🌙" },
+      { "prefix": "978006", "label": "HarperCollins", "icon": "🍃" },
+      { "prefix": "978014", "label": "Penguin", "icon": "🪶" }
+    ],
+    "defaultPublisher": { "prefix": "", "label": "Mystery press", "icon": "📖" },
+    "languageGroups": {
+      "0": { "id": "english-a", "label": "English-language coat" },
+      "1": { "id": "english-b", "label": "English-language coat" },
+      "2": { "id": "french", "label": "Francophone coat" },
+      "3": { "id": "german", "label": "German-language coat" },
+      "4": { "id": "japanese", "label": "Japanese-language coat" },
+      "5": { "id": "russian", "label": "Russian-language coat" },
+      "7": { "id": "chinese", "label": "Chinese-language coat" }
+    },
+    "defaultLanguageGroup": { "id": "international", "label": "International coat" }
+  },
+  "stickers": [
+    { "id": "star", "icon": "⭐", "label": "Star" },
+    { "id": "rainbow", "icon": "🌈", "label": "Rainbow" },
+    { "id": "flower", "icon": "🌸", "label": "Flower" },
+    { "id": "rocket", "icon": "🚀", "label": "Rocket" },
+    { "id": "cherries", "icon": "🍒", "label": "Cherries" },
+    { "id": "melody", "icon": "🎵", "label": "Melody" }
+  ],
+  "ui": {
+    "sparkleCount": 6,
+    "icons": { "star": "⭐", "emptyStar": "☆", "heart": "💖", "gift": "🎁", "sparkle": "✨", "sleep": "💤", "moon": "🌙" }
+  },
+  "copy": {
+    "title": "Creature Care",
+    "bookButton": "Book magic",
+    "bookDialogTitle": "Wake a book creature",
+    "bookDialogBody": "Choose a barcode photo, or type its ISBN.",
+    "bookPrivacy": "The photo stays on this device.",
+    "choosePhoto": "Choose barcode photo",
+    "manualDivider": "or type the number",
+    "isbnLabel": "Book ISBN",
+    "isbnPlaceholder": "978-0-06-440055-8",
+    "makeCreature": "Reveal creature",
+    "bookClose": "Close book magic",
+    "scanReading": "Reading the barcode…",
+    "scanNoBarcode": "I couldn't find a book barcode. Try typing the ISBN.",
+    "scanUnavailable": "Photo reading isn't available here. Type the ISBN below.",
+    "scanNotImage": "Choose a photo of the barcode.",
+    "scanNotBook": "That isn't an ISBN book barcode.",
+    "scanInvalid": "That ISBN needs another look.",
+    "scanFailed": "The photo was tricky. Try another or type the ISBN.",
+    "scanHashFailed": "Creature magic isn't available in this browser.",
+    "bookReady": "Your book creature is ready!",
+    "bookPreviewLine": "{family} · {palette} · {rarity}",
+    "bookPreviewDetails": "{quirk} · {voice}",
+    "bookEditionLine": "Edition ISBN {isbn}",
+    "bookBirthmarkLine": "{icon} {publisher} birthmark",
+    "useEgg": "Make this my egg",
+    "useLook": "Give {name} this look",
+    "bookApplied": "{name} has a book-born look! ✨",
+    "bookEggHint": "Tap to hatch {name}!",
+    "debugGear": "Inspect creature values",
+    "debugTitle": "Creature debug",
+    "debugClose": "Close creature debug",
+    "debugCaptured": "Captured from input",
+    "debugBook": "Book data",
+    "debugMapping": "How book data was mapped",
+    "debugDerived": "Generated values",
+    "debugRawJson": "Raw creature JSON",
+    "debugNoPhoto": "No photo was stored.",
+    "debugLegacy": "Legacy save",
+    "debugNotRecorded": "Not recorded",
+    "debugMetadataLegacy": "Book metadata was not recorded for this older creature.",
+    "tapEgg": "Tap the egg!",
+    "hatchedToast": "{name} hatched! 🎉",
+    "tuckInButton": "Tuck in",
+    "tuckInIcon": "🌙",
+    "tuckInLine": "See you tomorrow 🌙",
+    "welcomeTitle": "Welcome back!",
+    "welcomeBody": "{name} missed you!",
+    "giftLine": "A sticker for you!",
+    "giftButton": "Yay!",
+    "grewToast": "{name} grew! ✨",
+    "dailyCareLabel": "{done} of {total} care stars today",
+    "dailyCareDone": "Today's care is complete! 🌙",
+    "allGrown": "All grown up! 💖",
+    "growLabel": "{name} is growing…",
+    "restingLabel": "zzz",
+    "shelfLabel": "Sticker shelf",
+    "statsLabel": "How {name} feels",
+    "actionsLabel": "Care actions",
+    "eggLabel": "A mystery egg"
+  }
+}

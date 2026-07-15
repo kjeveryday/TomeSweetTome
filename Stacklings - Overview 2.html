@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Executive gameplay overview and modular systems design for Stacklings, an entertainment-first, all-ages mobile and web cozy creature-collecting game powered by books, reading, and libraries." name="description"/>
+<title>Stacklings — Gameplay, Systems &amp; Market Positioning Overview</title>
+<style>
+  :root{
+    --night:#132a29;
+    --night-2:#0d201f;
+    --forest:#234c43;
+    --forest-2:#397061;
+    --parchment:#f3ead5;
+    --paper:#fbf6e9;
+    --paper-2:#e8dcc0;
+    --ink:#28251f;
+    --ink-soft:#615b4e;
+    --burgundy:#7a302f;
+    --berry:#a54b48;
+    --gold:#b58a3a;
+    --gold-light:#e7c978;
+    --teal:#2c7a78;
+    --blue:#416f8b;
+    --purple:#745d8f;
+    --rule:#c9b990;
+    --success:#2f6d51;
+    --warning:#9b6127;
+    --shadow:0 18px 60px rgba(21,29,27,.16);
+    --radius:18px;
+    --sans:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --serif:Georgia, "Times New Roman", serif;
+    --mono:"Courier New", Courier, monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 8% 3%, rgba(231,201,120,.18), transparent 24rem),
+      linear-gradient(180deg,var(--night-2) 0 33rem,var(--parchment) 33rem 100%);
+    font-family:var(--sans);
+    line-height:1.58;
+  }
+  a{color:inherit}
+  a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--gold-light);outline-offset:3px}
+  .skip{position:absolute;left:-9999px;top:auto}
+  .skip:focus{left:14px;top:14px;z-index:999;background:white;padding:10px 14px;border-radius:8px}
+  .page{width:min(1440px,100%);margin:0 auto;position:relative}
+  .hero{
+    min-height:33rem;
+    color:#f8efd9;
+    padding:54px clamp(24px,6vw,86px) 76px;
+    position:relative;
+    overflow:hidden;
+    isolation:isolate;
+  }
+  .hero:before{
+    content:"";
+    position:absolute;inset:0;z-index:-2;
+    background:
+      linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px) 0 0/74px 100%,
+      radial-gradient(circle at 74% 20%,rgba(231,201,120,.16),transparent 17rem),
+      linear-gradient(135deg,var(--night),var(--night-2));
+  }
+  .hero:after{
+    content:"";
+    position:absolute;left:0;right:0;bottom:0;height:92px;z-index:-1;
+    background:
+      linear-gradient(90deg,
+        #412f27 0 8%,#7b4633 8% 13%,#324a45 13% 22%,#9e6a3a 22% 28%,#5b3340 28% 36%,
+        #35545a 36% 43%,#6d4933 43% 51%,#2f473d 51% 60%,#8a5238 60% 66%,#4e3854 66% 74%,
+        #aa7b42 74% 81%,#3f5e52 81% 90%,#704039 90% 100%);
+    clip-path:polygon(0 42%,4% 36%,4% 18%,8% 18%,8% 38%,13% 38%,13% 8%,17% 8%,17% 40%,22% 40%,22% 14%,26% 14%,26% 39%,30% 39%,30% 3%,35% 3%,35% 42%,40% 42%,40% 23%,45% 23%,45% 39%,50% 39%,50% 10%,54% 10%,54% 43%,59% 43%,59% 17%,64% 17%,64% 39%,68% 39%,68% 6%,73% 6%,73% 41%,78% 41%,78% 20%,83% 20%,83% 38%,88% 38%,88% 12%,93% 12%,93% 42%,100% 42%,100% 100%,0 100%);
+    opacity:.78;
+  }
+  .hero-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,.7fr);gap:50px;align-items:center}
+  .eyebrow{font-family:var(--mono);text-transform:uppercase;letter-spacing:.18em;font-size:.78rem;color:var(--gold-light);font-weight:700}
+  h1,h2,h3,h4{font-family:var(--serif);line-height:1.12;margin:0;color:inherit}
+  h1{font-size:clamp(3.4rem,9vw,7.8rem);letter-spacing:-.055em;margin:.1em 0 .08em}
+  .subtitle{font-family:var(--serif);font-size:clamp(1.2rem,2.5vw,1.75rem);max-width:780px;color:#e6dbc0;margin:0 0 24px}
+  .hero-meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:24px}
+  .chip{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(231,201,120,.42);background:rgba(255,255,255,.055);padding:7px 11px;border-radius:999px;font-size:.8rem;color:#f2e5c8}
+  .hero-card{
+    background:linear-gradient(180deg,#f4ead2,#e8dbbc);
+    color:var(--ink);
+    border:1px solid #c7b581;
+    padding:25px 24px 22px;
+    box-shadow:10px 13px 0 rgba(0,0,0,.2);
+    transform:rotate(1.2deg);
+    position:relative;
+  }
+  .hero-card:before{content:"STACKLINGS ARCHIVE";font:700 .69rem/1 var(--mono);letter-spacing:.2em;color:var(--burgundy);position:absolute;top:-11px;left:18px;background:var(--paper);border:1px solid var(--burgundy);padding:5px 8px;transform:rotate(-3deg)}
+  .hero-card h2{font-size:1.7rem;margin:5px 0 11px}
+  .hero-card p{margin:0 0 13px}
+  .stamp{display:inline-block;color:var(--burgundy);border:3px double var(--burgundy);font:700 .8rem/1 var(--mono);padding:8px 12px;transform:rotate(-4deg);text-transform:uppercase;letter-spacing:.14em;margin-top:8px}
+  .creature-seal{width:118px;height:118px;margin:0 auto 18px;border:3px solid var(--gold);border-radius:50%;position:relative;background:radial-gradient(circle,#f7edcf 0 45%,#dcc892 46% 48%,#2f5e52 49% 51%,#f7edcf 52%)}
+  .creature-seal:before,.creature-seal:after{content:"";position:absolute;background:var(--forest);border-radius:50%}
+  .creature-seal:before{width:58px;height:48px;left:27px;top:36px;border-radius:48% 48% 44% 44%}
+  .creature-seal:after{width:12px;height:12px;left:43px;top:50px;background:var(--gold-light);box-shadow:24px 0 0 var(--gold-light)}
+  .ears{position:absolute;width:23px;height:30px;background:var(--forest);top:24px;left:23px;border-radius:90% 10% 80% 20%;transform:rotate(-28deg);box-shadow:50px 0 0 var(--forest);}
+  .bookbody{position:absolute;width:62px;height:28px;left:25px;top:76px;background:var(--burgundy);border-radius:3px 3px 8px 8px;border-bottom:5px solid #4c2424}
+  .bookbody:after{content:"";position:absolute;left:29px;top:0;width:4px;height:23px;background:var(--gold-light)}
+  .layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:34px;padding:0 clamp(18px,4vw,54px) 90px;align-items:start}
+  nav{
+    position:sticky;top:18px;margin-top:-34px;background:rgba(251,246,233,.96);border:1px solid var(--rule);box-shadow:var(--shadow);border-radius:14px;padding:20px 16px;max-height:calc(100vh - 36px);overflow:auto;z-index:10
+  }
+  nav .nav-title{font:700 .74rem/1.2 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--burgundy);padding:0 9px 11px;border-bottom:1px solid var(--rule)}
+  nav a{display:block;text-decoration:none;padding:8px 9px;border-radius:8px;font-size:.88rem;color:var(--ink-soft)}
+  nav a:hover,nav a.active{background:#e9dec2;color:var(--ink)}
+  nav a.module{font-weight:750;color:var(--forest);margin-top:4px}
+  .nav-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
+  .nav-actions button{font:700 .7rem/1 var(--mono);border:1px solid var(--rule);background:#fffaf0;color:var(--ink);padding:9px 5px;border-radius:7px;cursor:pointer}
+  main{min-width:0}
+  section{scroll-margin-top:20px}
+  .sheet{
+    background:var(--paper);
+    border:1px solid var(--rule);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:clamp(27px,5vw,58px);
+    margin:34px 0;
+    position:relative;
+    overflow:hidden;
+  }
+  .sheet:before{content:attr(data-call);position:absolute;right:21px;top:18px;font:700 .69rem/1 var(--mono);letter-spacing:.18em;color:#998a67}
+  .section-kicker{font:700 .72rem/1 var(--mono);letter-spacing:.19em;text-transform:uppercase;color:var(--burgundy);margin-bottom:11px}
+  h2{font-size:clamp(2rem,4.5vw,3.45rem);letter-spacing:-.035em;margin-bottom:17px;color:var(--forest)}
+  h3{font-size:clamp(1.35rem,2.4vw,2rem);margin:30px 0 12px;color:var(--forest)}
+  h4{font-size:1.15rem;margin:21px 0 8px;color:var(--burgundy)}
+  p{margin:0 0 14px;max-width:83ch}
+  .lead{font-family:var(--serif);font-size:1.27rem;line-height:1.58;color:#3d392f;max-width:76ch}
+  .thesis{font-family:var(--serif);font-size:clamp(1.5rem,3vw,2.25rem);line-height:1.4;color:var(--forest);border-left:5px solid var(--gold);padding:4px 0 4px 22px;margin:24px 0 28px;max-width:48ch}
+  .recommendation{background:linear-gradient(135deg,#edf3e8,#f9f4e5);border:1px solid #a9bd94;border-left:7px solid var(--success);padding:20px 22px;border-radius:12px;margin:22px 0}
+  .recommendation .label{font:700 .72rem/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--success);margin-bottom:8px}
+  .recommendation p:last-child{margin-bottom:0}
+  .warning{background:#fbf0df;border:1px solid #d6ae72;border-left:7px solid var(--warning);padding:18px 21px;border-radius:12px;margin:20px 0}
+  .note{background:#edf3f3;border:1px solid #a7c8c7;border-left:6px solid var(--teal);padding:16px 19px;border-radius:10px;margin:18px 0}
+  .grid-2,.grid-3,.grid-4{display:grid;gap:16px;margin:20px 0}
+  .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .card{background:#fffaf0;border:1px solid var(--rule);border-radius:12px;padding:19px;position:relative}
+  .card h3,.card h4{margin-top:0}
+  .card p:last-child{margin-bottom:0}
+  .card .num{font:700 .72rem/1 var(--mono);letter-spacing:.16em;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+  .pillar{border-top:5px solid var(--forest)}
+  .pillar:nth-child(2){border-top-color:var(--burgundy)}
+  .pillar:nth-child(3){border-top-color:var(--gold)}
+  .pillar:nth-child(4){border-top-color:var(--teal)}
+  .decision-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin:26px 0}
+  .decision-strip div{background:var(--night);color:#f5ecd8;padding:15px 12px;border-radius:9px;min-height:94px}
+  .decision-strip b{display:block;font:700 .67rem/1.2 var(--mono);letter-spacing:.12em;color:var(--gold-light);text-transform:uppercase;margin-bottom:8px}
+  .decision-strip span{font-size:.87rem}
+  ul,ol{padding-left:1.25rem;margin:9px 0 16px}
+  li{margin:5px 0}
+  .plain-list{list-style:none;padding:0}
+  .plain-list li{position:relative;padding-left:24px;margin:8px 0}
+  .plain-list li:before{content:"✦";position:absolute;left:0;color:var(--gold)}
+  .tablewrap{overflow-x:auto;margin:18px 0 24px;border:1px solid var(--rule);border-radius:10px;background:#fffaf0}
+  table{border-collapse:collapse;width:100%;min-width:690px;font-size:.88rem}
+  th,td{padding:12px 13px;text-align:left;vertical-align:top;border-bottom:1px solid #ddd0b1}
+  th{font:700 .71rem/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;background:#e8dcc0;color:#504631}
+  tr:last-child td{border-bottom:none}
+  td strong{color:var(--forest)}
+  .rec-row{background:#edf4e9}
+  .status{display:inline-block;font:700 .68rem/1 var(--mono);padding:5px 7px;border-radius:99px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+  .status.rec{background:#dcebd8;color:#285d43}
+  .status.alt{background:#e9e0f0;color:#5b4372}
+  .status.later{background:#ece4d4;color:#705f3c}
+  details{border:1px solid var(--rule);border-radius:11px;background:#fffaf0;margin:12px 0;overflow:hidden}
+  summary{cursor:pointer;padding:16px 18px;font-weight:750;color:var(--forest);list-style:none;display:flex;justify-content:space-between;gap:15px;align-items:center}
+  summary::-webkit-details-marker{display:none}
+  summary:after{content:"+";font:700 1.4rem/1 var(--mono);color:var(--burgundy)}
+  details[open] summary:after{content:"–"}
+  details[open] summary{border-bottom:1px solid var(--rule);background:#efe5ce}
+  .detail-body{padding:18px 20px 21px}
+  .flow{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap;margin:22px 0}
+  .flow .step{flex:1 1 135px;background:var(--night);color:#f6ecd7;padding:17px 15px;border-radius:10px;position:relative;min-height:122px}
+  .flow .step b{display:block;color:var(--gold-light);font:700 .72rem/1.2 var(--mono);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px}
+  .flow .step:after{content:"›";position:absolute;right:-9px;top:42%;z-index:2;color:var(--gold);font-size:1.7rem}
+  .flow .step:last-child:after{display:none}
+  .codebox{background:#172927;color:#e9dfc5;border:1px solid #31504b;border-radius:10px;padding:18px;overflow:auto;font:400 .81rem/1.55 var(--mono);margin:16px 0}
+  .sigil{display:inline-block;background:var(--forest);color:#f6ecd7;font:700 .7rem/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:7px 9px;border-radius:7px}
+  .monster-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:18px 0}
+  .monster{background:linear-gradient(180deg,#fffaf0,#efe4cc);border:1px solid var(--rule);border-radius:13px;padding:19px;display:grid;grid-template-columns:76px 1fr;gap:15px;align-items:start}
+  .monster-icon{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;font-size:2rem;border:3px double var(--gold);background:#f8edcf}
+  .monster h4{margin:0 0 5px;color:var(--forest)}
+  .monster p{font-size:.9rem;margin:0 0 7px}
+  .monster .traits{font:700 .68rem/1.4 var(--mono);color:var(--burgundy);text-transform:uppercase;letter-spacing:.04em}
+  .timeline{position:relative;margin:26px 0 16px;padding-left:34px}
+  .timeline:before{content:"";position:absolute;left:11px;top:5px;bottom:6px;width:3px;background:var(--rule)}
+  .timeline .event{position:relative;margin:0 0 22px;background:#fffaf0;border:1px solid var(--rule);border-radius:10px;padding:15px 17px}
+  .timeline .event:before{content:"";position:absolute;left:-30px;top:18px;width:15px;height:15px;background:var(--gold);border:3px solid var(--paper);border-radius:50%;box-shadow:0 0 0 1px var(--gold)}
+  .timeline .event b{display:block;color:var(--forest);margin-bottom:4px}
+  .agebands{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}
+  .age{border:1px solid var(--rule);border-radius:12px;overflow:hidden;background:#fffaf0}
+  .age h4{background:var(--forest);color:#fff3d8;margin:0;padding:13px 16px}
+  .age .body{padding:15px 16px;font-size:.9rem}
+  .meter{display:grid;grid-template-columns:125px 1fr;gap:12px;align-items:center;margin:10px 0}
+  .meter .bar{height:12px;background:#e7dcc1;border-radius:99px;overflow:hidden}
+  .meter .bar span{display:block;height:100%;background:linear-gradient(90deg,var(--forest),var(--gold));border-radius:99px}
+  .bundle{border:2px solid var(--forest);background:#fffaf0;border-radius:14px;padding:22px;margin:18px 0;position:relative}
+  .bundle.recommended{box-shadow:inset 0 0 0 5px #deead9}
+  .bundle .ribbon{position:absolute;right:16px;top:-12px;background:var(--success);color:white;font:700 .67rem/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;border-radius:7px}
+  .bundle h3{margin:0 0 8px}
+  .compat td{text-align:center}
+  .compat td:first-child,.compat th:first-child{text-align:left}
+  .yes{color:var(--success);font-weight:800}.maybe{color:var(--warning);font-weight:800}.no{color:#9a4a43;font-weight:800}
+  .agent-lane{display:grid;grid-template-columns:140px 1fr 1fr;gap:0;border:1px solid var(--rule);border-radius:9px;overflow:hidden;margin:10px 0;background:#fffaf0;font-size:.88rem}
+  .agent-lane > div{padding:12px;border-right:1px solid var(--rule)}
+  .agent-lane > div:last-child{border-right:0}
+  .agent-lane .role{font-weight:800;color:var(--forest)}
+  .source-list{columns:2;column-gap:38px;font-size:.88rem}
+  .source-list li{break-inside:avoid;margin-bottom:9px}
+  .footer{color:#d8ceb4;padding:34px clamp(24px,6vw,86px) 54px;background:var(--night-2);font-size:.85rem}
+  .footer strong{color:var(--gold-light)}
+  .print-note{font-size:.78rem;color:var(--ink-soft)}
+  .hide-alt details:not([data-recommended="true"]){display:none}
+  .hide-alt .alt-only{display:none}
+  @media (max-width:1080px){
+    .layout{grid-template-columns:1fr;padding-top:18px}
+    nav{position:relative;top:auto;margin:0;max-height:none;display:none}
+    .hero-grid{grid-template-columns:1fr}.hero-card{max-width:600px}
+    .decision-strip{grid-template-columns:repeat(2,1fr)}
+  }
+  @media (max-width:760px){
+    .grid-2,.grid-3,.grid-4,.monster-grid,.agebands{grid-template-columns:1fr}
+    .hero{padding:38px 20px 70px}.hero-card{transform:none}
+    .layout{padding:0 13px 55px}.sheet{padding:27px 20px;border-radius:12px}
+    .decision-strip{grid-template-columns:1fr}
+    .flow{display:grid}.flow .step:after{content:"↓";right:50%;top:auto;bottom:-18px}
+    .agent-lane{grid-template-columns:1fr}.agent-lane > div{border-right:0;border-bottom:1px solid var(--rule)}
+    .source-list{columns:1}.monster{grid-template-columns:58px 1fr}.monster-icon{width:58px;height:58px}
+  }
+  @media print{
+    body{background:white;font-size:10.5pt}
+    .hero{min-height:auto;background:var(--night)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:32px 36px 48px}
+    .hero:after,nav,.nav-actions{display:none!important}
+    .layout{display:block;padding:0}.sheet{box-shadow:none;border-radius:0;margin:0;border:0;border-bottom:1px solid #aaa;page-break-inside:auto;padding:28px 36px}
+    h2,h3,h4{page-break-after:avoid}.card,.recommendation,.warning,details,.bundle,.monster{page-break-inside:avoid}
+    details{display:block}details .detail-body{display:block}summary:after{display:none}
+    .footer{background:white;color:#333;padding:24px 36px}
+  }
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to report</a>
+<div class="page">
+<header class="hero">
+<div class="hero-grid">
+<div>
+<div class="eyebrow">Executive Gameplay &amp; Systems Overview · July 2026</div>
+<h1>Stacklings</h1>
+<p class="subtitle">An entertainment-first, all-ages cozy creature-collecting game where books summon companions, reading shapes a living world, and libraries become trusted portals into play.</p>
+<div class="hero-meta">
+<span class="chip">Category: cozy creature collector</span>
+<span class="chip">Primary design audience: ages 8–12</span>
+<span class="chip">Supported audience: ages 6–13 + families</span>
+<span class="chip">Platforms: mobile + web</span>
+<span class="chip">Channel partners: public libraries</span>
+</div>
+</div>
+<aside aria-label="Recommended concept summary" class="hero-card">
+<div aria-hidden="true" class="creature-seal"><span class="ears"></span><span class="bookbody"></span></div>
+<h2>The recommended positioning</h2>
+<p>A player scans a book and meets its Stackling immediately. Borrowing invites that creature to live on the player’s shelf. Reading builds the relationship; returning the book graduates it into the permanent collection.</p>
+<p><strong>Sell the fantasy, not the lesson.</strong> Reading growth is a benefit, library partnership is a distribution advantage, and educational reporting is an optional adult-facing layer—not the player-facing promise.</p>
+<span class="stamp">Entertainment-first baseline</span>
+</aside>
+</div>
+</header>
+<div class="layout">
+<nav aria-label="Report navigation">
+<div class="nav-title">Catalog of Sections</div>
+<a href="#executive">Executive recommendation</a><a href="#positioning">Audience &amp; positioning</a>
+<a href="#frame">Product frame</a>
+<a href="#architecture">Modular architecture</a>
+<a class="module" href="#capture">01 · Monster Capture</a>
+<a class="module" href="#care">02 · Monster Care</a>
+<a class="module" href="#loop">03 · Gameplay Loop</a>
+<a class="module" href="#reading">04 · Reading Gamification</a>
+<a class="module" href="#library">05 · Library Connection</a>
+<a href="#multiplayer">Collaborative &amp; multiplayer</a>
+<a href="#bundles">Compatible game bundles</a>
+<a href="#content">Example content kit</a>
+<a href="#technical">Technical model</a>
+<a href="#safety">Safety &amp; privacy</a>
+<a href="#pilot">Pilot &amp; measurement</a>
+<a href="#decisions">Decisions to finalize</a>
+<a href="#agents">Multi-agent production plan</a>
+<a href="#sources">Research basis</a>
+<a href="#considerations">Considerations &amp; mitigations</a>
+<div class="nav-actions">
+<button id="toggleAlt" type="button">Recommended only</button>
+<button onclick="window.print()" type="button">Print</button>
+</div>
+</nav>
+<main id="main">
+<section class="sheet" data-call="001.3 · EXECUTIVE" id="executive">
+<div class="section-kicker">Executive recommendation</div>
+<h2>Make a game players want before making a tool adults approve</h2>
+<p class="lead">Stacklings should enter the market as a cozy creature-collecting and world-building game, not as educational software. The physical act of finding and borrowing a book becomes discovery in the wild; reading happens mostly away from the screen; the return to the app reveals how the relationship changed the creature and its world.</p>
+<p class="thesis">Make it for kids, package it for everyone, and sell the educational value to adults and institutions rather than to the player.</p>
+<div class="recommendation">
+<div class="label">Recommended market position</div>
+<p><strong>Entertainment-first, all-ages, child-centered.</strong> Design the moment-to-moment game around ages 8–12; support ages 6–13 through presentation and accessibility; give families and adult book lovers deeper collection, curation, decoration, and reading-history play. Libraries and schools are partners, channels, and optional program layers—not the creative audience.</p>
+</div><div class="recommendation">
+<div class="label">Recommended gameplay system bundle</div>
+<p>Two-stage capture + reading-powered care + a loan-cycle loop + privacy-minimized library signals + asynchronous cooperative play. Scanning creates an instant, deterministic sighting. A checkout, manual borrow confirmation, or branch token converts the sighting into a resident. Reading sessions create growth opportunities. An on-time return creates a celebratory graduation, never a punishment for late return. Shared Shelves and branch restorations let players change a world together without ranking their reading.</p>
+</div>
+<div aria-label="Module and shared-play recommendations" class="decision-strip">
+<div><b>Capture</b><span>Meet instantly; earn residency through borrowing.</span></div>
+<div><b>Care</b><span>Positive opportunities only. Nothing dies, starves, or leaves forever.</span></div>
+<div><b>Loop</b><span>Daily quiet ritual, weekly discovery, loan-period growth arc.</span></div>
+<div><b>Reading</b><span>Track personal goals and reading days, not public book-count races.</span></div>
+<div><b>Library</b><span>Optional integration, category-only history, strong partner tools.</span></div>
+<div><b>Shared play</b><span>Co-build, do not compete: household first, branch second.</span></div>
+</div>
+<h3>What should be fixed now</h3>
+<div class="grid-4">
+<div class="card pillar"><div class="num">Non-negotiable 01</div><h4>Every valid book creates something</h4><p>Capture must work from a normalized identifier even when the network, catalog, or metadata provider fails. Missing data becomes an “Uncatalogued” variant, not an error screen.</p></div>
+<div class="card pillar"><div class="num">Non-negotiable 02</div><h4>Reading choice remains legitimate</h4><p>Graphic novels, comics, rereading, series, shared reading, and audiobooks all count. Optional instructional views may distinguish modes, but the game never ranks one format as morally better.</p></div>
+<div class="card pillar"><div class="num">Non-negotiable 03</div><h4>Private history is optional</h4><p>Library integration adds provenance, local discovery, and partner value. The complete core game still works from scanning, public metadata, and player-selected goals.</p></div>
+<div class="card pillar"><div class="num">Non-negotiable 04</div><h4>No schoolwork skin</h4><p>The player-facing experience uses creatures, habitats, mysteries, collections, and stories—not grades, worksheets, mastery bars, or compulsory comprehension checks.</p></div>
+</div>
+<h3>What should remain open for a game designer</h3>
+<p>Combat, direct trading, open matchmaking, fully procedural bodies, title-level borrowing-history personalization, and a formal educator mode are not required to prove the concept. They add cost, moderation, privacy, or tonal risk before they add value. Treat them as optional modules with explicit interfaces rather than assumptions embedded in the consumer core. Cooperative rooms and projects are the safer way to test social pull first.</p>
+</section><section class="sheet" data-call="658.8 · POSITIONING" id="positioning">
+<div class="section-kicker">Audience and market positioning</div>
+<h2>Entertainment first. Child-centered. Built to travel across generations.</h2>
+<p class="lead">The broadest version of Stacklings is neither a school product nor an undifferentiated “game for everyone.” It is an all-ages cozy collector with one clear design center: children ages 8–12. Younger players receive co-reading and accessibility support; older children receive deeper strategy and less juvenile language; families and adults find genuine collection and curation depth in the same world.</p>
+<p class="thesis">Education is the outcome. The consumer promise is that every book can hide a creature and every shelf can become a world.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Audience layer</th><th>Role in the product</th><th>What they are promised</th><th>What the design must avoid</th></tr></thead>
+<tbody>
+<tr class="rec-row"><td><strong>Primary: ages 8–12</strong></td><td>Sets onboarding, language, progression speed, controls, and core fantasy</td><td>Discovery, attachment, collection, customization, and mastery</td><td>Homework framing, babyish art, or systems that require an adult to interpret</td></tr>
+<tr><td><strong>Supported: ages 6–7 and 13</strong></td><td>Defines the accessible lower edge and aspirational upper edge</td><td>Read-aloud play and icon support at one end; privacy, strategy, and identity at the other</td><td>One-size-fits-all copy or a single complexity curve</td></tr>
+<tr><td><strong>Secondary: families and adult book lovers</strong></td><td>Extends retention, co-play, word of mouth, and consumer viability</td><td>Cozy care, habitat design, rare variants, author/series sets, and a living reading archive</td><td>A separate “parent game” that feels like administration rather than play</td></tr>
+<tr><td><strong>Institutional: libraries, schools, funders</strong></td><td>Distribution, trust, programming, and optional reporting</td><td>Book discovery, visits, circulation, family engagement, and privacy-respecting program tools</td><td>Letting buyer requirements reshape the core into compliance software</td></tr>
+</tbody>
+</table></div>
+<h3>Design for two depths, not two games</h3>
+<div class="grid-2">
+<div class="card"><div class="num">Immediate layer</div><h4>Readable in one sentence</h4><p>Find a book → meet a Stackling → care for it → grow its habitat → find another book. A young player can enjoy the complete fantasy without understanding optimization, metadata, or program mechanics.</p></div>
+<div class="card"><div class="num">Mastery layer</div><h4>Deep enough to keep</h4><p>Edition traits, genre affinities, author constellations, series lineages, habitat attraction puzzles, seasonal collections, and exhibition design give older and adult players reasons to care about the same creature for months.</p></div>
+</div>
+<h3>Translate the same value for different audiences</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Consumer-facing language</th><th>Adult / family value</th><th>Library / school value</th></tr></thead>
+<tbody>
+<tr><td><strong>“Every book hides a creature.”</strong></td><td>A low-pressure reason to make reading visible and social</td><td>A discovery mechanic that sends players into real collections</td></tr>
+<tr><td><strong>“Build a world from what you read.”</strong></td><td>A personal reading archive with emotional meaning</td><td>Genre breadth, recommendations, and program continuity</td></tr>
+<tr><td><strong>“Follow a Curiosity Thread.”</strong></td><td>Helps families answer “what should we read next?”</td><td>Catalog navigation, holds, displays, and librarian curation</td></tr>
+<tr><td><strong>“Your Stacklings remember you.”</strong></td><td>Cozy ritual and shared family memories</td><td>Consistent participation without punitive streaks</td></tr>
+</tbody>
+</table></div>
+<h3>Brand guardrails</h3>
+<ul class="plain-list">
+<li>Market the category as <strong>cozy creature collecting and world building</strong>, not “edutainment.”</li>
+<li>Use sophisticated warmth rather than preschool cuteness: tactile books, mysterious stacks, handcrafted creatures, and quiet humor.</li>
+<li>Keep grade levels, reading scores, and instructional diagnostics out of the default player interface.</li>
+<li>Let adults play directly. Guardian tools, library dashboards, and educator overlays belong in separate account surfaces.</li>
+<li>Never require a library connection to understand the fantasy, but make the real library the richest and most trusted place to play.</li>
+</ul>
+</section>
+<section class="sheet" data-call="100.4 · PRODUCT FRAME" id="frame">
+<div class="section-kicker">Product frame</div>
+<h2>A general-audience fantasy built around a child-centered core</h2>
+<p class="lead">Books are unusually strong real-world game seeds: abundant, shareable, rich in metadata, and already organized into places people can explore. Stacklings should use that advantage to create a consumer game with family reach, while allowing libraries to become trusted portals, curators, and program partners.</p>
+<h3>The player fantasy</h3>
+<p>Every book leaves a small magical impression in the stacks. These impressions become Stacklings: original creatures inspired by genre, form, publication history, and place in the library, not by copyrighted characters or plot elements. A mystery might produce a Cluehound with a map-patterned coat. A nature book might reveal a Mossmoth whose wings change with the subject headings. The same edition produces the same base species for every player, inviting the question, “What lives in that book?”</p>
+<div class="grid-4">
+<div class="card pillar"><div class="num">Pillar A</div><h4>Books are the world</h4><p>The input, the collection, the map, and the reason to visit a branch.</p></div>
+<div class="card pillar"><div class="num">Pillar B</div><h4>Care creates attachment</h4><p>The creature changes because of a relationship, not because it was used as upgrade material.</p></div>
+<div class="card pillar"><div class="num">Pillar C</div><h4>Reading opens possibility</h4><p>Reading creates choices, habitat events, and growth routes rather than compulsory quizzes.</p></div>
+<div class="card pillar"><div class="num">Pillar D</div><h4>The library is the gateway</h4><p>Libraries provide trust, abundance, local identity, and the best physical discovery space. They enrich the game without becoming its only market or its creative audience.</p></div>
+</div>
+<h3>Audience architecture: primary ages 8–12, supported at the edges</h3>
+<div class="agebands">
+<div class="age"><h4>Ages 6–7 · Co-reader</h4><div class="body"><ul><li>Large icons, short spoken text, optional narration.</li><li>Shared reading and read-alouds count as first-class modes.</li><li>One-tap feelings, drawings, or voice notes instead of typed reflection.</li><li>Care sessions target 2–5 minutes; an adult can help with account and goals.</li></ul></div></div>
+<div class="age"><h4>Ages 8–10 · Explorer</h4><div class="body"><ul><li>The primary onboarding and interaction target.</li><li>Independent goals, series maps, genre discovery, and simple habitat strategy.</li><li>Visible cause-and-effect between reading habits and creature growth.</li><li>Asynchronous branch challenges and recommendations.</li></ul></div></div>
+<div class="age"><h4>Ages 11–13 · Curator</h4><div class="body"><ul><li>Deeper collection optimization, rare variants, lineage, and habitat planning.</li><li>Private profile controls and less juvenile language.</li><li>Long-book and audiobook support without point disadvantage.</li><li>Creation tools: shelf lists, exhibits, private notes, and optional short reviews.</li></ul></div></div>
+</div><div class="grid-2">
+<div class="card"><div class="num">Family co-play</div><h4>Share the world without sharing every metric</h4><p>Households can maintain separate collections, visit a shared room, recommend books, and complete cooperative displays. Adults support access and consent without becoming scorekeepers.</p></div>
+<div class="card"><div class="num">Adult book-lover play</div><h4>Same creatures, deeper curation</h4><p>Adults can collect edition marks, author constellations, genre sets, habitat themes, and reading memories. The interface may be denser, but the creature rules and world remain shared.</p></div>
+</div>
+<h3>Platform roles</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Surface</th><th>Best at</th><th>Primary actions</th><th>Design constraint</th></tr></thead>
+<tbody>
+<tr><td><strong>Mobile app</strong></td><td>Physical discovery and brief rituals</td><td>ISBN/barcode scan, branch QR, start Quiet Mode, quick care, field discoveries, optional reflection</td><td>Must not become the more interesting thing sitting next to the open book.</td></tr>
+<tr><td><strong>Web app</strong></td><td>Planning, deep collection, and shared-device access</td><td>Habitat editing, catalog search, next-book planning, adult/guardian settings, accessibility-first care, reading archive, library dashboards</td><td>Manual search can create a sighting, but verified capture needs a book, checkout event, or trusted token.</td></tr>
+<tr><td><strong>Library display</strong></td><td>Community discovery and trusted distribution</td><td>Branch gallery, seasonal challenge, QR totem, “found here” recommendations</td><td>No public display of a child’s reading history, name, or exact activity without explicit consent.</td></tr>
+</tbody>
+</table></div>
+<div class="warning"><strong>Core anti-goal:</strong> Stacklings is not schoolware wearing a creature skin. It should not force a quiz after every title, gate fun behind a reading level, or make a 500-page book lose to five short books in a public race. Any educational or program overlay must remain optional, adult-facing, and compatible with the same entertainment-first core.</div>
+</section>
+<section class="sheet" data-call="005.12 · MODULE MAP" id="architecture">
+<div class="section-kicker">Modular system architecture</div>
+<h2>Each module should exchange events, not own the whole game</h2>
+<p class="lead">The product can support several gameplay versions and audience presentations only if the five required modules agree on small, stable contracts. Capture identifies a creature. Reading produces a creditable event. Care interprets it. The gameplay loop schedules when it matters. Library connectors add confidence and locality. A cross-module collaboration layer consumes privacy-filtered receipts rather than raw reading data. A separate presentation profile changes language, assistance, and complexity without forking the collection or economy.</p>
+<div aria-label="Module event flow" class="flow">
+<div class="step"><b>Library connector</b>Emits checkout, return, hold, branch, catalog, and metadata signals.</div>
+<div class="step"><b>Capture</b>Creates a stable creature seed and provenance level.</div>
+<div class="step"><b>Reading</b>Emits goal, session, exploration, and reflection events.</div>
+<div class="step"><b>Care</b>Changes bond, state, habitat, and growth opportunities.</div>
+<div class="step"><b>Gameplay loop</b>Schedules reveals, quests, return moments, and seasonal arcs.</div>
+<div class="step"><b>Collaboration</b>Turns normalized contribution receipts into shared rooms, restorations, expeditions, and exhibits.</div>
+</div>
+<h3>Canonical contracts</h3>
+<div aria-label="Illustrative data contracts" class="codebox"><pre>BookSignal {
+  canonicalBookId, identifierType, metadataStatus,
+  format, language, pageBand, publicationEra,
+  genreTerms[], subjectTerms[], seriesToken?, coverPalette?
+}
+
+CaptureResult {
+  seedVersion, speciesId, primaryType, secondaryType?,
+  variantTraits[], provenance: "sighting" | "borrowed" | "verified",
+  sourceBookToken, sourceCopyToken?
+}
+
+ReadingEvent {
+  goalType: "session" | "minutes" | "chapters" | "days" | "exploration",
+  goalCompleted, mode: "independent" | "shared" | "audio" | "paired",
+  bookToken?, confidenceBand, optionalReflectionType?
+}
+
+LibraryEvent {
+  eventType: "checkout" | "return" | "renewal" | "hold" | "branch_visit",
+  bookToken?, branchToken?, loanToken?, dueWindow?, onTimeStatus?,
+  verificationTier
+}
+
+CareOutcome {
+  creatureId, bondDelta, stateChange?, growthRouteSignal?,
+  habitatEvent?, cosmeticUnlock?, nextEligibleAt?
+}
+
+ExperienceProfile {
+  presentation: "co_reader" | "explorer" | "curator" | "adult",
+  assistanceLevel, complexityLevel, privacyDefaults,
+  householdRole?, institutionOverlay?: "none" | "library" | "school"
+}
+
+CollaborationReceipt {
+  receiptId, sharedSpaceId, sourceClass: "capture" | "reading" | "care" | "library" | "event",
+  normalizedValue: 1, verificationTier, visibility: "private" | "space_aggregate",
+  optionalShare: "none" | "creature" | "genre" | "explicit_book", expiresAt?
+}
+
+SharedProjectState {
+  projectId, spaceType: "household" | "branch" | "approved_circle" | "event_room",
+  themeId, milestoneState, aggregateProgress, personalReceiptState, rewardVersion
+}</pre></div>
+<h3>Rules for modularity</h3>
+<ol>
+<li><strong>No library connector may write directly to creature stats.</strong> It emits a standard event that care or the loop can interpret.</li>
+<li><strong>No reading format is hard-coded into the economy.</strong> A shared picture-book session and an audiobook session can both complete a player-selected goal while preserving mode information for families or schools that care about decoding practice.</li>
+<li><strong>All trust levels are additive.</strong> An unverified user gets the full private experience. Verification unlocks public honors, library-specific events, or provenance cosmetics, not basic fun.</li>
+<li><strong>Species mappings are versioned and frozen.</strong> “Same book, same Stackling” fails if an update silently remaps the collection.</li>
+<li><strong>Care never assumes a particular capture gate.</strong> A creature can come from a scan, checkout, branch quest, recommendation code, or future digital-loan event.</li>
+<li><strong>One collection, multiple presentations.</strong> Age and adult profiles alter copy, assistance, density, and optional depth—not species identity, reward value, or access to the core fantasy.</li><li><strong>Institutional overlays do not own progression.</strong> A school or library program may define a challenge or reporting view, but completing an assignment is never required to keep a creature or enjoy the consumer game.</li><li><strong>Shared projects consume normalized receipts, never raw reading totals.</strong> A five-minute shared read, a long independent session, a branch visit, or a checkout can each provide one eligible contribution according to the project rules. Other players see progress, not minutes, pages, titles, or inferred ability.</li>
+<li><strong>Solo play remains complete.</strong> Social spaces may unlock collaborative cosmetics, visitors, and stories, but no core species, care route, or reading benefit requires another player.</li>
+</ol>
+<h3>Six tunable decisions</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Tunable</th><th>Low-friction setting</th><th>High-integrity setting</th><th>Recommended default</th></tr></thead>
+<tbody>
+<tr><td>Permanent capture gate</td><td>Scan alone</td><td>Verified checkout</td><td>Sighting on scan; residency on borrow</td></tr>
+<tr><td>Reading evidence</td><td>Player self-report</td><td>Goal timer + optional reflection</td><td>Self-selected goal with soft confidence bands</td></tr>
+<tr><td>Care intensity</td><td>Passive habitat only</td><td>Several daily actions</td><td>One optional ritual plus passive growth</td></tr>
+<tr><td>Social scope</td><td>Private collection</td><td>Trading and direct interaction</td><td>Household Shared Shelf + branch restoration; approved-friend expeditions later</td></tr>
+<tr><td>Borrowing-history detail</td><td>No history</td><td>Title-level history</td><td>Category and event summaries by default</td></tr>
+<tr><td><strong>Presentation depth</strong></td><td>Single simplified interface</td><td>Separate child and adult games</td><td>Shared game state with co-reader, explorer, curator, and adult presentations</td></tr></tbody>
+</table></div>
+</section>
+<section class="sheet" data-call="793.93 · MODULE 01" id="capture">
+<div class="section-kicker">Module 01 · Monster Capture</div>
+<h2>Meet the creature now; earn its residency through a real book relationship</h2>
+<p class="lead">Capture is the moment of magic and must be nearly impossible to break. The camera reads the book, a local hash creates the base Stackling immediately, and metadata arrives afterward to enrich its type and appearance. The recommended system separates discovery from ownership so players can scan freely without turning an afternoon of shelf strip-mining into a completed collection.</p>
+<div class="recommendation">
+<div class="label">Recommended: Sighting → Invitation → Residency</div>
+<p><strong>Scan:</strong> reveal a stable Stackling and add its silhouette to the Field Guide. <strong>Borrow:</strong> a checkout signal, receipt scan, branch token, or player-confirmed loan invites it into the habitat. <strong>Read:</strong> the creature bonds and develops. <strong>Return:</strong> the creature receives an Archive Mark and remains permanently; late return never removes it.</p>
+</div>
+<h3>Capture alternatives</h3>
+<details data-recommended="true" open="">
+<summary>Alternative A · Two-stage capture: sighting plus residency <span class="status rec">Recommended</span></summary>
+<div class="detail-body">
+<p><strong>How it works.</strong> Any valid scan produces a sighting. The player can inspect the creature, learn its likely preferences, and add a shadow entry to the catalog. A second signal, usually borrowing, makes it a resident. This preserves instant delight while giving the library transaction meaningful game value.</p>
+<p><strong>Best for.</strong> The full mobile/web product and library pilots. <strong>Risk.</strong> A player may feel that scan alone “doesn’t count.” The reveal must therefore be satisfying, and sightings should support useful actions such as tracking, wish-listing, and asking the library to place a hold.</p>
+</div>
+</details>
+<details>
+<summary>Alternative B · Instant permanent capture on scan <span class="status alt">Fastest MVP</span></summary>
+<div class="detail-body">
+<p><strong>How it works.</strong> Every scan immediately adds the creature to the permanent collection. Duplicates add a bond mark or cosmetic mutation. A daily cap can slow bulk scanning.</p>
+<p><strong>Best for.</strong> A proof-of-magic prototype, bookstore play, classrooms without circulation integration, and players who cannot borrow independently. <strong>Trade-off.</strong> It weakens the connection between the game and reading or borrowing, and it makes a photographed list of ISBNs functionally equivalent to a library visit unless camera-only input and scan pacing are enforced.</p>
+</div>
+</details>
+<details>
+<summary>Alternative C · Reading-gated hatch <span class="status alt">Strongest reading link</span></summary>
+<div class="detail-body">
+<p><strong>How it works.</strong> A scan produces an egg. The creature appears after the player completes a reading goal with that book. Longer or harder books do not create better creatures; the goal is personalized and can be a session, chapter, shared read-aloud, or listening block.</p>
+<p><strong>Best for.</strong> Family or school programs that want reading behavior to be visibly central. <strong>Trade-off.</strong> It delays the fantasy and may make reading feel like a toll. Use only when the egg itself is expressive and the goal can be very small.</p>
+</div>
+</details>
+<details>
+<summary>Alternative D · Branch encounter and quest capture <span class="status later">Event layer</span></summary>
+<div class="detail-body">
+<p><strong>How it works.</strong> Genre zones, branch QR totems, displays, and scavenger-hunt clues create local encounters. The player finds a book matching the clue, scans it, and invites the creature. The branch can rotate encounters without changing the global species mapping.</p>
+<p><strong>Best for.</strong> Summer reading, launch events, and local community play. <strong>Trade-off.</strong> Staff maintenance and accessibility. It should sit on top of another capture model, not replace it.</p>
+</div>
+</details>
+<h3>The recommended capture sequence</h3>
+<div class="flow">
+<div class="step"><b>1 · Read identifier</b>Mobile camera reads ISBN/EAN; web accepts webcam, catalog selection, or a mobile handoff code.</div>
+<div class="step"><b>2 · Normalize</b>Validate check digit, convert ISBN-10 to ISBN-13 when possible, distinguish title identifier from local copy barcode.</div>
+<div class="step"><b>3 · Seed locally</b>A versioned stable hash selects base family, body plan, pattern, temperament, and initial rarity flags.</div>
+<div class="step"><b>4 · Reveal</b>Show the base creature in under one second. Network enrichment can still be pending.</div>
+<div class="step"><b>5 · Enrich</b>Genre, subject, format, era, series, and local shelf data refine type, lore, and cosmetic traits.</div>
+<div class="step"><b>6 · Establish provenance</b>Scan = sighting; borrow/branch/ILS event = resident or verified resident.</div>
+</div>
+<h3>Deterministic generation model</h3>
+<p>The book should not generate an unrestricted AI creature. A curated species library with procedural variants is safer, easier to art-direct, more legible to players, and more stable over years. The hash decides among approved parts and traits; metadata gives those choices meaning.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Book input</th><th>Creature output</th><th>Design note</th></tr></thead>
+<tbody>
+<tr><td>Canonical ISBN or work identifier</td><td>Base species seed</td><td>Global and stable. Freeze the mapping under a named seed version.</td></tr>
+<tr><td>Dominant genre/form term</td><td>Primary type and habitat affinity</td><td>Prefer local genre label or MARC 655/LCGFT, then BISAC, subjects, Dewey, and keyword fallback.</td></tr>
+<tr><td>Secondary genre/subject</td><td>Hybrid trait or ability</td><td>A science-fiction mystery can be a Gearling with a Cluehound scent trail rather than forcing one label.</td></tr>
+<tr><td>Format</td><td>Body finish</td><td>Graphic novel = panel markings; audiobook = echo halo; large print = grand form; board book = sturdy shell.</td></tr>
+<tr><td>Publication era</td><td>Archive patina</td><td>Era changes ornament and lore, not power. Older books are not automatically rarer or better.</td></tr>
+<tr><td>Page or duration band</td><td>Scale and animation cadence</td><td>Cosmetic only. Page count must not determine combat power or reward value.</td></tr>
+<tr><td>Series token</td><td>Family crest and evolution chain</td><td>Scanning another title in the series reveals a related form and helps solve the “next book” problem.</td></tr>
+<tr><td>Author token</td><td>Shared lineage accent</td><td>Subtle common feature across books by the same creator.</td></tr>
+<tr><td>Local item barcode</td><td>Copy-specific Archive Mark</td><td>Hashed locally; identifies a famous or well-traveled copy without revealing the barcode publicly.</td></tr>
+<tr><td>Missing or contradictory metadata</td><td>Errata / Uncatalogued variant</td><td>A deliberate rare-feeling mystery state that can resolve later without changing the base identity.</td></tr>
+</tbody>
+</table></div>
+<h3>Metadata priority</h3>
+<ol>
+<li><strong>Partner library’s local record and shelf category</strong>, because it reflects how players actually find the book in that branch.</li>
+<li><strong>MARC genre/form and children’s subject fields</strong>, including LCGFT and CYAC-oriented terms.</li>
+<li><strong>Publisher BISAC JUV/YAF codes</strong>, which are granular and commercially common.</li>
+<li><strong>Dewey, call number, summary, and subject headings</strong>, interpreted as signals rather than a single truth.</li>
+<li><strong>Public metadata or title/description fallback.</strong></li>
+<li><strong>Uncatalogued type</strong> if evidence is thin. The game must never invent a confident category from one weak keyword.</li>
+</ol>
+<h3>Example captures</h3>
+<div class="monster-grid">
+<article class="monster"><div aria-hidden="true" class="monster-icon">🐕</div><div><h4>Cluehound</h4><p><strong>Input:</strong> <em>The Lantern Map Mystery</em>; mystery + historical fiction; 192 pages; series book two.</p><p><strong>Output:</strong> a compact hound with brass compass ears and a lantern-tail. The second series title adds a “Trail Continues” crest.</p><div class="traits">Mystery · Archive patina · Series lineage</div></div></article>
+<article class="monster"><div aria-hidden="true" class="monster-icon">🦋</div><div><h4>Mossmoth</h4><p><strong>Input:</strong> <em>Under the Pond: A Field Guide</em>; juvenile nonfiction; ecology; illustrated.</p><p><strong>Output:</strong> broad leaf-wings patterned from the cover palette. A nonfiction subject about amphibians adds a tiny tadpole familiar.</p><div class="traits">Nature · Illustrated · Field-guide form</div></div></article>
+<article class="monster"><div aria-hidden="true" class="monster-icon">🐉</div><div><h4>Quillwyrm</h4><p><strong>Input:</strong> <em>The Clockwork Moon</em>; fantasy + science fiction; audiobook edition.</p><p><strong>Output:</strong> a paper-scaled dragon with a gear halo. The audio format creates an Echo variant whose call changes during quiet-reading mode.</p><div class="traits">Fantasy · Technology hybrid · Echo form</div></div></article>
+<article class="monster"><div aria-hidden="true" class="monster-icon">?</div><div><h4>Errata</h4><p><strong>Input:</strong> valid ISBN, incomplete public record, contradictory categories.</p><p><strong>Output:</strong> a friendly shifting bundle of catalog cards. When better metadata arrives, it gains a type charm but keeps its original face and bond history.</p><div class="traits">Uncatalogued · Metadata-resilient · Rare mystery</div></div></article>
+</div>
+<h3>Capture acceptance tests</h3>
+<ul class="plain-list">
+<li>The same seed version and canonical identifier produce the same base species on mobile and web across three consecutive runs.</li>
+<li>A valid ISBN produces a reveal without internet access; metadata can enrich later.</li>
+<li>No title is stronger because it is longer, harder, newer, or more expensive.</li>
+<li>Copyrighted cover characters, author likenesses, and plot-specific characters are never reproduced as Stackling bodies.</li>
+<li>A scan can be repeated without junking the result; duplicates improve bond, provenance, or cosmetic variation.</li>
+<li>A player can reach the core collection loop without a library account, GPS, or real name.</li>
+</ul>
+</section>
+<section class="sheet" data-call="636.088 · MODULE 02" id="care">
+<div class="section-kicker">Module 02 · Monster Care</div>
+<h2>Keep the ritual; remove the threat</h2>
+<p class="lead">The virtual-pet lineage creates attachment by asking the player to return, but hunger, illness, death, and rigid streaks turn that attachment into anxiety. Stacklings should use the gentler version of the loop: care opens a pleasant possibility, absence produces curiosity, and the creature is always glad the player came back.</p>
+<div class="recommendation">
+<div class="label">Recommended: Reading-powered ecology with one optional ritual</div>
+<p>Reading and borrowing produce passive habitat energy. Once per day, the player may greet a buddy, choose a small activity, or place an item. This is a bonus, not maintenance. Creatures never lose bond, become sick, or disappear permanently. Time away can create visitor photos, gathered objects, and “welcome back” stories.</p>
+</div>
+<h3>Care alternatives</h3>
+<details data-recommended="true" open="">
+<summary>Alternative A · Positive-state care <span class="status rec">Recommended core</span></summary>
+<div class="detail-body"><p>Creatures move among <strong>Resting, Curious, Inspired, Ready to Grow,</strong> and <strong>Celebrating</strong>. These states invite actions; none is a deficit. Reading can move a creature from Curious to Inspired, but not reading does not move it into a harmful state.</p></div>
+</details>
+<details>
+<summary>Alternative B · Habitat attraction <span class="status alt">Highly compatible</span></summary>
+<div class="detail-body"><p>The player decorates genre shelves and leaves story-related items. Visiting wild Stacklings appear while the app is closed. A visible requirement such as “three nature books and one rainy-day reading session” turns collection into a legible discovery puzzle.</p></div>
+</details>
+<details>
+<summary>Alternative C · Traditional daily needs <span class="status later">Use sparingly</span></summary>
+<div class="detail-body"><p>Feeding, cleaning, rest, and play are familiar and easy to understand, but they risk converting reading into labor and punishing busy families. This model is acceptable only if meters never drain below neutral and all missed care is recoverable immediately.</p></div>
+</details>
+<details>
+<summary>Alternative D · Conversation and memory care <span class="status alt">Narrative layer</span></summary>
+<div class="detail-body"><p>A buddy occasionally asks a low-pressure question: “Was the book funny, tense, useful, or something else?” The response changes its memories or room decoration. This can deepen attachment without becoming a quiz, but it needs careful writing and voice/accessibility support.</p></div>
+</details>
+<h3>The positive care state machine</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>State</th><th>What caused it</th><th>What the player sees</th><th>Available action</th></tr></thead>
+<tbody>
+<tr><td><strong>Resting</strong></td><td>Default or recently active</td><td>Creature naps, reads, rearranges its shelf</td><td>No action required; optionally take a photo or change buddy</td></tr>
+<tr><td><strong>Curious</strong></td><td>New book, hold, recommendation, or new subject</td><td>Question mark, map clue, or visitor rumor</td><td>Start a reading goal, inspect a related shelf, or save a next-book path</td></tr>
+<tr><td><strong>Inspired</strong></td><td>Completed reading event</td><td>New animation, found object, small habitat effect</td><td>Choose one of two growth signals or cosmetic reactions</td></tr>
+<tr><td><strong>Ready to Grow</strong></td><td>Enough bond plus a route condition</td><td>Visible cocoon/book-nook construction</td><td>Evolve now or wait; preview route consequences in plain language</td></tr>
+<tr><td><strong>Celebrating</strong></td><td>Return, completed series, library event, personal milestone</td><td>Confetti of catalog slips, branch stamp, visitor party</td><td>Claim an Archive Mark, recommend the book, or place an exhibit</td></tr>
+</tbody>
+</table></div>
+<h3>Care resources</h3>
+<p>The economy should be small enough that a player can explain it without a wiki. Each resource corresponds to a useful behavior and has a non-competitive purpose.</p>
+<div class="grid-3">
+<div class="card"><div class="num">Storylight</div><h4>From reading goals</h4><p>Used to awaken animations, start growth choices, and power habitat objects. A completed personal goal earns a bounded amount; reading longer than the goal can continue for enjoyment without creating an exploit incentive.</p></div>
+<div class="card"><div class="num">Catalog Stamps</div><h4>From library moments</h4><p>Earned through branch visits, verified borrowing, returns, and events. Used for branch-themed decorations and public-gallery exhibits, not core power.</p></div>
+<div class="card"><div class="num">Curiosity Threads</div><h4>From exploration</h4><p>Earned by trying a new genre, format, author, or subject. Used to reveal attraction hints and connect two habitat zones into a hybrid nook.</p></div>
+</div>
+<h3>Growth routes</h3>
+<p>Evolution should tell the story of how a creature was raised without implying that one reading identity is superior. Routes can overlap, and the player should be able to preview or redirect them.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Route</th><th>Behavior signal</th><th>Visual result</th><th>Example ability</th></tr></thead>
+<tbody>
+<tr><td><strong>Steady Keeper</strong></td><td>Reading on several days across a rolling window</td><td>Layered shelf armor, calm glow</td><td>Preserves one habitat attraction condition for a week</td></tr>
+<tr><td><strong>Deep Diver</strong></td><td>Repeated sessions with the same long book or subject</td><td>Longer body, ink-depth pattern</td><td>Reveals hidden subject links and related nonfiction</td></tr>
+<tr><td><strong>Trailblazer</strong></td><td>Genre and format breadth</td><td>Mixed wings, travel tags, hybrid crest</td><td>Attracts cross-genre visitors</td></tr>
+<tr><td><strong>Series Keeper</strong></td><td>Rereading or continuing a series</td><td>Matching family emblems</td><td>Creates a “next volume” path in the catalog</td></tr>
+<tr><td><strong>Community Scribe</strong></td><td>Recommendations, events, shared reading</td><td>Branch pennant and note-scroll tail</td><td>Leaves a safe, prewritten recommendation card in the branch gallery</td></tr>
+</tbody>
+</table></div>
+<h3>Absence rules</h3>
+<ul>
+<li><strong>No decay.</strong> Bond and growth progress never decrease because a player stopped playing.</li>
+<li><strong>No dead pet.</strong> A creature cannot die, become permanently ill, or leave because of neglect.</li>
+<li><strong>No lost streak.</strong> The interface shows a flexible rhythm such as “4 reading days in the last 7,” not a brittle chain reset to zero.</li>
+<li><strong>Welcome-back compression.</strong> Returning after a week or a month produces one summary scene, not a backlog of chores.</li>
+<li><strong>Natural stopping point.</strong> After one or two care choices, the creature settles and the app explicitly says the shelf is content for now.</li>
+</ul>
+<h3>Example care content</h3>
+<div class="monster-grid">
+<article class="monster"><div aria-hidden="true" class="monster-icon">📖</div><div><h4>Story Snack</h4><p>After a reading session, choose “funny,” “mysterious,” “surprising,” or “useful.” The choice changes the buddy’s next idle animation and generates no correctness score.</p><div class="traits">10 seconds · Optional · No typing</div></div></article>
+<article class="monster"><div aria-hidden="true" class="monster-icon">🏠</div><div><h4>Build a Nook</h4><p>Spend Storylight to place a cushion, lamp, plant, or tiny exhibit. Objects affect which visitors appear, making decoration part of the collection puzzle.</p><div class="traits">Habitat strategy · Cosmetic · Persistent</div></div></article>
+<article class="monster"><div aria-hidden="true" class="monster-icon">🧭</div><div><h4>Follow a Curiosity Thread</h4><p>A Cluehound found “books about codes.” The player can browse three locally available options without being told which one is at the “right level.”</p><div class="traits">Next-book discovery · Library-linked</div></div></article>
+<article class="monster"><div aria-hidden="true" class="monster-icon">🌙</div><div><h4>While You Were Away</h4><p>On return, the game shows a three-panel postcard: a visitor came, a plant grew, and the buddy left a bookmark. No missed tasks are listed.</p><div class="traits">Return curiosity · No guilt · One screen</div></div></article>
+</div>
+<h3>Care acceptance tests</h3>
+<ul class="plain-list">
+<li>A player absent for 30 days returns to equal or greater permanent progress and no urgent deficit meters.</li>
+<li>A daily care session has a clear end within five minutes.</li>
+<li>Every growth route can be reached through multiple reading formats and book lengths.</li>
+<li>The user can understand why a creature is leaning toward a route and can choose another route before evolution.</li>
+<li>Care actions never require spending money, watching ads, or keeping a notification streak alive.</li>
+</ul>
+</section>
+<section class="sheet" data-call="794.8 · MODULE 03" id="loop">
+<div class="section-kicker">Module 03 · Gameplay Loop</div>
+<h2>The game lives on three clocks: the moment, the week, and the loan</h2>
+<p class="lead">A single daily loop is too small for older players, while an endless mobile loop competes with the reading the product is meant to encourage. Stacklings should layer a short check-in over a weekly discovery loop and a longer borrowing arc. Each clock gives the player a reason to return without making every day mandatory.</p>
+<div class="recommendation">
+<div class="label">Recommended: Layered cozy loop</div>
+<p><strong>Moment loop:</strong> discover, choose a buddy, read, return for one outcome. <strong>Weekly loop:</strong> follow a curiosity path, visit or browse the library, improve a habitat zone. <strong>Loan loop:</strong> invite, bond, renew if needed, return, and graduate. <strong>Seasonal loop:</strong> branch themes, summer challenges, and collection exhibits.</p>
+</div>
+<h3>Gameplay loop alternatives</h3>
+<details data-recommended="true" open="">
+<summary>Alternative A · Layered cozy collector <span class="status rec">Recommended</span></summary>
+<div class="detail-body"><p>Combines short care sessions, habitat attraction, book discovery, and the loan-period arc. It supports players who play for creatures, decoration, completion, or reading identity. The main risk is feature sprawl, so the first release should expose only one daily choice and one active weekly quest.</p></div>
+</details>
+<details>
+<summary>Alternative B · Library expedition <span class="status alt">More active</span></summary>
+<div class="detail-body"><p>The player explores a stylized branch map, completes shelf quests, decodes call numbers, and scans books as encounters. This creates strong place attachment and educational value but depends more heavily on branch participation and can encourage phone use in crowded aisles.</p></div>
+</details>
+<details>
+<summary>Alternative C · Story campaign <span class="status alt">More authored</span></summary>
+<div class="detail-body"><p>A central mystery unfolds as reading goals restore rooms in a magical archive. Any capture and care model can feed chapter unlocks. This gives clear progression for ages 9–13 but creates a large narrative content burden and risks making reading a key required to unlock the “real” game.</p></div>
+</details>
+<details>
+<summary>Alternative D · Habitat sandbox <span class="status alt">Most relaxed</span></summary>
+<div class="detail-body"><p>The shelf is the game: creatures visit, interact, and alter a diorama based on the collection. Reading and borrowing influence the simulation but there is no quest ladder. This is gentle and scalable, though it may need stronger collection goals for older players.</p></div>
+</details>
+<h3>Recommended loop hierarchy</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Clock</th><th>Player actions</th><th>Game response</th><th>Healthy stopping point</th></tr></thead>
+<tbody>
+<tr><td><strong>Capture moment<br/>30–90 seconds</strong></td><td>Scan or select a book; see the Stackling; decide whether to borrow, hold, or wish-list.</td><td>Immediate reveal, provenance state, one attraction clue.</td><td>“You found it. Put the phone away and meet it in the book.”</td></tr>
+<tr><td><strong>Reading session<br/>Player-selected</strong></td><td>Choose a buddy and a goal, then enter Quiet Mode or simply log the session later.</td><td>No constant animation or minute-by-minute rewards. One end-of-session outcome.</td><td>Goal complete; continue reading for pleasure or close the app.</td></tr>
+<tr><td><strong>Daily care<br/>2–5 minutes</strong></td><td>Greet, choose one inspired action, place an object, or inspect a visitor.</td><td>Bond/growth signal, small animation, next curiosity clue.</td><td>Creature settles; no remaining red badges.</td></tr>
+<tr><td><strong>Weekly discovery<br/>10–20 minutes</strong></td><td>Browse recommendations, visit a branch, complete a genre path, improve a zone.</td><td>New resident or visitor, habitat milestone, local event progress.</td><td>One active quest is completed or intentionally saved.</td></tr>
+<tr><td><strong>Loan arc<br/>1–4 weeks</strong></td><td>Borrow, read in any rhythm, renew or return.</td><td>Creature changes with the relationship and receives an Archive Mark on return.</td><td>The book leaves; the Stackling stays, carrying the memory of the loan.</td></tr>
+<tr><td><strong>Season<br/>6–12 weeks</strong></td><td>Participate in a library theme, summer reading, exhibit, or collaborative restoration.</td><td>Shared branch progress and limited-time decor that does not require perfect attendance.</td><td>Season closes with a recap and permanent keepsake.</td></tr>
+</tbody>
+</table></div>
+<h3>Quiet Mode</h3>
+<p>Quiet Mode is a design safeguard, not a productivity timer. The player chooses a buddy and a goal, then the screen dims to a simple illustration, optional elapsed-time display, and an emergency exit. There are no coins every sixty seconds. At the end, the game asks whether the session happened and offers one optional reflection. A family can disable timers entirely and use “I read” or caregiver-assisted logging.</p>
+<div class="note"><strong>Why this matters:</strong> the strongest version of Stacklings gets the player to close the game. The return loop works because the creature remembers the time, not because the screen was watched during it.</div>
+<h3>Two example journeys</h3>
+<div class="timeline">
+<div class="event"><b>Maya, age 7 · Monday</b>At a branch display, Maya scans an illustrated book about frogs. A Mossmoth appears as a sighting. Her parent checks out the book, and the library receipt QR turns it into a resident.</div>
+<div class="event"><b>Tuesday</b>Maya and her parent read aloud for twelve minutes. They tap “shared reading” and choose “surprising.” Mossmoth’s wings gain bright eye spots and it brings a pond-sticker for the habitat.</div>
+<div class="event"><b>Saturday</b>Maya rereads the same book. The repeat counts. A curiosity clue offers three more frog and pond books, including a picture book, a beginner reader, and a nonfiction title.</div>
+<div class="event"><b>Two weeks later</b>The book is returned. Mossmoth remains, receives the branch’s blue Archive Mark, and attracts a visiting Tadpolite because Maya’s shelf now contains two nature books.</div>
+</div>
+<div class="timeline">
+<div class="event"><b>Jordan, age 12 · Week one</b>Jordan borrows a 430-page fantasy novel and selects a “read on four days this week” goal. Stacklings does not ask for a daily page total.</div>
+<div class="event"><b>Week two</b>Four short sessions and one long weekend session all feed the same Quillwyrm. Jordan chooses the Deep Diver route rather than being penalized for completing only one book.</div>
+<div class="event"><b>Week three</b>A series link shows the sequel is checked out but offers a hold. Placing the hold creates a traveling “message egg” in the habitat, so waiting becomes anticipation rather than a dead end.</div>
+<div class="event"><b>Return day</b>The book is returned before the sequel arrives. Quillwyrm graduates and keeps a small hold-tag charm; Jordan’s collection records a fantasy series path without exposing the title publicly.</div>
+</div>
+<h3>Loop acceptance tests</h3>
+<ul class="plain-list">
+<li>The player can complete a meaningful session without starting a reading timer and without visiting a branch.</li>
+<li>The game offers no infinite feed, autoplay chain, or pressure to remain after the daily care moment.</li>
+<li>A long book produces regular progress across days without requiring completion.</li>
+<li>A player who misses a week of play can resume the loan arc without a recovery grind.</li>
+<li>The weekly “next book” path includes locally available choices when integration exists and generic options when it does not.</li>
+</ul>
+</section>
+<section class="sheet" data-call="028.5 · MODULE 04" id="reading">
+<div class="section-kicker">Module 04 · Reading Gamification Details</div>
+<h2>Reward autonomy, competence, and connection</h2>
+<p class="lead">Reading research does not support one universal minute quota for every child. It does support frequent access, successful reading, meaningful choice, human guidance, and visible personal progress. Stacklings should translate those principles into satisfying game consequences, while keeping educational language out of the default player experience.</p>
+<div class="recommendation">
+<div class="label">Recommended: Personal-goal credit with broad format inclusion</div>
+<p>Players choose a goal in minutes, sessions, chapters, reading days, shared-reading moments, or exploration. The game records completion and mode, then converts it into bounded care opportunities. It does not award unlimited currency per page or rank players publicly. Rewards stay close to the fantasy: creature growth, book discovery, habitat exhibits, family memories, and library experiences.</p>
+</div>
+<h3>Translate educational intent into game-world consequences</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Underlying goal</th><th>Player-facing mechanic</th><th>What the player experiences</th></tr></thead>
+<tbody>
+<tr><td>Build a sustainable reading rhythm</td><td><strong>Storylight blooms</strong></td><td>The habitat brightens after a chosen reading moment; there is no attendance grade or broken streak.</td></tr>
+<tr><td>Broaden genre and format choice</td><td><strong>Open new biomes</strong></td><td>A graphic novel, audiobook, biography, or field guide changes who can visit the habitat.</td></tr>
+<tr><td>Reflect without testing</td><td><strong>Leave a creature memory</strong></td><td>A feeling, drawing, voice note, or private caption changes an animation or keepsake; no answer is marked correct.</td></tr>
+<tr><td>Find the next book</td><td><strong>Follow a Curiosity Thread</strong></td><td>The buddy offers a few meaningful paths instead of a catalog-sized recommendation wall.</td></tr>
+<tr><td>Connect to the library</td><td><strong>Invite and graduate residents</strong></td><td>Borrowing and return become story beats, not compliance checks.</td></tr>
+</tbody>
+</table></div>
+
+<h3>What counts</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Reading mode</th><th>Counts?</th><th>How Stacklings treats it</th><th>Important nuance</th></tr></thead>
+<tbody>
+<tr><td><strong>Independent print or ebook</strong></td><td>Yes</td><td>Standard reading event and goal completion</td><td>Difficulty is not scored as virtue; practice, stretch, and joy books all have a place.</td></tr>
+<tr><td><strong>Shared reading / read-aloud</strong></td><td>Yes</td><td>First-class mode, especially ages 6–8</td><td>Conversation and interaction can matter more than finishing every page.</td></tr>
+<tr><td><strong>Graphic novels and comics</strong></td><td>Yes</td><td>Eligible for all core rewards and unique Panel traits</td><td>Do not treat visual reading as a lesser category.</td></tr>
+<tr><td><strong>Audiobooks</strong></td><td>Yes</td><td>Eligible for listening goals and Echo variants</td><td>For beginning readers, families or educators may separately track direct decoding practice; the game does not shame listening.</td></tr>
+<tr><td><strong>Rereading</strong></td><td>Yes</td><td>Builds bond, fluency route, and Series Keeper signals</td><td>Repeated books should not be treated as failed novelty.</td></tr>
+<tr><td><strong>Magazines, long-form articles, recipes, manuals</strong></td><td>Yes, where age-appropriate</td><td>Topic or project goals; may generate temporary visitors rather than permanent ISBN residents</td><td>The reading system should not be limited to traditional novels.</td></tr>
+<tr><td><strong>Assigned school reading</strong></td><td>Yes</td><td>Can complete personal goals but does not receive a special power multiplier</td><td>Avoid making every school text another test inside the game.</td></tr>
+</tbody>
+</table></div>
+<h3>The three-lane reading model</h3>
+<div class="grid-3">
+<div class="card"><div class="num">Practice</div><h4>Build accuracy and confidence</h4><p>Text the child can read successfully with little guessing or frustration. Stacklings can label this privately as a “steady trail” only when a caregiver, educator, or child chooses to use the lane.</p></div>
+<div class="card"><div class="num">Stretch</div><h4>Reach richer language and ideas</h4><p>More complex text with adult, peer, or audio support. The game can suggest a “co-read” buddy rather than locking the title because a score says it is too hard.</p></div>
+<div class="card"><div class="num">Joy</div><h4>Build identity and voluntary reading</h4><p>Anything age-appropriate the child genuinely wants to read, including familiar series and easier books. This lane is not a consolation prize; it is central to habit and attachment.</p></div>
+</div>
+<h3>Goal types</h3>
+<p>The setup presents six goal cards, ordered by age and prior use. A player can switch goals weekly without losing progress.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Goal</th><th>Example</th><th>Good for</th><th>Game output</th></tr></thead>
+<tbody>
+<tr><td><strong>Reading days</strong></td><td>Read on 4 of the next 7 days</td><td>Habit building without perfect streaks</td><td>Steady Keeper route signal</td></tr>
+<tr><td><strong>Sessions</strong></td><td>Have 3 reading moments this week</td><td>Younger readers, shared reading, variable schedules</td><td>One Storylight bloom per completed session, capped</td></tr>
+<tr><td><strong>Minutes</strong></td><td>Read for 15 minutes after dinner</td><td>Children who like timers and clear boundaries</td><td>Goal-complete event, not a per-minute currency faucet</td></tr>
+<tr><td><strong>Chapters or checkpoints</strong></td><td>Read two chapters by Saturday</td><td>Long books and older readers</td><td>Deep Diver route signal</td></tr>
+<tr><td><strong>Series path</strong></td><td>Continue the next book in a series</td><td>Momentum and the next-book problem</td><td>Family crest, sequel map, hold prompt</td></tr>
+<tr><td><strong>Exploration</strong></td><td>Try one nonfiction title and one graphic work this month</td><td>Breadth without speed competition</td><td>Curiosity Thread and hybrid visitor</td></tr>
+</tbody>
+</table></div>
+<h3>Reading evidence: confidence, not proof</h3>
+<p>A checkout proves that a book was borrowed, not that it was read. A timer proves that a screen remained in a mode, not that attention was sustained. A reflection can show engagement but should not become a comprehension exam. Stacklings should use transparent confidence bands only where public or partner rewards require them.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Signal</th><th>What it supports</th><th>Confidence</th><th>Permitted reward</th></tr></thead>
+<tbody>
+<tr><td>Player says “I read”</td><td>Private care and growth</td><td>Self-reported</td><td>Full private progress</td></tr>
+<tr><td>Quiet Mode or caregiver confirmation</td><td>Private goal completion</td><td>Supported</td><td>Full private progress; optional family dashboard</td></tr>
+<tr><td>Optional feeling, voice note, drawing, or reflection</td><td>Personal memory and narrative care</td><td>Engagement signal</td><td>Cosmetic memory; never a correctness bonus</td></tr>
+<tr><td>Checkout / return event</td><td>Borrowing provenance and library program participation</td><td>Verified circulation</td><td>Archive Mark, branch exhibit, partner challenge credit</td></tr>
+<tr><td>Staff event token or branch QR</td><td>Presence at a specific activity</td><td>Verified event</td><td>Event cosmetic or visitor</td></tr>
+</tbody>
+</table></div>
+<h3>Reward structure</h3>
+<div class="grid-2">
+<div class="card"><h4>Use these rewards</h4><ul><li>Creature growth choices and animations</li><li>Habitat objects and branch-themed cosmetics</li><li>New attraction clues and book recommendations</li><li>Choosing the next family read-aloud</li><li>Creating a library display or digital exhibit</li><li>Book-related event access or a donated book in the player’s honor</li></ul></div>
+<div class="card"><h4>Avoid making these the engine</h4><ul><li>Cash, candy, toys, or unrelated prizes per book</li><li>Public leaderboards for pages, speed, or titles</li><li>Rare creatures reserved for high Lexile or long books</li><li>Tests and worksheets after leisure reading</li><li>Perfect daily streaks that reset to zero</li><li>Rewards that require purchases, ads, or social pressure</li></ul></div>
+</div>
+<h3>Bounded progress formula</h3>
+<p>The game does not need to reveal a numerical formula, but the internal rule should be simple and fair. Each personal goal can generate at most one <strong>Reading Bloom</strong> per local day and a small weekly completion bonus. Extra reading remains valuable because it advances the book relationship, unlocks optional memories, and may complete the book, but it does not create an unlimited grind advantage.</p>
+<div class="codebox"><pre>DailyReadingBloom =
+  1 if player-selected goal is completed
+  0 otherwise
+
+WeeklyRhythmBonus =
+  1 if player meets their chosen reading-days target
+  0 otherwise
+
+GrowthRouteSignals =
+  derived from rolling patterns (consistency, depth, breadth, series, community)
+  never from public comparison or raw reading speed</pre></div>
+<h3>Solving the next-book problem</h3>
+<p>The most useful gamification output may not be a reward at all. After a player finishes, pauses, or returns a book, the buddy should offer a small menu rather than an overwhelming catalog:</p>
+<ol>
+<li>One familiar continuation: next in series, same author, or same creature family.</li>
+<li>One adjacent curiosity: a related nonfiction or fiction title.</li>
+<li>One format shift: graphic, audio, shorter, illustrated, or Hi-Lo where available.</li>
+<li>One child-selected wildcard from a saved interest.</li>
+</ol>
+<p>When library availability is known, the menu labels “on shelf,” “available digitally,” or “place a hold.” When it is not, the game gives search terms and a branch-friendly question the player can ask a librarian.</p>
+<h3>Age-specific presentation</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Age band</th><th>Default goal language</th><th>Reflection</th><th>Dashboard emphasis</th></tr></thead>
+<tbody>
+<tr><td><strong>6–7 · Co-reader</strong></td><td>“Have three story times”</td><td>Emoji, color, voice, drawing; caregiver can help</td><td>Shared reading, routine, favorite topics, no numeric level display</td></tr>
+<tr><td><strong>8–10 · Explorer</strong></td><td>“Read on four days” or “finish two chapters”</td><td>One optional prompt or recommendation</td><td>Personal rhythm, genres tried, series paths, habitat discoveries</td></tr>
+<tr><td><strong>11–13 · Curator</strong></td><td>Custom session, chapter, project, or exploration goal</td><td>Private notes, shelf lists, short reviews, or none</td><td>Autonomy, collection strategy, privacy controls, long-form progress</td></tr>
+<tr><td><strong>Family / adult co-player</strong></td><td>Personal, household, or book-club goal</td><td>Reading journal, recommendation, shared memory, or none</td><td>Collection curation, author/series sets, household exhibits; no access to a child’s private details by default</td></tr>
+</tbody>
+</table></div>
+<h3>Reading gamification acceptance tests</h3>
+<ul class="plain-list">
+<li>A player reading one long novel can progress at the same weekly pace as a player reading several short books.</li>
+<li>Graphic novels, rereading, and shared reading trigger the same core care opportunities as prose novels.</li>
+<li>There is no public ranking by reading speed, book count, minutes, or difficulty.</li>
+<li>A missed day cannot erase prior progress or produce a shame message.</li>
+<li>Every reading prompt can be skipped without losing the session’s core credit.</li>
+<li>The recommendation menu includes accessible and interesting options rather than only numerically “on-level” titles.</li>
+<li>The default player interface never uses grades, Lexile bands, mastery labels, or educational claims; those appear only in explicitly enabled adult or institutional views.</li></ul>
+</section>
+<section class="sheet" data-call="025.6 · MODULE 05" id="library">
+<div class="section-kicker">Module 05 · Connection to Library / Reading Systems</div>
+<h2>Integrate in layers so the library improves the game without becoming a single point of failure</h2>
+<p class="lead">The library is a high-trust channel, content partner, and real-world play space—not the creative audience for the core game. Physical and digital lending are different technical and business worlds. Stacklings should launch physical-first, keep the consumer core offline-capable, and add partner integrations in layers so no vendor or institution becomes a single point of failure.</p>
+<div class="recommendation">
+<div class="label">Recommended: Four trust tiers, category-only history by default</div>
+<p>Tier 0 works anywhere from a scan. Tier 1 adds a selected home branch and catalog links. Tier 2 adds branch tokens and soft borrow confirmation. Tier 3 adds minimal checkout, return, hold, and renewal events from an ILS. The library retains patron identity and raw circulation history; Stacklings receives only the pseudonymous event and metadata needed for the mechanic. The consumer fantasy remains coherent at every tier.</p>
+</div><div class="note"><strong>Positioning rule:</strong> Libraries buy program tools, local curation, reporting, and trusted integration. Players receive creatures, places, events, and better discovery. Never expose a procurement feature as a chore in the consumer loop.</div>
+<h3>Trust and integration tiers</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Tier</th><th>Requires</th><th>Game features</th><th>Data posture</th></tr></thead>
+<tbody>
+<tr><td><strong>Tier 0 · Open stacks</strong></td><td>Nothing beyond the app</td><td>ISBN scan, deterministic sighting, public metadata, private reading goals, habitat and care</td><td>Local-first profile; no library account</td></tr>
+<tr><td><strong>Tier 1 · Branch-aware</strong></td><td>Player or household selects a branch</td><td>Catalog deep links, branch hours/events, “ask a librarian” prompts, local shelf labels</td><td>Branch preference only; no GPS required</td></tr>
+<tr><td><strong>Tier 2 · Branch-verified</strong></td><td>Rotating QR, event code, or receipt token</td><td>Resident provenance, local visitor, seasonal challenge, branch gallery</td><td>Token proves an event, not identity or full history</td></tr>
+<tr><td><strong>Tier 3 · Circulation-connected</strong></td><td>Formal library partnership and ILS access</td><td>Checkout hatch, return graduation, renewals, holds as traveling summons, partner reporting</td><td>Library keeps credentials and raw patron record; game receives minimal pseudonymous events</td></tr>
+<tr><td><strong>Future · Open digital</strong></td><td>Palace/OPDS or approved vendor partnership</td><td>Ebook/audiobook availability, digital checkout events, cross-format residents</td><td>Separate partner scope; never required for physical core</td></tr>
+</tbody>
+</table></div>
+<h3>Physical-first integration path</h3>
+<div class="grid-3">
+<div class="card"><div class="num">SIP2 / NCIP</div><h4>Circulation signals</h4><p>Useful for patron validation, item status, checkout/check-in, and interlibrary-loan style events. A partner library must enable and secure access.</p></div>
+<div class="card"><div class="num">Vendor APIs</div><h4>Richer account events</h4><p>Polaris, Sierra, Symphony, Koha, Evergreen, and other platforms expose different REST or service layers. Use a thin adapter per vendor behind one canonical event model.</p></div>
+<div class="card"><div class="num">Discovery layer</div><h4>Find the next book</h4><p>BiblioCommons-style catalogs, Aspen Discovery, or local OPAC links provide availability and hold pathways. Stacklings should deep-link rather than rebuild lending.</p></div>
+</div>
+<h3>Digital path</h3>
+<p>The open strategic route is to interoperate with library-governed systems such as the Palace Project and standards such as OPDS. Proprietary digital platforms may offer partnership APIs, but access is a business-development dependency and should not be assumed in the product architecture. A mobile/web MVP can still recognize audiobooks and ebooks through manual selection or public metadata without initiating the loan.</p>
+<h3>Borrowing-history modes</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Mode</th><th>Stored by Stacklings</th><th>Personalization</th><th>Recommendation</th></tr></thead>
+<tbody>
+<tr class="rec-row"><td><strong>Category summary</strong></td><td>Rolling counts or proportions by broad genre, format, and recency; pseudonymous book tokens for active loans</td><td>Habitat balance, trainer style, broad recommendations</td><td><span class="status rec">Default</span></td></tr>
+<tr><td><strong>Active-loan titles only</strong></td><td>Title metadata for current loans; delete or aggregate after return</td><td>Specific creature and next-book path during loan</td><td><span class="status alt">Good partner mode</span></td></tr>
+<tr><td><strong>Title-level archive</strong></td><td>Full historical title list, guardian consent, clear deletion controls</td><td>Deep series/author memory and retrospective collection</td><td><span class="status later">Opt-in only</span></td></tr>
+<tr><td><strong>No history</strong></td><td>Only current local collection and self-reported goals</td><td>Deterministic capture and care still function</td><td><span class="status alt">Always available</span></td></tr>
+</tbody>
+</table></div>
+<h3>Privacy-preserving event pattern</h3>
+<div class="codebox"><pre>Library system holds:
+  patron identity, barcode/PIN, full checkout record, fines, addresses,
+  exact timestamps, staff notes, and protected account state
+
+Stacklings receives, where needed:
+  pseudonymousPlayerToken
+  pseudonymousLoanToken
+  canonicalBookToken or category vector
+  eventType (checkout / return / renewal / hold)
+  coarse time window
+  branchToken
+  onTimeStatus (only when partner approves the mechanic)
+
+Stacklings does not need:
+  library PIN, street address, full patron record, fines balance,
+  staff notes, exact GPS, or a publicly visible title history</pre></div>
+<h3>Metadata stack</h3>
+<p>Library records do not contain one definitive “genre.” They combine descriptive metadata, subject headings, genre/form terms, classification, publisher codes, and local shelving choices. Stacklings should preserve that ambiguity rather than pretend a single label is perfect.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Layer</th><th>Meaning</th><th>Game use</th></tr></thead>
+<tbody>
+<tr><td><strong>MARC descriptive fields</strong></td><td>Title, creator, edition, publisher, date, identifiers, format</td><td>Canonical identity, era, format variant, series and creator lineage</td></tr>
+<tr><td><strong>650 subject terms</strong></td><td>What the work is about</td><td>Secondary traits, habitat props, curiosity threads</td></tr>
+<tr><td><strong>655 genre/form terms</strong></td><td>What kind of work it is</td><td>Primary or secondary creature type</td></tr>
+<tr><td><strong>CYAC / child-facing headings</strong></td><td>Simplified terms used for children’s cataloging</td><td>Plain-language lore and search labels</td></tr>
+<tr><td><strong>BISAC JUV/YAF</strong></td><td>Publisher and trade subject categories</td><td>Granular fallback for fantasy, mystery, graphic, sports, social themes, and more</td></tr>
+<tr><td><strong>Dewey / call number</strong></td><td>Discipline and shelf address, not always genre</td><td>Library map clues, nonfiction families, shelf-learning quests</td></tr>
+<tr><td><strong>Local genre or sublocation</strong></td><td>How a specific branch shelves and signs the book</td><td>Best signal for local navigation and branch-themed types</td></tr>
+</tbody>
+</table></div>
+<h3>Library mechanics examples</h3>
+<div class="grid-2">
+<div class="card"><h4>Checkout → Invitation</h4><p>The ILS emits a checkout event. The already-scanned sighting receives a branch ribbon and moves into the habitat. If the player never scanned it, a sealed “new resident” card waits for reveal.</p></div>
+<div class="card"><h4>Return → Graduation</h4><p>An on-time return adds an Archive Mark and a thank-you animation. A late return still graduates the creature; the game can omit the bonus stamp rather than scold the player or reveal fines.</p></div>
+<div class="card"><h4>Hold → Traveling Summons</h4><p>Placing a hold creates a small traveling trunk or message egg. Its route advances with coarse status changes. The mechanic makes waiting legible without exposing queue position publicly.</p></div>
+<div class="card"><h4>Interlibrary loan → Faraway Visitor</h4><p>A future NCIP/ILL-compatible signal can mark a creature as having traveled from another system. The reward is provenance and lore, not extra power.</p></div>
+<div class="card"><h4>Branch QR → Local encounter</h4><p>A rotating code at the desk or display unlocks a seasonal visitor. No GPS is needed, and a printed alternative can support children without a personal phone.</p></div>
+<div class="card"><h4>Librarian list → Curated trail</h4><p>Staff publish a short themed list, such as “Night Creatures.” Scanning or borrowing any two titles attracts the event Stackling, turning programming into circulation pathways.</p></div>
+</div>
+<h3>Library dashboard</h3>
+<p>Partner reporting should show program health without turning children into surveillance rows. Suggested aggregate metrics include youth checkouts linked to the program, return visits, hold placement, genre/format breadth, event participation, recommendation click-through, and completion of self-selected goals. Staff should not see a child’s private notes, exact reading minutes, or inferred reading ability unless a separate school/family product explicitly supports that purpose and obtains the necessary consent.</p>
+<h3>Library connection acceptance tests</h3>
+<ul class="plain-list">
+<li>Disabling every partner integration leaves a coherent and enjoyable core game.</li>
+<li>No library credentials are stored in the game client or exposed to other players.</li>
+<li>A partner can choose category-only data and still support checkout, return, and branch mechanics.</li>
+<li>Metadata failure changes enrichment quality, not the ability to capture.</li>
+<li>Each vendor adapter maps to the same canonical LibraryEvent contract.</li>
+<li>The public branch gallery can operate with prewritten reactions and no direct child-to-child messaging.</li>
+</ul>
+</section>
+
+<section class="sheet" data-call="793.7 · SHARED PLAY" id="multiplayer">
+<div class="section-kicker">Cross-module layer · Collaborative &amp; Multiplayer Gameplay</div>
+<h2>Make the library feel inhabited without turning reading into a race</h2>
+<p class="lead">Multiplayer should broaden Stacklings from a private collection into a shared world, but the social fantasy must match the product’s tone and audience. The best fit is not real-time combat, open chat, or competitive reading totals. It is asynchronous cooperation: families build a shelf together, branch communities restore magical rooms, approved friends send creatures on expeditions, and event groups solve short shelf mysteries in the same physical place.</p>
+<p class="thesis">The social reward should be “we changed the world together,” not “I proved I read more than you.”</p>
+<div class="recommendation">
+<div class="label">Recommended social stack</div>
+<p><strong>Launch with the Household Shared Shelf; add Branch Restorations in the library pilot; hold Approved-Friend Expeditions for a later safety-tested release.</strong> These modes share one contribution-receipt contract, work asynchronously across mobile and web, and do not require direct messaging. Real-time play should be limited to hosted, co-located events. Direct creature trading, public reading leaderboards, and open matchmaking should remain out of scope for v1.</p>
+</div>
+<h3>Principles for broad-appeal shared play</h3>
+<div class="grid-4">
+<div class="card pillar"><div class="num">Principle 01</div><h4>Asynchronous by default</h4><p>Players can contribute on different schedules. No child must be online at the same time as a stranger, and adults can participate without adopting a mobile-game appointment calendar.</p></div>
+<div class="card pillar"><div class="num">Principle 02</div><h4>Cooperative, not comparative</h4><p>Shared spaces show milestones, discoveries, and collective change. They do not rank pages, minutes, books, streaks, reading level, or “best reader.”</p></div>
+<div class="card pillar"><div class="num">Principle 03</div><h4>Expressive, not exposing</h4><p>Players share a creature, habitat object, genre clue, or deliberately selected recommendation. Exact reading history and private reflections never leak through ambient social features.</p></div>
+<div class="card pillar"><div class="num">Principle 04</div><h4>Useful alone</h4><p>Every collaborative reward is cosmetic, narrative, or discovery-oriented. A solo player can still collect every core family, finish every care route, and enjoy the full loan loop.</p></div>
+</div>
+<h3>Gameplay flow alternatives</h3>
+<details data-recommended="true" open="">
+<summary>Flow A · Household Shared Shelf <span class="status rec">Launch foundation</span></summary>
+<div class="detail-body">
+<p><strong>Fantasy:</strong> a family, classroom household, or trusted co-reading group has one magical room where separately owned Stacklings can visit and build memories together. Each profile keeps its private collection; the room is a shared display and cooperation surface, not a merged account.</p>
+<div aria-label="Household Shared Shelf flow" class="flow">
+<div class="step"><b>1 · Open the room</b>A guardian or adult creates a Shared Shelf and adds local profiles or verified household members.</div>
+<div class="step"><b>2 · Choose a theme</b>The group selects one of three low-pressure prompts, such as “Night Visitors,” “Things That Fly,” or “Books We Reread.”</div>
+<div class="step"><b>3 · Place a contribution</b>Each player may add one creature visit, decoration, or deliberately shared recommendation. Participation is optional and not equalized by reading volume.</div>
+<div class="step"><b>4 · Watch the ecology</b>Contributed Stacklings interact, reveal a hybrid animation, or attract a temporary visitor based on the combined traits.</div>
+<div class="step"><b>5 · Keep the memory</b>The room creates a weekly postcard or family emblem. Private logs stay private; absent players are never listed as missing.</div>
+</div>
+<p><strong>Reward model:</strong> shared décor, paired keepsakes, visitor sightings, family crests, and a scrapbook of room changes. <strong>Healthy failure rule:</strong> milestones require a small number of distinct contributions, never 100% household participation. <strong>Compatibility:</strong> works at library Tier 0 and with every capture, care, and loop option.</p>
+</div>
+</details>
+<details data-recommended="true" open="">
+<summary>Flow B · Branch Restoration <span class="status rec">Recommended public mode</span></summary>
+<div class="detail-body">
+<p><strong>Fantasy:</strong> everyone using a participating library helps restore one room of a magical branch archive. The project is visible on a web page, lobby screen, or in-app branch view, but individual players are represented only by private contribution receipts and optional prewritten signatures.</p>
+<div aria-label="Branch Restoration flow" class="flow">
+<div class="step"><b>1 · Staff opens a project</b>A librarian selects a theme, dates, allowed contribution types, and three to five visual milestones.</div>
+<div class="step"><b>2 · Players earn a Spark</b>An eligible action—such as a checkout, reading-goal completion, branch QR, event attendance, or curated-trail scan—creates one normalized receipt.</div>
+<div class="step"><b>3 · Deposit privately</b>The player chooses whether to contribute the receipt. The branch sees one Spark; it does not receive the underlying title, minutes, or reading mode.</div>
+<div class="step"><b>4 · The room changes</b>At 25%, 50%, 75%, and 100%, shelves return, lights turn on, visitors arrive, and new book trails open for everyone.</div>
+<div class="step"><b>5 · Close with an exhibit</b>The branch receives a permanent season snapshot; every contributor receives the same core keepsake plus a private mark for the milestones they witnessed.</div>
+</div>
+<p><strong>Reward model:</strong> community world changes, branch décor, local visitor lore, and curated discovery paths. <strong>Anti-competition rule:</strong> show aggregate progress and milestone contributors, never a personal contribution leaderboard. <strong>Compatibility:</strong> works with Tier 1 QR programming through Tier 3 ILS events.</p>
+</div>
+</details>
+<details>
+<summary>Flow C · Approved-Friend Expeditions <span class="status alt">Later retention layer</span></summary>
+<div class="detail-body">
+<p><strong>Fantasy:</strong> two or more trusted players send Stacklings beyond their own shelves to discover a bridge between their collections. This creates repeat social play without transferring ownership or requiring chat.</p>
+<div aria-label="Approved friend expedition flow" class="flow">
+<div class="step"><b>1 · Establish trust</b>Adults connect directly; child connections require a guardian-approved code or an institution-managed group. Profiles are not searchable.</div>
+<div class="step"><b>2 · Pack the expedition</b>Each player selects one creature and a curiosity card such as “funny nonfiction,” “a story with a map,” or “something we can read aloud.”</div>
+<div class="step"><b>3 · Receive a bridge clue</b>The game combines traits from both collections into one compatible challenge without revealing either player’s unseen history.</div>
+<div class="step"><b>4 · Complete privately</b>Each player scans, borrows, reads, or saves one matching book on their own schedule. The shared service receives only completion receipts.</div>
+<div class="step"><b>5 · Return with a postcard</b>The Stacklings come home with paired cosmetics, a two-creature animation, and an optional recommendation the sender explicitly chose to share.</div>
+</div>
+<p><strong>Reward model:</strong> paired charms, expedition maps, bridge habitats, and collaborative lore. <strong>Safety cost:</strong> relationship approval, blocking, reporting, membership audit, and strict separation between adult and child social graphs. <strong>Compatibility:</strong> works without library integration, though local availability can improve the challenge.</p>
+</div>
+</details>
+<details>
+<summary>Flow D · Co-located Shelf Safari <span class="status alt">Hosted event mode</span></summary>
+<div class="detail-body">
+<p><strong>Fantasy:</strong> a librarian, teacher, bookseller, or family host opens a short room-code session in a real location. Players work in teams to find books matching creature clues and assemble a temporary constellation before the event ends.</p>
+<div aria-label="Co-located Shelf Safari flow" class="flow">
+<div class="step"><b>1 · Host the room</b>The facilitator chooses safe search zones, age band, duration, and clue deck; players join with a rotating QR or short code.</div>
+<div class="step"><b>2 · Draw a clue</b>Teams receive prompts based on visible metadata: “Find a 500s book with wings,” “Find two formats of one story,” or “Find a mystery and a true story that share a subject.”</div>
+<div class="step"><b>3 · Search together</b>Players locate and scan candidates, then return to the gathering spot. The game avoids continuous GPS and does not reward running or speed.</div>
+<div class="step"><b>4 · Assemble the constellation</b>Every valid find contributes a creature silhouette. Duplicate answers still help by adding animation or décor rather than being rejected.</div>
+<div class="step"><b>5 · Group reveal</b>The room summons an event visitor and generates a printable or digital recap. Guest players can leave with a one-time claim code without creating a public profile.</div>
+</div>
+<p><strong>Reward model:</strong> event visitor, team postcard, and optional branch trail. <strong>Operational caution:</strong> this mode needs facilitator tools, accessibility alternatives, and clear physical-space rules. It should not become the standard everyday loop.</p>
+</div>
+</details>
+<details>
+<summary>Flow E · Curator Circles <span class="status later">Adult / older-player extension</span></summary>
+<div class="detail-body">
+<p><strong>Fantasy:</strong> a small private group builds a rotating exhibit around a theme—“first-contact stories,” “books that feel like winter,” “one-volume manga,” or “local history.” The mode gives adult cozy players and older teens a reason to use the same collection systems without changing the child-centered core.</p>
+<div aria-label="Curator Circle flow" class="flow">
+<div class="step"><b>1 · Create a circle</b>An adult creates a private group or a library hosts an age-banded circle. Child and adult spaces never mix through discovery.</div>
+<div class="step"><b>2 · Set the prompt</b>The host chooses a theme, contribution window, and whether explicit book titles are visible.</div>
+<div class="step"><b>3 · Curate one piece</b>Members contribute a Stackling, habitat vignette, or book recommendation; no one is asked to prove completion.</div>
+<div class="step"><b>4 · React and connect</b>Child-safe circles use canned reactions. Adult-only circles may support moderated text later, after a separate trust-and-safety review.</div>
+<div class="step"><b>5 · Archive the exhibit</b>The circle creates a collective room, reading list, and seasonal badge that can be revisited without preserving private activity logs.</div>
+</div>
+<p><strong>Reward model:</strong> exhibition frames, group seals, rotating visitors, and a visual archive. <strong>Strategic role:</strong> broadens adult appeal and library book-club use, but should come after the child-safe cooperative core is proven.</p>
+</div>
+</details>
+<div class="warning"><strong>Do not lead with direct trading or PvP.</strong> Trading makes a creature generated from a specific reading relationship feel like a transferable commodity, creates loss and scam pressure, and increases account-recovery and moderation complexity. Competitive reading battles create the wrong incentive even if the battle itself is playful. If exchange is later desired, trade temporary visitor cards, habitat postcards, or duplicate cosmetic tokens—not bonded residents.</div>
+<h3>Recommended rollout</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Phase</th><th>Shared-play mode</th><th>Why it belongs here</th><th>Release gate</th></tr></thead>
+<tbody>
+<tr class="rec-row"><td><strong>Vertical slice</strong></td><td>Shared Shelf on one household device</td><td>Tests whether cooperative ecology and family participation add delight with almost no moderation surface.</td><td>Two profiles can contribute without seeing each other’s title history or reading totals.</td></tr>
+<tr class="rec-row"><td><strong>Branch pilot</strong></td><td>One Branch Restoration</td><td>Tests community value, staff tooling, aggregate progress, and partner visibility without a friend graph.</td><td>Contribution receipts are normalized, opt-in, idempotent, and staff cannot reconstruct private activity.</td></tr>
+<tr><td><strong>Post-launch</strong></td><td>Approved-Friend Expeditions</td><td>Adds repeat social retention after account, consent, block, and reporting systems are mature.</td><td>Guardian approval, adult/child graph separation, no chat, no searchable profiles, completed abuse review.</td></tr>
+<tr><td><strong>Program expansion</strong></td><td>Shelf Safari and Curator Circles</td><td>Supports events, book clubs, schools, and adult players with purpose-built hosted flows.</td><td>Facilitator tools, accessibility alternatives, age-banding, and content-moderation policy are operational.</td></tr>
+</tbody>
+</table></div>
+<h3>How collaboration connects to the five modules</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Module</th><th>What it contributes</th><th>What the shared layer may consume</th><th>Boundary</th></tr></thead>
+<tbody>
+<tr><td><strong>Monster Capture</strong></td><td>Stable creature identity and optional provenance</td><td>A shareable creature snapshot, family/type tags, or sighting receipt</td><td>No social mode changes species mapping or transfers bonded ownership.</td></tr>
+<tr><td><strong>Monster Care</strong></td><td>Bond state, animations, habitat objects, learned behaviors</td><td>One selected visitor, action, or décor contribution</td><td>Other players cannot feed, rename, evolve, or spend resources on a private creature without explicit shared-room permission.</td></tr>
+<tr><td><strong>Gameplay Loop</strong></td><td>Project windows, expedition timers, event cadence, healthy stopping points</td><td>Milestone schedule and one return reveal</td><td>Shared timers never create loss, decay, or mandatory daily attendance.</td></tr>
+<tr><td><strong>Reading Gamification</strong></td><td>Private completion events across reading modes</td><td>A normalized participation receipt after the player opts to contribute</td><td>No pages, minutes, level, streak, title, or mode is visible to peers by default.</td></tr>
+<tr><td><strong>Library Connection</strong></td><td>Branch identity, curated themes, optional verification, hosted events</td><td>Branch-safe event receipts and aggregate project configuration</td><td>Library staff see project health and totals, not private reading behavior.</td></tr>
+</tbody>
+</table></div>
+<h3>Example collaborative content</h3>
+<div class="grid-2">
+<div class="card"><h4>The Moonlit Reading Room</h4><p>A branch restoration accepts one Spark from a night-creature scan, a nocturnal-animal checkout, a reading goal, or event attendance. Milestones light the windows, return the star map, and attract a Wispkin–Mossmoth visitor. Every path contributes equally.</p></div>
+<div class="card"><h4>The Bridge Between Shelves</h4><p>Two approved friends send a Cluehound and Craftcrab on expedition. The game asks each player to find a book that combines making with mystery. Their creatures return wearing matching compass-tool charms.</p></div>
+<div class="card"><h4>The Family Menagerie</h4><p>A Shared Shelf theme asks each household profile to contribute an animal-adjacent Stackling or a habitat object. Two contributions unlock a tiny watering hole; four create a postcard. The room never shows who read how much.</p></div>
+<div class="card"><h4>The Missing Catalog Star</h4><p>During a hosted Shelf Safari, teams solve subject, format, and call-number clues. Every correct book adds a point of light to one constellation. The final visitor appears when the whole room completes the pattern, not when one team finishes first.</p></div>
+</div>
+<h3>Multiplayer acceptance tests</h3>
+<ul class="plain-list">
+<li>A child can use every core collection, care, and reading feature without joining a shared space.</li>
+<li>No shared view exposes exact books, minutes, pages, reading mode, inferred ability, school schedule, or branch-visit pattern unless a player deliberately shares a specific title through an approved flow.</li>
+<li>One short eligible action and one long eligible action produce the same standard contribution receipt for a cooperative project.</li>
+<li>A player who joins late or misses the project can still participate, receive a keepsake, and understand the shared story without a recovery grind.</li>
+<li>Household and branch modes function with no free-text chat, image upload, voice, precise location, or searchable child profile.</li>
+<li>Duplicate or replayed receipts cannot inflate a public project, while private cozy play remains permissive.</li>
+<li>Blocking or removal from a shared space immediately stops future interaction without deleting the player’s private creatures or reading history.</li>
+<li>Every hosted synchronous activity has a no-phone or shared-device accommodation and does not reward speed through physical library spaces.</li>
+</ul>
+</section>
+<section class="sheet" data-call="004.2 · COMPATIBILITY" id="bundles">
+<div class="section-kicker">Cross-module compatibility</div>
+<h2>Three product strategies can share the same systems</h2>
+<p class="lead">The modular design is useful only if it produces coherent products, not a menu of disconnected features. These bundles show how Stacklings can test consumer demand, deepen library partnership, or support a time-bound program without changing its entertainment-first identity.</p>
+<article class="bundle recommended">
+<span class="ribbon">Recommended</span>
+<h3>Bundle A · The Living Library</h3>
+<p><strong>Capture:</strong> sighting → residency. <strong>Care:</strong> positive-state ecology. <strong>Loop:</strong> layered cozy collector. <strong>Reading:</strong> personal goals. <strong>Library:</strong> tiers 0–3. <strong>Shared play:</strong> Household Shared Shelf + branch restorations.</p>
+<p>This is the strongest general-audience product: instant magic, meaningful borrowing, broad age support, and enough collection depth for families and adult book lovers. It can launch without ILS access and should remain the executive baseline.</p>
+</article>
+<article class="bundle">
+<h3>Bundle B · Stacklings Everywhere</h3>
+<p><strong>Capture:</strong> instant permanent scan. <strong>Care:</strong> habitat attraction. <strong>Loop:</strong> sandbox. <strong>Reading:</strong> self-reported sessions. <strong>Library:</strong> tier 0–1. <strong>Shared play:</strong> private by default, optional household Shared Shelf.</p>
+<p>This is the smallest lovable general-audience consumer MVP. It tests whether players enjoy scanning books, collecting deterministic creatures, and building habitats before partnership work. The cost is a weaker connection between borrowing, reading, and ownership.</p>
+</article>
+<article class="bundle">
+<h3>Bundle C · The Archive Quest</h3>
+<p><strong>Capture:</strong> reading-gated hatch. <strong>Care:</strong> conversation and memory. <strong>Loop:</strong> authored story campaign. <strong>Reading:</strong> chapter/checkpoint goals. <strong>Library:</strong> tier 1–3. <strong>Shared play:</strong> one time-bound restoration or hosted event room.</p>
+<p>This version fits a school, grant, summer-reading, or seasonal library program that needs a clear arc. It should be an optional institutional overlay, not the market identity, because stronger reading gates and authored content can make the base experience feel assigned.</p>
+</article><div class="note"><strong>Cross-bundle collaboration:</strong> Any bundle can consume the same normalized CollaborationReceipt contract. Shared Shelves are the lowest-risk family layer; Branch Restorations are the strongest institutional layer; Approved-Friend Expeditions are a later retention layer. None changes capture identity, reading credit, or private ownership.</div>
+<h3>Compatibility matrix</h3>
+<div class="tablewrap"><table class="compat">
+<thead><tr><th>System option</th><th>Positive care</th><th>Habitat care</th><th>Layered loop</th><th>Campaign loop</th><th>Tier 0–1</th><th>Tier 3</th></tr></thead>
+<tbody>
+<tr><td><strong>Instant scan capture</strong></td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td></tr>
+<tr><td><strong>Sighting → residency</strong></td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="maybe">△</td><td class="yes">●</td></tr>
+<tr><td><strong>Reading-gated hatch</strong></td><td class="yes">●</td><td class="maybe">△</td><td class="maybe">△</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td></tr>
+<tr><td><strong>Traditional needs care</strong></td><td class="no">—</td><td class="maybe">△</td><td class="maybe">△</td><td class="maybe">△</td><td class="yes">●</td><td class="yes">●</td></tr>
+<tr><td><strong>Personal-goal reading</strong></td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td></tr>
+<tr><td><strong>Checkout/return loan arc</strong></td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="maybe">△</td><td class="maybe">△</td><td class="yes">●</td></tr>
+<tr><td><strong>Branch expedition</strong></td><td class="yes">●</td><td class="yes">●</td><td class="maybe">△</td><td class="maybe">△</td><td class="maybe">△</td><td class="yes">●</td></tr>
+<tr><td><strong>Household Shared Shelf</strong></td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td></tr>
+<tr><td><strong>Branch Restoration</strong></td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="maybe">△</td><td class="yes">●</td></tr>
+<tr><td><strong>Approved-Friend Expedition</strong></td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="maybe">△</td><td class="yes">●</td><td class="yes">●</td></tr>
+</tbody>
+</table></div>
+<p class="print-note">Legend: ● works naturally · △ works with an adapter or soft/manual substitute · — philosophical or mechanical conflict</p>
+<h3>Feature flags</h3>
+<div class="codebox"><pre>capture.mode = "instant" | "sighting_residency" | "reading_hatch"
+care.mode = ["positive_state", "habitat", "conversation"]
+loop.primary = "layered" | "expedition" | "campaign" | "sandbox"
+reading.goalTypes = configurable list
+reading.publicCompetition = false
+library.maxTier = 0..3
+history.mode = "none" | "category" | "active_titles" | "title_archive"
+social.mode = "private" | "shared_shelf" | "branch_restoration" | "approved_friends" | "event_room" | "adult_circle"
+social.messaging = "none" | "canned_reactions"   // no child free text in baseline
+social.competition = "none"                         // cooperative milestones only
+social.titleSharing = "none" | "explicit_opt_in"
+collaboration.credit = "normalized_receipt"
+experience.presentation = "co_reader" | "explorer" | "curator" | "adult"
+institution.overlay = "none" | "library" | "school"
+household.sharedShelf = true | false
+combat.enabled = false   // recommended for v1</pre></div>
+</section>
+<section class="sheet" data-call="808.83 · CONTENT KIT" id="content">
+<div class="section-kicker">Example content system</div>
+<h2>A starter bestiary built for expansion</h2>
+<p class="lead">The first content set should be broad enough that almost any common library book produces a meaningful result, but small enough that every family has a clear silhouette and animation identity. Twelve primary families with secondary traits can create immediate child-readable charm and enough long-term collection depth for teens, families, and adult book lovers.</p>
+<h3>Two-depth content design</h3>
+<div class="grid-2">
+<div class="card"><div class="num">Readable charm</div><h4>Recognize the fantasy instantly</h4><p>Strong silhouettes, expressive animation, plain-language types, and one memorable behavior let a younger player understand a creature without opening a stats screen.</p></div>
+<div class="card"><div class="num">Collector depth</div><h4>Reward long-term curation</h4><p>Edition patina, translator and narrator marks, author constellations, series crests, branch provenance, habitat synergies, and seasonal variants create sophisticated goals without stronger books producing stronger creatures.</p></div>
+</div>
+
+<h3>Primary creature families</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Family</th><th>Book signals</th><th>Visual language</th><th>Habitat behavior</th></tr></thead>
+<tbody>
+<tr><td><strong>Quillwyrm</strong></td><td>Fantasy, folklore, magic</td><td>Paper scales, quill horns, bookmark wings</td><td>Builds towers and guards unfinished series</td></tr>
+<tr><td><strong>Cluehound</strong></td><td>Mystery, thriller, puzzles</td><td>Compass ears, map coat, lantern tail</td><td>Finds hidden shelf links and recommends cases</td></tr>
+<tr><td><strong>Mossmoth</strong></td><td>Nature, animals, ecology</td><td>Leaf wings, specimen tags, soft bioluminescence</td><td>Grows habitat plants and attracts field-guide visitors</td></tr>
+<tr><td><strong>Gearling</strong></td><td>Technology, robots, invention, space</td><td>Card-catalog drawers, gears, orbit rings</td><td>Repairs interactive objects and decodes systems</td></tr>
+<tr><td><strong>Echoowl</strong></td><td>Biography, history, memoir</td><td>Archive spectacles, date-stamp feathers</td><td>Creates timeline exhibits and remembers branch provenance</td></tr>
+<tr><td><strong>Panelimp</strong></td><td>Comics, graphic novels, manga</td><td>Ink outline, speech-bubble tail, panel-shift animation</td><td>Turns moments into three-panel postcards</td></tr>
+<tr><td><strong>Rallyroo</strong></td><td>Sports, games, movement</td><td>Scoreboard patches, spring legs, pennants</td><td>Hosts non-combat skill exhibitions and stat-book trails</td></tr>
+<tr><td><strong>Hearthhare</strong></td><td>Realistic fiction, family, friendship, school</td><td>Patchwork cardigan, note pockets, warm lamp</td><td>Welcomes visitors and boosts shared-reading events</td></tr>
+<tr><td><strong>Wispkin</strong></td><td>Horror, ghosts, paranormal</td><td>Safe-spooky sheet form, candle eyes, torn catalog slips</td><td>Appears at dusk and creates gentle “bravery shelf” quests</td></tr>
+<tr><td><strong>Rhymeling</strong></td><td>Poetry, language, jokes, wordplay</td><td>Ribbon body, movable type, musical punctuation</td><td>Changes soundscape and supports read-aloud play</td></tr>
+<tr><td><strong>Craftcrab</strong></td><td>Art, cooking, making, hobbies</td><td>Tool claws, recipe-card shell, paint flecks</td><td>Unlocks real-world project prompts tied to books</td></tr>
+<tr><td><strong>Errata</strong></td><td>Thin, missing, or conflicting metadata</td><td>Shifting cards, question-mark eyes, misfiled labels</td><td>Collects clues until a type charm can be assigned</td></tr>
+</tbody>
+</table></div>
+<h3>Secondary traits</h3>
+<div class="grid-4">
+<div class="card"><h4>Panel</h4><p>Graphic format; bold outlines, frame-step idle animation.</p></div>
+<div class="card"><h4>Echo</h4><p>Audiobook; voice halo and waveform footprints.</p></div>
+<div class="card"><h4>Archive</h4><p>Older edition; brass corners and date-stamp patina.</p></div>
+<div class="card"><h4>Field</h4><p>Guide/manual form; labels, specimen satchel, index tabs.</p></div>
+<div class="card"><h4>Series</h4><p>Family crest grows with each related title.</p></div>
+<div class="card"><h4>Co-read</h4><p>Shared-reading bond; paired lanterns or two-tone scarf.</p></div>
+<div class="card"><h4>Local</h4><p>Verified branch provenance; small branch color ribbon.</p></div>
+<div class="card"><h4>Faraway</h4><p>ILL or distant-source provenance; travel trunk and route tags.</p></div>
+</div>
+<h3>Example quests</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Quest</th><th>Trigger</th><th>Player action</th><th>Outcome</th></tr></thead>
+<tbody>
+<tr><td><strong>The Moonlit Shelf</strong></td><td>Branch hosts a nocturnal-animal event</td><td>Borrow or scan one fiction and one nonfiction title about night creatures</td><td>Attract a limited Wispkin–Mossmoth hybrid visitor and unlock a permanent night lamp</td></tr>
+<tr><td><strong>Case of the Empty Frame</strong></td><td>Cluehound reaches Curious</td><td>Follow three catalog clues: subject, call number, and local genre sticker</td><td>Find a new mystery sighting and learn how the branch organizes books</td></tr>
+<tr><td><strong>One More in the Series</strong></td><td>Series token detected</td><td>Read or borrow the next title, or place a hold</td><td>Extend the family crest; hold creates a traveling message egg</td></tr>
+<tr><td><strong>Build It From a Book</strong></td><td>Craftcrab visitor</td><td>Choose an age-appropriate project from a craft, recipe, or science title</td><td>Photograph the result privately or simply mark it complete; receive a habitat model</td></tr>
+<tr><td><strong>The Genre Bridge</strong></td><td>Two habitat zones reach level two</td><td>Try a book that connects them, such as sports biography or historical fantasy</td><td>Create a hybrid nook and attract a cross-genre Stackling</td></tr>
+<tr><td><strong>Pass the Bookmark</strong></td><td>Household Shared Shelf is enabled</td><td>Recommend a book or creature path to another household profile; they may accept, save, or ignore it</td><td>Create a paired keepsake in the shared room without exposing private notes, timers, or reading scores</td></tr>
+<tr><td><strong>Restore the Moonlit Reading Room</strong></td><td>A branch opens a cooperative seasonal project</td><td>Contribute one normalized receipt from an eligible scan, checkout, reading goal, event, or branch code</td><td>Advance a shared room milestone; receive the same core keepsake regardless of contribution source or reading volume</td></tr></tbody>
+</table></div>
+<h3>Non-combat play options</h3>
+<p>Combat is not necessary for the first version. If the product later needs challenge or social comparison, use activities that fit a library and care fantasy:</p>
+<ul>
+<li><strong>Exhibitions:</strong> arrange a habitat around a theme and receive private or branch-safe reactions.</li>
+<li><strong>Talent shows:</strong> select a creature’s learned animations and combine them into a short routine.</li>
+<li><strong>Cooperative restorations:</strong> branch participants contribute verified visits, checkouts, or reading-goal completions to rebuild a shared room.</li>
+<li><strong>Trivia as optional play:</strong> general topic puzzles or book-finding skills, never required proof that a specific child read a specific book.</li>
+<li><strong>Collection riddles:</strong> deduce which metadata traits will attract a visitor.</li>
+</ul>
+</section>
+<section class="sheet" data-call="004.6 · TECHNICAL" id="technical">
+<div class="section-kicker">Technical architecture</div>
+<h2>Local magic, network enrichment, partner adapters</h2>
+<p class="lead">The capture experience should be deterministic and local. Cloud services synchronize accounts, enrich metadata, deliver content, and receive partner events, but they should not decide whether a valid book produces a creature. This reduces failure at the most emotionally important moment and allows mobile and web to share the same seed library.</p>
+<h3>Reference architecture</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Layer</th><th>Responsibilities</th><th>Failure behavior</th></tr></thead>
+<tbody>
+<tr><td><strong>Client seed engine</strong></td><td>Normalize identifier, stable hash, base species, cached trait tables, offline reveal</td><td>Always returns a base creature for valid input</td></tr>
+<tr><td><strong>Metadata service</strong></td><td>Merge local library record, MARC-derived fields, public metadata, controlled-vocabulary mapping</td><td>Returns partial confidence and Uncatalogued state; never blocks capture</td></tr>
+<tr><td><strong>Game state service</strong></td><td>Account sync, collection, habitats, care events, content versioning</td><td>Queues offline events and resolves idempotently</td></tr>
+<tr><td><strong>Reading event service</strong></td><td>Goal definitions, daily/weekly bounds, optional family confirmations</td><td>Accepts self-report locally and syncs later</td></tr>
+<tr><td><strong>Library adapter gateway</strong></td><td>Vendor-specific SIP2/API/NCIP integrations mapped to canonical events</td><td>Falls back to lower trust tier; no lost creature</td></tr>
+<tr><td><strong>Recommendation service</strong></td><td>Series, author, genre, format, age-appropriateness, local availability</td><td>Returns generic search trails when local catalog is unavailable</td></tr>
+<tr><td><strong>Partner dashboard</strong></td><td>Aggregate program metrics, content lists, branch events, QR rotation</td><td>Does not expose child-level private reading data by default</td></tr>
+<tr><td><strong>Collaboration service</strong></td><td>Shared spaces, membership policy, normalized receipts, aggregate projects, expedition state, canned reactions, block/removal enforcement</td><td>Falls back to solo state; never exposes the event source behind a contribution receipt</td></tr>
+<tr><td><strong>Experience profile service</strong></td><td>Presentation depth, assistance, household role, institution overlay, privacy defaults</td><td>Changes copy and available surfaces without forking creature identity or economy</td></tr></tbody>
+</table></div>
+<h3>Seed algorithm sketch</h3>
+<div class="codebox"><pre>canonical = normalizeIdentifier(input)
+seed = SHA256("stacklings:v1:" + canonical)
+
+baseFamilyIndex = bytes(seed, 0..1) mod eligibleFamilies(metadataConfidence)
+bodyPlan        = bytes(seed, 2..3) mod family.bodyPlans
+pattern         = bytes(seed, 4..5) mod family.patterns
+temperament     = bytes(seed, 6)    mod temperaments
+rareFlag        = rarityRule(seed, metadataSignals)  // cosmetic, not power
+
+primaryType   = resolveGenre(metadataPriorityStack)
+secondaryType = resolveSecondary(metadataPriorityStack)
+traits        = deriveFormatEraSeriesTraits(metadata, seed)
+
+return frozenMapping(seedVersion="v1", baseFamilyIndex, traits)</pre></div>
+<p>The genre resolver must be deterministic for the same metadata snapshot, but the stable base species should not change when enrichment improves. New metadata can add a type charm, habitat affinity, or lore entry. It should not replace a beloved creature after weeks of care.</p>
+<h3>Content versioning</h3>
+<ul>
+<li><strong>Seed version:</strong> determines stable base mapping. Never revise silently.</li>
+<li><strong>Art version:</strong> can improve models and animation without changing identity.</li>
+<li><strong>Metadata mapping version:</strong> can add or refine terms while preserving existing primary type unless the player chooses a correction.</li>
+<li><strong>Balance version:</strong> affects attraction and care pacing, not book-to-species mapping.</li>
+<li><strong>Partner configuration:</strong> controls verification rewards, active branch events, and history mode.</li>
+</ul>
+<h3>Web and mobile handoff</h3>
+<p>A player using the web app can search the library catalog and create a wish-list sighting. To establish a physical scan, the mobile app can show a one-time handoff code, or the web app can use a webcam. A shared household device can scan for multiple profiles, and the player chooses which profile receives the sighting. Adult and guardian surfaces can manage consent and shared rooms without exposing one profile’s private reading details to another.</p>
+<h3>Account roles without separate games</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Role</th><th>Default presentation</th><th>Capabilities</th><th>Boundary</th></tr></thead>
+<tbody>
+<tr><td><strong>Child profile</strong></td><td>Co-reader, Explorer, or Curator</td><td>Full collection, care, reading, branch play, Shared Shelf, and approved project participation</td><td>Private by default; no direct messaging, searchable profile, or targeted monetization</td></tr>
+<tr><td><strong>Adult player</strong></td><td>Adult</td><td>Same game plus denser collection, archive, curation views, household rooms, and age-appropriate circles</td><td>No automatic access to another player’s private title history or to child social spaces</td></tr>
+<tr><td><strong>Guardian</strong></td><td>Adult control surface</td><td>Consent, account recovery, household sharing, optional goal support</td><td>Support is not surveillance; private notes remain separately controlled</td></tr>
+<tr><td><strong>Library / school staff</strong></td><td>Partner dashboard</td><td>Events, curated lists, Branch Restorations, hosted rooms, aggregate metrics, program configuration</td><td>No default child-level reading rows, private notes, or underlying contribution sources</td></tr>
+</tbody>
+</table></div>
+
+<h3>System acceptance tests</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Area</th><th>Test</th></tr></thead>
+<tbody>
+<tr><td>Determinism</td><td>Same canonical ID + seed version yields identical species checksum on iOS, Android, and web.</td></tr>
+<tr><td>Offline</td><td>Capture, current collection, reading log, and one care action work in airplane mode.</td></tr>
+<tr><td>Idempotency</td><td>Repeated library event or offline sync cannot duplicate a graduation reward.</td></tr>
+<tr><td>Metadata</td><td>Conflicting genre sources produce a transparent confidence record and stable fallback.</td></tr>
+<tr><td>Accessibility</td><td>Core web flow is keyboard usable; scanner has manual and assisted alternatives; color is never the only type signal.</td></tr>
+<tr><td>Performance</td><td>Base reveal target under one second on a representative lower-cost device; metadata enrichment can stream later.</td></tr>
+<tr><td>Deletion</td><td>Family can delete profile and title-level data; partner tokens are invalidated; aggregate metrics cannot reconstruct identity.</td></tr>
+<tr><td>Shared-play privacy</td><td>A contribution receipt reveals only project eligibility and normalized value; another player or staff member cannot derive the title, duration, mode, or source event.</td></tr>
+<tr><td>Shared-state integrity</td><td>Offline replay, duplicate partner events, or reconnect storms cannot add the same receipt twice; removal from a space stops future events without altering private collection state.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section class="sheet" data-call="364.16 · TRUST" id="safety">
+<div class="section-kicker">Safety, privacy, and integrity</div>
+<h2>Apply under-13 protections to the shared world; layer adult controls around it</h2>
+<p class="lead">Stacklings can welcome adult players without weakening the safeguards required by a child-centered product. Reading choices can reveal health, family, identity, religion, or personal concerns. The shared world should therefore use child-safe defaults, while adult, guardian, and institutional capabilities live in clearly separated account surfaces.</p>
+<h3>Recommended privacy posture</h3>
+<ul>
+<li>Use guardian or library-managed consent flows where required; product counsel should validate COPPA, FERPA, state privacy law, and partner obligations before launch.</li>
+<li>Store no ads profile, precise GPS trail, contacts, camera roll, or cross-app tracking identifier.</li>
+<li>Keep library card number and PIN with the library or an approved authentication boundary; do not make Stacklings a universal patron-identity provider.</li>
+<li>Default to category aggregates and active-loan tokens rather than a permanent title history.</li>
+<li>Offer clear export, correction, and deletion controls in family language.</li>
+<li>No direct messaging in the children’s product. Branch gallery reactions use a curated vocabulary or staff-approved templates.</li>
+<li>No public profile should expose exact books, reading time, inferred ability, school, or branch visit schedule.</li>
+<li>Adult profiles may use richer curation or social features only in age-appropriate spaces; they do not gain access to child profiles, messages, or reading history unless a verified guardian relationship and explicit controls allow a specific action.</li><li>Household co-play shares rooms, recommendations, and approved keepsakes—not exact reading time, inferred ability, or private reflections by default.</li><li>Shared projects receive normalized contribution receipts only after the player opts in; the receipt cannot be expanded back into the underlying reading or library event.</li><li>Child profiles are not searchable. Approved-friend links use guardian-approved or institution-managed codes, and blocking immediately removes future interaction.</li></ul>
+
+<h3>Shared-play boundaries</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Space</th><th>Membership</th><th>Communication</th><th>Visible information</th></tr></thead>
+<tbody>
+<tr><td><strong>Household Shared Shelf</strong></td><td>Guardian-managed local or household profiles</td><td>Canned reactions and explicit recommendations</td><td>Selected creature, room object, optional selected title; no ambient reading totals</td></tr>
+<tr><td><strong>Branch Restoration</strong></td><td>Open program participation; no player-to-player membership required</td><td>Aggregate milestones and staff-authored updates</td><td>Project total, room state, optional generated nickname or signature</td></tr>
+<tr><td><strong>Approved-Friend Expedition</strong></td><td>Adults direct-connect; children require guardian or institution approval</td><td>No chat; structured curiosity cards and canned reactions</td><td>Selected creature, challenge state, explicit recommendation only</td></tr>
+<tr><td><strong>Hosted Event Room</strong></td><td>Short-lived facilitator code; optionally guest-only</td><td>In-person facilitator plus on-screen team state</td><td>Team contribution and group reveal; no persistent contact graph required</td></tr>
+<tr><td><strong>Adult Curator Circle</strong></td><td>Age-gated private group</td><td>Canned reactions at launch; text only after separate moderation review</td><td>Member-selected exhibit items and titles according to circle settings</td></tr>
+</tbody>
+</table></div>
+<h3>Cheating posture</h3>
+<p>In a private cozy collector, most “cheating” has no victim. A player entering a manual reading session or scanning a sibling’s book does not justify invasive surveillance. Integrity measures should protect only scarce public honors, partner reporting, and competitive systems.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Concern</th><th>Light response</th><th>Where stronger verification is justified</th></tr></thead>
+<tbody>
+<tr><td>ISBN lists or screen scans</td><td>Camera capture, scan pacing, sighting-only status</td><td>Verified branch discovery credit</td></tr>
+<tr><td>Claiming reading without reading</td><td>Accept for private care; cap daily blooms</td><td>Never claim comprehension; partner reward can require a circulation/event token</td></tr>
+<tr><td>Fake branch visit</td><td>Rotating QR or printed event code</td><td>Branch gallery first-discovery credit</td></tr>
+<tr><td>Duplicate library events</td><td>Idempotent loan token</td><td>Partner metrics and Archive Marks</td></tr>
+<tr><td>Public leaderboard manipulation</td><td>Do not create the leaderboard</td><td>If a future contest exists, use team goals and verified aggregate contributions</td></tr>
+</tbody>
+</table></div>
+<h3>Screen-time safeguards</h3>
+<ul>
+<li>Quiet Mode has no variable feed, ad, loot roll, or periodic tap requirement.</li>
+<li>Daily care resolves in a small number of choices, then explicitly ends.</li>
+<li>Notifications are opt-in, limited, and framed as invitations, not warnings of loss.</li>
+<li>No creature asks the player to return during school or sleep hours.</li>
+<li>A web or shared-device mode provides full access for children without personal phones.</li>
+</ul>
+<h3>Content and IP safeguards</h3>
+<p>Stacklings should be generated from bibliographic and library signals rather than from copyrighted characters, cover illustrations, or plot summaries that would produce close imitation. Cover colors can inform a palette where licensed or technically permissible, but the creature body remains part of Stacklings’ own curated taxonomy. User-written reviews and photographs require separate moderation and consent decisions; they are not assumed in the baseline.</p>
+</section>
+<section class="sheet" data-call="658.404 · PILOT" id="pilot">
+<div class="section-kicker">Pilot and measurement plan</div>
+<h2>Prove entertainment demand before educational or integration claims</h2>
+<p class="lead">The highest-risk assumption is not whether an ILS can emit a checkout event or whether adults approve of the concept. It is whether players voluntarily care that a specific book creates a specific creature, return to that creature after reading, and ask for another book. The roadmap should first prove desire, attachment, and next-book behavior; then prove family, library, and educational value.</p>
+<h3>Phased build</h3>
+<div class="timeline">
+<div class="event"><b>Phase 0 · Paper and clickable prototype</b>Test the scan reveal, creature appeal, sighting versus residency language, and whether the product reads as a game rather than an assignment. Center ages 8–12, include ages 6–7 and 13 as edge cases, and add a small family/adult co-player cohort. No live library data.</div>
+<div class="event"><b>Phase 1 · Entertainment-first vertical slice</b>Mobile scan, web collection, 12 families, positive care, personal reading goals, offline reveal, public metadata enrichment, one small habitat, one adult-depth collection view, and a two-profile Shared Shelf on a household device. This is enough to test the consumer fantasy and low-risk co-play before partner complexity.</div>
+<div class="event"><b>Phase 2 · Branch-aware pilot</b>One to three branches, rotating QR totems, curated trails, manual/receipt borrow confirmation, one Branch Restoration, staff content tool, branch-safe exhibit view, and aggregate reporting.</div>
+<div class="event"><b>Phase 3 · One ILS integration</b>Checkout, return, renewal, and hold events through a single partner and vendor adapter. Measure staff burden, event accuracy, account linking, and incremental value beyond Tier 2.</div>
+<div class="event"><b>Phase 4 · Consortium and open digital path</b>Abstract additional ILS adapters, pursue a consortium, and prototype Palace/OPDS-based digital availability. Only proceed after the physical loop shows sustained child demand.</div>
+</div>
+<h3>Prototype scope: what to include and cut</h3>
+<div class="grid-2">
+<div class="card"><h4>Include</h4><ul><li>Six to twelve strong creature families</li><li>Ten example metadata mappings</li><li>Instant local reveal and delayed enrichment</li><li>Sighting/residency toggle for testing</li><li>One reading goal and one care outcome</li><li>One next-book recommendation path</li><li>Shared-device child profiles</li><li>One household Shared Shelf theme and postcard outcome</li></ul></div>
+<div class="card"><h4>Cut</h4><ul><li>Combat, breeding, direct trading, and PvP</li><li>Open text chat, searchable child profiles, or public reviews</li><li>Approved-friend graph and live matchmaking</li><li>Full library account integration</li><li>Generative creature art</li><li>Large narrative campaign</li><li>Title-level historical import</li><li>Monetization or cosmetic store</li></ul></div>
+</div>
+<h3>Metrics that answer design questions</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Question</th><th>Metric</th><th>Interpretation caution</th></tr></thead>
+<tbody><tr class="rec-row"><td><strong>Would players choose it without an assignment?</strong></td><td>Unaided desire to replay, return-session intent, voluntary scan/read loop, “would you play at home?” response</td><td>Adult approval and novelty are not substitutes for player pull.</td></tr>
+<tr><td>Does capture feel magical?</td><td>Reveal completion, child explanation of “why this creature,” desire to scan another physical book</td><td>Repeated scanning alone may show novelty, not reading intent.</td></tr>
+<tr><td>Does the game support reading?</td><td>Reading-goal starts and completions, return to the same book, self-reported enjoyment, caregiver observation</td><td>Do not claim causal reading gains from app telemetry alone.</td></tr>
+<tr><td>Does it solve next-book discovery?</td><td>Recommendation opens, catalog deep links, holds, subsequent scans in same path</td><td>Availability and family logistics can block action even when interest exists.</td></tr>
+<tr><td>Does care create attachment?</td><td>Buddy selection, nickname rate, repeat visits to same creature, growth-route choices</td><td>Daily return should not be optimized without checking stress or screen displacement.</td></tr>
+<tr><td>Does collaboration add pull without pressure?</td><td>Shared Shelf contributions, co-player invitation, branch-restoration participation, return to view group change, child-reported sense of teamwork</td><td>High contribution volume can signal obligation or adult prompting; pair telemetry with stress and privacy interviews.</td></tr>
+<tr><td>Does the library benefit?</td><td>Youth circulation, branch return visits, event participation, holds, genre/format breadth</td><td>Pilot participants may already be more motivated than nonparticipants.</td></tr>
+<tr><td>Is the system equitable?</td><td>Completion by device mode, age band, shared-device use, accessibility path, branch</td><td>Do not infer sensitive attributes beyond what the evaluation genuinely needs.</td></tr>
+</tbody>
+</table></div>
+<h3>Research design</h3>
+<p>A small pilot should combine telemetry with observed play, child interviews, caregiver feedback, adult-player sessions, and librarian logs. Compare at least two capture gates and two care presentations. Include a solo-versus-Shared-Shelf comparison and one branch restoration that normalizes different contribution sources. Ask children what they think caused the creature to change; if they answer only “I got points,” the relationship model is not visible enough. Ask whether the shared mode felt like teamwork or like being watched. Ask adults whether the game has genuine cozy-collection appeal beyond supporting a child. Ask librarians whether it sends players toward useful shelves without increasing staff burden.</p>
+<h3>Pilot success thresholds to set before launch</h3>
+<ul class="plain-list"><li>A majority of ages 8–12 in the target cohort say they would choose to play again without a teacher, parent, or librarian requiring it.</li>
+<li>A majority of test children can explain the scan → creature relationship after one use.</li>
+<li>Children can start a reading goal in three taps or fewer and can skip it without losing the creature.</li>
+<li>At least one-third of active pilot users follow a next-book path or scan a related title; set the exact target with the partner based on baseline behavior.</li>
+<li>Library staff can maintain weekly content and QR rotations within a pre-agreed time budget.</li>
+<li>No critical flow requires a child-owned phone, title-level history, or public profile.</li>
+<li>Family and adult testers can name at least one collection, curation, or habitat goal they would pursue for themselves—not only for a child.</li><li>Most Shared Shelf participants can explain what was shared and what stayed private, and no child reports that a co-player could see how much or what they read without an explicit share.</li><li>Branch-restoration participants understand that different actions contribute equally and do not interpret the display as a reader ranking.</li></ul>
+</section>
+<section class="sheet" data-call="001.4 · DECISION LOG" id="decisions">
+<div class="section-kicker">Executive decision log</div>
+<h2>Questions to settle with the game designer</h2>
+<p class="lead">The concept is specific enough to prototype, but audience and category choices now matter as much as the mechanics. The recommended answers below protect an entertainment-first, child-centered product while leaving room for family, adult, and institutional layers.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Decision</th><th>Recommended answer</th><th>Alternative worth testing</th><th>Decision evidence</th></tr></thead>
+<tbody><tr class="rec-row"><td><strong>What category is it?</strong></td><td>All-ages cozy creature collector and world-builder</td><td>Educational reading app</td><td>Test unaided product description and willingness to play without assignment.</td></tr><tr><td><strong>Who is the design center?</strong></td><td>Ages 8–12; support ages 6–13</td><td>Undifferentiated all-ages interface</td><td>Observe comprehension, delight, and age-up/age-down friction.</td></tr><tr><td><strong>What is the adult role?</strong></td><td>Direct player and optional household co-player</td><td>Guardian dashboard only</td><td>Test whether adults value collection and curation for themselves.</td></tr><tr><td><strong>What do institutions buy?</strong></td><td>Integration, curation, events, aggregate reporting, and program tools</td><td>A separate school edition</td><td>Partner discovery interviews; protect the consumer loop from procurement-driven chores.</td></tr>
+<tr><td><strong>What makes a creature permanent?</strong></td><td>Sighting on scan; residency on borrow or trusted confirmation</td><td>Instant permanent capture for the first prototype</td><td>Observe whether two-stage language feels exciting or withholding.</td></tr>
+<tr><td><strong>How much care?</strong></td><td>One optional ritual plus passive ecology</td><td>Habitat-only for younger users</td><td>Measure attachment and stress, not just return rate.</td></tr>
+<tr><td><strong>Does combat exist?</strong></td><td>No combat in v1</td><td>Non-combat exhibitions and cooperative restoration</td><td>Test whether older children need mastery beyond collection and habitat.</td></tr>
+<tr><td><strong>How is reading logged?</strong></td><td>Player-selected goal, self-report accepted, optional Quiet Mode</td><td>Caregiver confirmation for family programs</td><td>Watch for friction and whether logging displaces reading.</td></tr>
+<tr><td><strong>What history is imported?</strong></td><td>Category summary and active loans only</td><td>Title archive as explicit family opt-in</td><td>Ask whether deeper memory creates enough value to justify privacy cost.</td></tr>
+<tr><td><strong>What form of multiplayer?</strong></td><td>Asynchronous cooperation: Shared Shelf first, Branch Restoration second, approved-friend expeditions later</td><td>Hosted co-located Shelf Safari</td><td>Test whether shared play increases delight and return intent without comparison pressure or privacy confusion.</td></tr>
+<tr><td><strong>What is public?</strong></td><td>Branch aggregate, shared project state, curated exhibit, optional generated nickname</td><td>Approved-friend creature visits later</td><td>Moderation and child-safety review before expansion; no public reading totals or ambient title history.</td></tr>
+<tr><td><strong>How is it funded?</strong></td><td>Hybrid: free or low-cost consumer core + library/program licensing; optional adult cosmetics with no power advantage</td><td>Grant-funded institutional product only</td><td>Business-model test; no child-targeted ads, pay-to-win, or reading rewards for purchase</td></tr>
+<tr><td><strong>How procedural are creatures?</strong></td><td>Curated families plus deterministic parts</td><td>Hand-authored species per major genre</td><td>Art-cost test and children’s ability to recognize families.</td></tr>
+</tbody>
+</table></div>
+<h3>Recommended decisions for the next workshop</h3>
+<ol><li>Lock the category statement, primary audience, and consumer promise before debating feature scope.</li>
+<li>Choose the prototype bundle: <strong>The Living Library</strong> or <strong>Stacklings Everywhere</strong>.</li>
+<li>Storyboard the first five minutes from book scan to putting the phone down.</li>
+<li>Pick six initial creature families and create three deterministic variants for each.</li>
+<li>Define one reading goal, one care state change, and one next-book recommendation.</li>
+<li>Test “sighting” versus “resident” language with children and librarians before building ILS logic.</li>
+<li>Prototype one adult-depth collection screen and one Shared Shelf interaction so broad-audience positioning is tested rather than assumed.</li>
+<li>Storyboard a Branch Restoration from eligible action to normalized receipt to shared milestone, and specify exactly what staff and other players can see.</li></ol>
+</section>
+<section class="sheet" data-call="006.3 · AGENT PLAN" id="agents">
+<div class="section-kicker">Multi-agent report production plan</div>
+<h2>Use one coordinator, specialist threads, and explicit handoffs</h2>
+<p class="lead">The source guide recommends parallelizing independent work, assigning agents by domain, and using a coordinator to synthesize context-isolated threads. The report workflow should follow that model: each specialist receives a narrow source bundle and a precise output contract, writes to a shared workspace, then remains available in a persistent thread for follow-up questions.</p>
+<div class="recommendation">
+<div class="label">Orchestration recommendation</div>
+<p>Use a single coordinator with one-level delegation to thirteen specialist agents. Run research, system design, multiplayer/community design, and safety work in parallel, then route the integrated draft through a red-team agent, a dedicated writing agent, and an HTML/accessibility agent. Do not ask every agent to read every file; context isolation is useful only when the coordinator curates each brief.</p>
+</div>
+<h3>Agent roster and deliverables</h3>
+<div class="agent-lane"><div class="role">Audience &amp; Positioning</div><div><strong>Inputs:</strong> target ages, product premise, market alternatives, family/adult expansion.</div><div><strong>Output:</strong> category statement, audience hierarchy, player/buyer value propositions, tone guardrails, broad-appeal risks.</div></div><div class="agent-lane"><div class="role">Coordinator</div><div><strong>Task:</strong> maintain decision log, source manifest, module contracts, and final synthesis.</div><div><strong>Output:</strong> master outline, conflict resolutions, final report package.</div></div>
+<div class="agent-lane"><div class="role">Reading Science</div><div><strong>Inputs:</strong> both children’s reading reports.</div><div><strong>Output:</strong> evidence constraints, age-band guidance, reward anti-patterns, what counts as reading.</div></div>
+<div class="agent-lane"><div class="role">Game Systems</div><div><strong>Inputs:</strong> creature overview, cozy loops, physical capture, monster-generation report.</div><div><strong>Output:</strong> three compatible macro loops, currencies, progression, stopping points.</div></div>
+<div class="agent-lane"><div class="role">Capture &amp; Generation</div><div><strong>Inputs:</strong> monster-generation mechanics, physical capture, metadata report.</div><div><strong>Output:</strong> deterministic algorithm, trait table, fallbacks, rarity rules, acceptance tests.</div></div>
+<div class="agent-lane"><div class="role">Creature Care</div><div><strong>Inputs:</strong> cozy return loops and hidden-variable care examples.</div><div><strong>Output:</strong> positive-state model, absence rules, growth routes, care content examples.</div></div>
+<div class="agent-lane"><div class="role">Library Architect</div><div><strong>Inputs:</strong> lending systems, metadata/classification, existing game overview.</div><div><strong>Output:</strong> integration tiers, adapter design, metadata priority, partner rollout.</div></div>
+<div class="agent-lane"><div class="role">Multiplayer &amp; Community Systems</div><div><strong>Inputs:</strong> gameplay loop, audience hierarchy, library programming, household roles, safety constraints.</div><div><strong>Output:</strong> shared-space flows, contribution-receipt model, social rollout, group rewards, anti-competition rules, failure and abuse cases.</div></div>
+<div class="agent-lane"><div class="role">Child Privacy &amp; Safety</div><div><strong>Inputs:</strong> all proposed event contracts and social features.</div><div><strong>Output:</strong> data-minimization review, threat model, moderation boundaries, legal questions for counsel.</div></div>
+<div class="agent-lane"><div class="role">UX &amp; Accessibility</div><div><strong>Inputs:</strong> age bands, mobile/web roles, module flows.</div><div><strong>Output:</strong> 6–8 / 9–10 / 11–13 presentations, shared-device flow, accessibility acceptance criteria.</div></div>
+<div class="agent-lane"><div class="role">Content Designer</div><div><strong>Inputs:</strong> approved mechanics and taxonomy.</div><div><strong>Output:</strong> starter bestiary, quests, example books, evolution routes, branch events.</div></div>
+<div class="agent-lane"><div class="role">Red Team / Modularity QA</div><div><strong>Inputs:</strong> all module drafts and contracts.</div><div><strong>Output:</strong> contradiction list, exploit review, compatibility matrix, missing failure states.</div></div>
+<div class="agent-lane"><div class="role">Writing Agent</div><div><strong>Inputs:</strong> integrated draft plus the supplied writing ruleset.</div><div><strong>Output:</strong> executive-ready prose, concrete examples, reduced repetition, fact-confidence pass, consistent terminology.</div></div>
+<div class="agent-lane"><div class="role">HTML &amp; Visual QA</div><div><strong>Inputs:</strong> edited manuscript and design brief.</div><div><strong>Output:</strong> responsive single-file HTML, print styles, keyboard navigation, visual validation screenshots.</div></div>
+<h3>Session plan</h3>
+<div class="timeline">
+<div class="event"><b>Pass 1 · Source manifest and briefs</b>Coordinator lists each source, assigns authoritative uses, defines shared terms, and creates a folder per workstream. Every agent receives the user constraints: ages 6–13, mobile/web, recommendations allowed, modular five-system structure.</div>
+<div class="event"><b>Pass 2 · Parallel specialist work</b>Reading, game systems, generation, care, library, multiplayer/community, safety, and UX agents work at the same time. Each writes a concise memo and a structured JSON or table of requirements to the shared filesystem.</div>
+<div class="event"><b>Pass 3 · Coordinator synthesis</b>Coordinator merges module contracts, flags disagreements, and asks persistent specialist threads targeted follow-ups. No agent delegates further; one-level orchestration keeps accountability clear.</div>
+<div class="event"><b>Pass 4 · Content and red team</b>Content designer creates examples against the frozen mechanics. Red team tests incompatible combinations, cheating, metadata failures, age mismatch, screen-time conflict, and library-data leakage.</div>
+<div class="event"><b>Pass 5 · Writing agent</b>The writing agent receives the complete draft, intended audience, through-line, and required facts. It cuts generic framing, checks concrete anchors, calibrates confidence, and keeps the executive recommendation visible.</div>
+<div class="event"><b>Pass 6 · HTML and visual QA</b>HTML agent applies the real/fantasy library theme, adds responsive and print behavior, validates headings, tables, details elements, reduced motion, and contrast, then produces screenshots for coordinator review.</div>
+<div class="event"><b>Pass 7 · Acceptance review</b>Coordinator verifies every user-requested module, alternatives, recommendation, examples, modularity matrix, agent plan, and source attribution before release.</div>
+</div>
+<h3>Shared workspace contract</h3>
+<div class="codebox"><pre>/stacklings-session/
+  00-source-manifest.md
+  01-reading-science.md
+  02-game-systems.md
+  03-capture-generation.json
+  04-creature-care.md
+  05-library-integration.md
+  06-privacy-safety.md
+  07-ux-accessibility.md
+  08-content-examples.md
+  09-multiplayer-community.md
+  10-red-team-findings.md
+  11-integrated-draft.md
+  12-writing-agent-revision.md
+  13-final-report.html
+  decision-log.md
+  terminology.json
+  acceptance-checklist.md</pre></div>
+<h3>Specialist brief template</h3>
+<div class="codebox"><pre>ROLE
+You are the [domain] specialist for Stacklings.
+
+CONTEXT
+Entertainment-first all-ages positioning. Primary design audience ages 8–12; supported ages 6–13; secondary families and adult book lovers. Mobile and web. The game connects monster collection
+and care to reading behavior and library borrowing. Core must work without
+library integration.
+
+OBJECTIVE
+Produce [named deliverable] for the coordinator.
+
+NON-NEGOTIABLES
+- Preserve autonomy and broad reading-format inclusion.
+- Do not make library data load-bearing.
+- State uncertainty and distinguish evidence from design judgment.
+- Use the canonical module contracts.
+
+OUTPUT CONTRACT
+1. Recommendation
+2. Two or three alternatives
+3. Mechanics detail
+4. Example content
+5. Risks and failure states
+6. Compatibility notes
+7. Acceptance tests
+
+ANTI-GOALS
+No generic trend summary, no invented facts, no hidden dependency on another
+module, no child-surveillance solution to a low-stakes integrity problem.</pre></div>
+<h3>Coordinator quality gates</h3>
+<ul class="plain-list">
+<li>Every module states one recommendation and at least two viable alternatives.</li>
+<li>Every alternative identifies dependencies and which other modules it can combine with.</li>
+<li>Claims from the source reports remain within their evidence; design judgments are labeled as recommendations.</li>
+<li>The writing pass keeps concrete examples and removes ceremonial or repetitive language.</li>
+<li>The final HTML works without external assets, remains readable on mobile, and prints cleanly.</li>
+</ul>
+</section>
+<section class="sheet" data-call="016.7 · RESEARCH BASIS" id="sources">
+<div class="section-kicker">Research basis and source synthesis</div>
+<h2>How the attached materials shaped the design</h2>
+<p class="lead">This report is a design synthesis of every supplied file, now reframed around an entertainment-first, all-ages market position. The sources constrain reading mechanics, library integration, care loops, and generation systems; they do not require the product to be marketed as educational or prove that the game will produce a particular learning outcome.</p>
+<ul class="source-list">
+<li><strong># Multi-agent sessions.md</strong> — provided the one-coordinator, parallel-specialist, persistent-thread, shared-filesystem orchestration model used in the production plan.</li>
+<li><strong># WRITING.md</strong> — guided the final document toward concrete, context-fit, executive prose with explicit fact discipline and accessible web structure.</li>
+<li><strong>childrens-reading-report (1 of 2).md</strong> — supplied reading-volume context, incentive cautions, and mechanics from major programs.</li>
+<li><strong>childrens_reading_research_report (2 of 2).md</strong> — supplied the more conservative evidence frame: no universal minute quota, broad format inclusion, autonomy/competence/relatedness, personal progress, and the next-book problem.</li>
+<li><strong>cozy-game-return-loops-report.md</strong> — shaped the clean stopping points, absence forgiveness, care framing, and appointment-loop safeguards.</li>
+<li><strong>Game dev prompt example.pdf</strong> — informed the use of explicit objectives, non-negotiables, discrete systems, data contracts, tunables, anti-goals, and acceptance tests.</li>
+<li><strong>library-creature-game-overview.html</strong> — provided the original core premise, deterministic scan, trust tiers, local-first posture, and library-as-wilderness framing.</li>
+<li><strong>library-lending-systems-overview.md</strong> — supplied the physical/digital distinction, ILS/vendor adapter path, SIP2/NCIP/API landscape, Palace/OPDS option, and consortium strategy.</li>
+<li><strong>library-metadata-and-genre-classification-report.md</strong> — supplied MARC 650/655 distinctions, LCGFT/CYAC/BISAC/Dewey layers, local genrefication, and the need for a metadata priority stack.</li>
+<li><strong>monster-generation-mechanics-report.md</strong> — supplied the taxonomy of external seeds, hidden identity values, fusion, breeding, and care-state evolution, plus the lesson that determinism creates a community knowledge economy.</li>
+<li><strong>physical_capture_report.md</strong> — supplied the real-world input patterns from Skannerz, Monster Rancher, and Pokémon GO: personal spawn pools, deterministic secrets, engineered incompleteness, and capture feeding a deeper mastery loop.</li>
+</ul>
+<h3>Evidence boundaries</h3>
+<ul>
+<li>Reading research supports design principles such as frequent access, choice, guidance, and personal progress. It does not establish that Stacklings itself will improve reading skill or volume without evaluation.</li>
+<li>Library vendor relationships, API access, and licensing terms can change. The physical-first architecture is robust, but a specific partner integration must be verified during procurement.</li>
+<li>Reverse-engineered game mechanics are useful design precedents, not instructions to reproduce protected code or content.</li>
+<li>Legal and privacy recommendations are product principles, not legal advice; qualified counsel should review implementation.</li>
+</ul>
+<h3>Glossary</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Term</th><th>Meaning in Stacklings</th></tr></thead>
+<tbody>
+<tr><td><strong>Sighting</strong></td><td>A creature revealed from a book but not yet invited into the permanent habitat.</td></tr>
+<tr><td><strong>Resident</strong></td><td>A creature connected to a borrow, trusted confirmation, or chosen capture rule.</td></tr>
+<tr><td><strong>Archive Mark</strong></td><td>A provenance cosmetic awarded at return or completion of a library event.</td></tr>
+<tr><td><strong>Reading Bloom</strong></td><td>A bounded daily care opportunity from completing a personal reading goal.</td></tr>
+<tr><td><strong>Curiosity Thread</strong></td><td>A path from one book, topic, or creature to a small set of next-book options.</td></tr>
+<tr><td><strong>Quiet Mode</strong></td><td>A low-stimulation optional reading-session screen with no continuous reward loop.</td></tr>
+<tr><td><strong>Trust tier</strong></td><td>The provenance level of an event, from self-reported to branch- or ILS-verified.</td></tr>
+<tr><td><strong>Seed version</strong></td><td>The frozen mapping that ensures the same book keeps the same base Stackling.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section class="sheet" data-call="017.8 · CONSIDERATIONS" id="considerations">
+<div class="section-kicker">Adversarial review and mitigation plan</div>
+<h2>What could break Stacklings—and how to design around it</h2>
+<p class="lead">The adversarial review reaches one central conclusion: Stacklings has a strong fantasy, a responsible reading framework, and a credible library story, but it has not yet proven that it is a durable game or a sustainable product. The greatest risk is that scanning and creature reveals create an excellent first session while the systems that follow fail to generate enough choice, mastery, surprise, or social meaning to support the fiftieth session.</p>
+<div class="warning">
+<p><strong>Blunt summary:</strong> the concept can fail even if parents, librarians, and funders love it. It must prove that children voluntarily play when no new book is available, that the creatures feel meaningfully connected to particular books, that less-motivated readers are not excluded, and that one customer group will pay enough to support content, safety, and live operations.</p>
+</div>
+<h3>Risk summary and response order</h3>
+<div class="grid-3">
+<div class="card pillar"><div class="num">Cluster 01 · Product</div><h4>The hook may outrun the game</h4><p>Capture, care, collaboration, and long-term collection need meaningful decisions that remain fun without a new scan or reading check-in.</p></div>
+<div class="card pillar"><div class="num">Cluster 02 · Audience</div><h4>The product may reward existing readers</h4><p>The age range, motivation model, and reward economy must work for hesitant readers as well as avid collectors.</p></div>
+<div class="card pillar"><div class="num">Cluster 03 · Content and data</div><h4>Universal generation is expensive and fragile</h4><p>Millions of editions, inconsistent metadata, private reading histories, and closed e-book systems can make the promise feel arbitrary or invasive.</p></div>
+<div class="card pillar"><div class="num">Cluster 04 · Market and operations</div><h4>The consumer and library businesses can conflict</h4><p>Procurement, staff burden, compliance, content cost, access inequity, and monetization can overwhelm the core game.</p></div>
+<div class="card pillar"><div class="num">Cluster 05 · Evidence</div><h4>Success can be interpreted too generously</h4><p>Novelty, adult enthusiasm, and avid-reader adoption can disguise weak voluntary retention or little effect on reading choice.</p></div>
+<div class="card pillar"><div class="num">Operating principle</div><h4>Prove fun before infrastructure</h4><p>Do not invest deeply in ILS integrations, dashboards, or broad content production until the no-new-book, four-week, semantic-fit, reluctant-reader, and economic tests pass.</p></div>
+</div>
+<div class="tablewrap"><table>
+<thead><tr><th>#</th><th>Consideration</th><th>Priority</th><th>Mitigation headline</th><th>Evidence gate</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><strong>The concept may have a hook, not a durable game</strong></td><td><span class="status rec">P0 · prove now</span></td><td>Build a collection-powered play loop that works without new reading input</td><td>Players choose to continue for at least one meaningful session with no new scan</td></tr>
+<tr><td>2</td><td><strong>It may mostly serve children who already read</strong></td><td><span class="status rec">P0 · prove now</span></td><td>Design a low-friction bridge from curiosity to the next book and recruit low-motivation testers</td><td>Some initially hesitant readers voluntarily select or resume a book because of the game</td></tr>
+<tr><td>3</td><td><strong>“Every book” creates a content-production problem</strong></td><td><span class="status rec">P0 · prove now</span></td><td>Use a hybrid curated/procedural generator with confidence scoring and fallbacks</td><td>Players can explain why a creature belongs to its book beyond color or broad genre</td></tr>
+<tr><td>4</td><td><strong>Ages 6–13 and adults may require incompatible experiences</strong></td><td><span class="status alt">P1 · design next</span></td><td>Use shared content with adaptive presentation and progressive disclosure</td><td>Each age band can onboard independently and older players do not describe the game as babyish</td></tr>
+<tr><td>5</td><td><strong>The consumer and library products may pull apart</strong></td><td><span class="status rec">P0 · prove now</span></td><td>Separate the self-sufficient consumer core from optional partner adapters</td><td>Consumer retention is credible before a library integration becomes load-bearing</td></tr>
+<tr><td>6</td><td><strong>The business model is unresolved</strong></td><td><span class="status rec">P0 · prove now</span></td><td>Test one primary payer and one secondary channel with a full cost model</td><td>Willingness to pay can support art, compliance, support, and content without ads or data sales</td></tr>
+<tr><td>7</td><td><strong>The e-book ritual is structurally weaker</strong></td><td><span class="status alt">P1 · design next</span></td><td>Give digital reading equal progression but a distinct, low-friction portal ritual</td><td>Digital-first readers retain and feel equally valued without continuous monitoring</td></tr>
+<tr><td>8</td><td><strong>Safe multiplayer may be socially weak</strong></td><td><span class="status alt">P1 · design next</span></td><td>Create interdependent co-building and expeditions, not merely shared progress bars</td><td>Players invite someone because the joint activity produces a unique outcome</td></tr>
+<tr><td>9</td><td><strong>Care may lack stakes</strong></td><td><span class="status rec">P0 · prove now</span></td><td>Use irreversible difference without harm, decay, or absence punishment</td><td>Players remember and value care choices because they create distinct creatures and stories</td></tr>
+<tr><td>10</td><td><strong>Gamification may crowd out reading motivation</strong></td><td><span class="status rec">P0 · prove now</span></td><td>Fade rewards from acquisition toward autonomy, identity, and curation</td><td>Reading choice persists when direct rewards are reduced</td></tr>
+<tr><td>11</td><td><strong>Privacy minimization does not eliminate governance risk</strong></td><td><span class="status rec">P0 · prove now</span></td><td>Keep titles local/private by default and separate game identity from library identity</td><td>A child-safety and library-privacy review approves the data map and social presentation</td></tr>
+<tr><td>12</td><td><strong>Library staff burden may be understated</strong></td><td><span class="status alt">P1 · design next</span></td><td>Provide a zero-staff baseline and self-serve program automation</td><td>Pilot staff time remains within a precommitted weekly limit</td></tr>
+<tr><td>13</td><td><strong>Access inequity may become collection inequity</strong></td><td><span class="status rec">P0 · prove now</span></td><td>Apply a parity doctrine across formats, devices, branches, and integration tiers</td><td>No strategic power or permanent rarity depends on privilege, geography, or vendor access</td></tr>
+<tr><td>14</td><td><strong>Success may be difficult to prove</strong></td><td><span class="status rec">P0 · prove now</span></td><td>Precommit primary outcomes, comparison points, and failure criteria</td><td>The team can call a pilot unsuccessful even when anecdotes are positive</td></tr>
+<tr><td>15</td><td><strong>The long-term content lifecycle is undefined</strong></td><td><span class="status alt">P1 · design next</span></td><td>Make curation, habitats, exhibitions, and horizontal specialization the endgame</td><td>Large collections remain legible and older creatures remain useful after months of play</td></tr>
+</tbody>
+</table></div>
+<h3>Detailed considerations and mitigations</h3>
+<details data-recommended="true" open>
+<summary>01 · The capture fantasy may not contain a durable game</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> Scanning a book and revealing a creature is a strong first-five-minutes experience, but capture, gentle care, decoration, and logging do not automatically produce challenge or mastery. If the player has nothing interesting to do without a new book, Stacklings is a reward interface rather than a game.</p>
+<p><strong>Recommended mitigation: establish a collection-powered play verb.</strong> Build the first prototype around <em>habitat ecology</em>: Stacklings have preferences, synergies, quirks, and environmental effects; arranging them changes what grows, which visitors appear, and which expeditions become possible. Layer short asynchronous expeditions on top, with players selecting a small team whose complementary traits solve a situation. New books expand the possibility space, but existing creatures power the actual play.</p>
+<ul>
+<li>Guarantee a complete 10–20 minute session using only creatures already owned.</li>
+<li>Favor readable tradeoffs and surprising interactions over passive decoration bonuses.</li>
+<li>Prototype the core without barcode scanning first; the scan should amplify a good game, not conceal a weak one.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> run a “no-new-book test.” Give players a fixed collection and observe whether they voluntarily start another session, change a plan, or pursue a self-chosen goal.</div>
+</div>
+</details>
+<details data-recommended="true">
+<summary>02 · Stacklings may work best for children who already read</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> Avid readers already possess the books, routines, family support, and collector mindset the concept rewards. A hesitant reader may experience the loop as “do the activity I avoid, report it, then receive the fun.” Strong engagement from enthusiastic readers could therefore mask little behavioral change.</p>
+<p><strong>Recommended mitigation: build a curiosity bridge rather than a compliance gate.</strong> Let players preview a creature family from a shelf scan, sample a short passage or read-aloud, and choose a tiny next action such as “open this again,” “listen for five minutes,” or “ask someone to read it with me.” Keep substantial game play available without reading; reading should create variety, personal meaning, and discovery rather than access to basic fun or competitive power.</p>
+<ul>
+<li>Recruit low- and mixed-motivation readers intentionally in every formative test.</li>
+<li>Use librarian and family curation to offer short, high-interest, graphic, audio, and read-aloud paths.</li>
+<li>Measure voluntary next-book selection and book resumption, not only check-ins or minutes.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> identify whether initially hesitant readers choose a book or return to one because of curiosity created by the game, without an adult assignment or external prize.</div>
+</div>
+</details>
+<details data-recommended="true">
+<summary>03 · “Every book hides a creature” can become a content-production bomb</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> Millions of works and editions contain duplicate identifiers, thin or conflicting metadata, translations, omnibuses, local cataloging, and uncatalogued titles. A purely handcrafted system cannot scale; a purely procedural system may feel arbitrary. The core magic fails if a creature is merely “a blue fantasy moth” with no convincing relationship to the book.</p>
+<p><strong>Recommended mitigation: use a three-layer generation stack.</strong> The base family comes from stable, work-level metadata and a curated creature taxonomy. Procedural edition and provenance traits create variety. Hand-authored “constellations” cover high-circulation themes, series patterns, local collections, and seasonal programs. A metadata-confidence score determines how specific the output can safely become; low-confidence inputs receive an intentionally mysterious Uncatalogued family rather than fabricated precision.</p>
+<ul>
+<li>Normalize work, edition, translation, and format before assigning the persistent seed.</li>
+<li>Version mappings so metadata corrections do not silently replace beloved creatures.</li>
+<li>Give librarians and content designers review tools for exceptions without requiring title-by-title authorship.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> show players books and generated Stacklings without explaining the rules. They should articulate a plausible, emotionally satisfying connection that goes beyond broad genre or cover color.</div>
+</div>
+</details>
+<details data-recommended="true">
+<summary>04 · The age range can conceal several incompatible products</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> A six-year-old, a thirteen-year-old, and an adult cozy player have different needs in language, autonomy, complexity, social identity, and visual tone. Adding deeper systems for older players can overwhelm younger children; simplifying everything can make the game feel juvenile.</p>
+<p><strong>Recommended mitigation: share the world and inventory, adapt the presentation.</strong> Use progressive disclosure and three interface profiles: an icon-led Explorer presentation for emerging readers, the default Collector presentation for ages 8–10, and a denser Curator presentation for older children and adults. These are presentation and control layers, not separate games. The same creature, habitat, and economy remain underneath.</p>
+<ul>
+<li>Use a sophisticated, tactile library-fantasy art direction rather than preschool coding.</li>
+<li>Gate complexity by demonstrated play, not only declared age.</li>
+<li>Keep guardian controls and adult analytics in separate surfaces so adult co-play still feels like play.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> each age cohort should complete onboarding independently; older players should perceive depth and identity rather than a child product with extra menus.</div>
+</div>
+</details>
+<details data-recommended="true">
+<summary>05 · The consumer game and library product may pull in opposite directions</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> Consumer software needs immediate onboarding, fast iteration, and broad availability. Library software needs procurement, accessibility, privacy review, staff controls, reporting, and predictable support. Building both too early can bury the game beneath integration work; building only the consumer game can later create a product libraries cannot adopt.</p>
+<p><strong>Recommended mitigation: enforce a hard architectural and roadmap boundary.</strong> The consumer core must work from ISBN/manual search, public metadata, local reading moments, and ordinary accounts. Library adapters add trusted provenance, local discovery, branch events, and reporting through event contracts. They may enrich outcomes, but they cannot own identity, progression, or the core economy.</p>
+<ul>
+<li>Do not build a production ILS integration before the consumer vertical slice shows credible voluntary retention.</li>
+<li>Use one lightweight branch pilot with QR/event tokens before attempting circulation APIs.</li>
+<li>Keep partner configuration and reporting in a separate product surface and release cadence.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> a player outside a participating library must receive a complete experience, while a participating branch can add value without custom engineering or changing the child-facing game.</div>
+</div>
+</details>
+<details data-recommended="true">
+<summary>06 · The business model is not yet resolved</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> Ethical constraints correctly remove advertising, data sales, pay-to-win, aggressive consumables, and many child-targeted monetization tactics. Yet Stacklings carries high costs in art, metadata, safety, accessibility, content operations, integrations, and support. Library licensing alone may not cover those costs quickly or reliably.</p>
+<p><strong>Recommended mitigation: test a consumer-led model with institutional expansion.</strong> Begin with a free, genuinely playable starter experience and a paid family product or subscription centered on expanded habitats, curation tools, cosmetic themes, and story chapters—not stronger creatures or faster reading rewards. Treat seasonal library/program licenses as a second channel, and grants as development capital rather than the assumed permanent operating model.</p>
+<ul>
+<li>Build a bottom-up cost model that includes ongoing creature production, moderation, support, and compliance.</li>
+<li>Test one primary payer at a time: families first or institutions first, not a blended survey question.</li>
+<li>Keep every paid benefit understandable to a guardian and non-coercive to a child.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> one audience demonstrates willingness to pay at a level that supports the full service cost while the product retains its no-ads, no-data-sale, no-pay-for-reading-power principles.</div>
+</div>
+</details>
+<details data-recommended="true">
+<summary>07 · The e-book loop is structurally less tangible</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> Physical books provide an object to find, scan, carry, display, and return. E-books often reduce the loop to title search, app switching, and self-report. Direct automation depends on closed vendor relationships and can make digital readers feel either over-monitored or mechanically inferior.</p>
+<p><strong>Recommended mitigation: equal progression, different ritual.</strong> A share sheet, catalog link, or title search opens a “digital portal” and reveals the same base Stackling as the print work. Quiet Check-ins use only broad, user-selected states—started, continued, paused, finished—and reading days, never continuous screen surveillance. Digital provenance adds a cosmetic “glow,” “drift,” or portal mark rather than weaker or stronger progression.</p>
+<ul>
+<li>Do not use device-specific page counts as a universal currency.</li>
+<li>Keep manual digital participation fully viable; vendor integrations remove friction but do not confer power.</li>
+<li>Design a satisfying return-to-game reveal so digital reading is more than form entry.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> compare physical-first and digital-first cohorts for retention, perceived fairness, and check-in burden. Digital readers should not feel like a fallback audience.</div>
+</div>
+</details>
+<details data-recommended="true">
+<summary>08 · Multiplayer can become safe but socially unimportant</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> Removing open chat, public rankings, unrestricted trading, and open matchmaking is appropriate for a child-centered product, but it also removes common sources of social pull. A shared progress bar may not give anyone ownership or a reason to invite a friend.</p>
+<p><strong>Recommended mitigation: make collaboration produce something impossible alone.</strong> Approved players each contribute one Stackling to a short expedition, choose complementary roles, and make asynchronous decisions that alter the outcome. Household or branch groups co-design a habitat room whose ecology depends on varied creature traits or genres, not on who logs the most reading. Communication uses curated emotes, stickers, and context-specific phrases.</p>
+<ul>
+<li>Begin with household co-play and invite-only friend codes; add broader groups only after safety and value are proven.</li>
+<li>Reward diversity of contribution rather than volume, speed, or rarity.</li>
+<li>Create a persistent co-authored artifact—room, mural, story map, or visitor—that belongs to the group.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> players should be able to name what collaboration let them create or experience that solo play could not, and invitations should arise from that value rather than reward bribery.</div>
+</div>
+</details>
+<details data-recommended="true">
+<summary>09 · Positive-only creature care may feel inconsequential</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> If nothing can die, leave, decay, or become worse, care can devolve into decorative taps. Adding harsher consequences would create guilt and make a child feel responsible for a dependent whenever they stop reading.</p>
+<p><strong>Recommended mitigation: use irreversible difference without harm.</strong> Care choices establish preferences, memories, habits, and branching specializations. A Stackling that was read with at bedtime may become Nocturnal; one taken on repeated library trips may become Wayfinding. Choosing one path closes some cosmetic or behavioral possibilities while opening others, but no path is a failure state. Absence produces a warm homecoming event, never injury or lost progress.</p>
+<ul>
+<li>Let players pause active-care expectations explicitly.</li>
+<li>Make meaningful choices occasional and legible rather than hidden behind repetitive feeding.</li>
+<li>Preserve the creature’s history so care creates a story, not merely statistics.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> after a gap, players should recall at least one choice that made their Stackling distinct and feel curiosity—not anxiety—about returning.</div>
+</div>
+</details>
+<details data-recommended="true">
+<summary>10 · Gamification may undermine the reading behavior it intends to support</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> Even literacy-related rewards can turn reading into resource extraction. Players may choose the shortest books, log without reading, abandon a book after capture, or lose interest when direct rewards stop feeling novel.</p>
+<p><strong>Recommended mitigation: design an explicit reward-fading curve.</strong> Early play uses immediate discovery to teach the fantasy. Midgame shifts toward choosing paths, forming attachments, and following Curiosity Threads. Long-term play emphasizes identity, curation, recommendations, and stories created from an existing collection. Reading adds meaning and possibility, but the game remains playable and rewarding between reading moments.</p>
+<ul>
+<li>Never use loss-based streaks, uncapped minute farming, or public volume comparisons.</li>
+<li>Cap repeatable daily reading rewards and make rereading, audio, shared reading, and pausing legitimate.</li>
+<li>Reward book choice, return, reflection, and recommendation sparingly rather than completion alone.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> reduce direct rewards during a test period and observe whether players still choose books, discuss them, and return to Stacklings for collection and care goals.</div>
+</div>
+</details>
+<details data-recommended="true">
+<summary>11 · Privacy minimization does not remove privacy and content-governance risk</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> Reading history can reveal sensitive interests. Even category-only data can become identifying when combined with age, branch, household, timestamps, rare titles, and social displays. The product also needs rules for adult, violent, medical, political, challenged, or otherwise sensitive books a child may encounter.</p>
+<p><strong>Recommended mitigation: make privacy the default system architecture.</strong> Separate the library credential from the game identity through scoped tokens. Keep title-level history on device where possible; sync only the minimum event, category, and provenance needed. Hide titles, covers, and exact reading activity from social surfaces by default. Offer a sensitive-title mode that substitutes neutral creature language and suppresses recommendations or displays.</p>
+<ul>
+<li>Provide clear delete, export, unlink, and consent-revocation paths.</li>
+<li>Use age-aware recommendation policies without turning Stacklings into a censorship or surveillance tool.</li>
+<li>Conduct formal child-safety, threat-model, and librarian privacy reviews before any live integration.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> reviewers can trace every stored field to a necessary player or partner outcome, and no child-facing social feature exposes a specific reading choice without deliberate permission.</div>
+</div>
+</details>
+<details data-recommended="true">
+<summary>12 · Library staff burden can quietly make the product unscalable</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> Rotating codes, displays, curation, account questions, event setup, confirmation, moderation, reporting, and troubleshooting each sound small. Together they can become another program library staff must operate without additional capacity.</p>
+<p><strong>Recommended mitigation: design a zero-staff baseline and optional curation ceiling.</strong> Branch participation should work with a printable evergreen marker, automatically scheduled restoration, self-serve campaign templates, and no manual approval of ordinary player actions. Librarians can add curated trails, displays, and local lore when they choose, but the game never depends on weekly content entry.</p>
+<ul>
+<li>Auto-expire event codes and generate accessible print/digital materials from templates.</li>
+<li>Provide patron self-service for account linking, unlinking, and common troubleshooting.</li>
+<li>Measure staff minutes, support tickets, setup time, and repeated maintenance as primary pilot costs.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> set a maximum acceptable staff-time budget before the pilot and stop or redesign the program if routine operation exceeds it.</div>
+</div>
+</details>
+<details data-recommended="true">
+<summary>13 · Unequal access can become unequal game power</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> The richest experience may accrue to players with personal devices, reliable internet, nearby well-funded branches, transportation, participating library systems, and adults who can manage accounts. A collection game can make those advantages look like player achievement.</p>
+<p><strong>Recommended mitigation: adopt a parity doctrine.</strong> Every format and trust tier must be able to unlock equivalent strategic capability. Library visits, verified loans, special branches, and partner vendors may grant provenance, local story, or cosmetics, but never permanently superior creatures or required abilities. Support low-end phones, offline scan queues, manual ISBN entry, web/shared-device use, and a strong starter collection.</p>
+<ul>
+<li>Make branch-exclusive content discoverable elsewhere after a window or keep it purely commemorative.</li>
+<li>Optimize for low bandwidth and avoid requiring a personal phone camera.</li>
+<li>Audit progression and collection outcomes by access path during pilots.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> a player using a shared web device and manual entry can participate meaningfully beside a player with a modern phone and integrated library account.</div>
+</div>
+</details>
+<details data-recommended="true">
+<summary>14 · The pilot can look successful without proving the product</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> Novelty, enthusiastic librarians, parent approval, and self-selecting avid readers can produce strong anecdotes and activity counts without demonstrating durable voluntary play, changed book choice, or reading motivation.</p>
+<p><strong>Recommended mitigation: precommit a small evaluation hierarchy.</strong> Choose no more than two primary outcomes for the first pilot: voluntary four-week return and voluntary selection or resumption of a next book. Treat reading days, genre breadth, branch visits, circulation, satisfaction, and staff time as secondary or diagnostic measures. Establish baseline behavior, segment by initial motivation, and define failure criteria before launch.</p>
+<ul>
+<li>Track whether sessions contain meaningful play when no scan or reading reward is available.</li>
+<li>Use interviews and observation to distinguish affection for creatures from compliance with adults.</li>
+<li>Document missing data and selection effects rather than converting every signal into a success claim.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> the team must be able to state in advance what result would cause it to stop, narrow, or substantially redesign the concept.</div>
+</div>
+</details>
+<details data-recommended="true">
+<summary>15 · A collection game needs an answer to abundance and endgame</summary>
+<div class="detail-body">
+<p><strong>Why it could fail.</strong> After hundreds of creatures, discovery becomes clutter. Duplicates can feel worthless, older creatures can be displaced by new content, and seasonal drops can create an expensive treadmill. Without a long-term aspiration, the collection becomes an inventory rather than a world.</p>
+<p><strong>Recommended mitigation: make curation—not accumulation—the endgame.</strong> Players build themed habitats, exhibitions, family shelves, migration routes, and story collections from a limited active roster while preserving an unlimited archive. Duplicates become annotations, provenance variants, shared memories, or pages in a Folio rather than upgrade fodder. Progress is horizontal: new creatures create new combinations and stories without invalidating favorites.</p>
+<ul>
+<li>Give every creature enduring roles in habitats, expeditions, exhibitions, and social projects.</li>
+<li>Use rotating curatorial prompts and world chapters rather than constant power inflation.</li>
+<li>Budget and prototype the content cadence needed for 90 days and one year before promising live-service scale.</li>
+</ul>
+<div class="note"><strong>Validation gate:</strong> players with large collections can find a favorite, understand why it matters, and pursue a meaningful goal without obtaining a new creature.</div>
+</div>
+</details>
+<h3>Recommended change to the development sequence</h3>
+<div class="timeline">
+<div class="event"><b>Stage 0 · Prove the game without books</b><span>Graybox habitat ecology, care branching, and expeditions using a fixed creature set. Run the no-new-book test before investing in capture technology.</span></div>
+<div class="event"><b>Stage 1 · Add the magical reveal</b><span>Build ISBN/manual search capture, a small hybrid creature generator, and the first loan-cycle relationship. Test semantic fit and four-week voluntary return with families.</span></div>
+<div class="event"><b>Stage 2 · Test the behavior hypothesis</b><span>Recruit mixed- and low-motivation readers, add Curiosity Threads and reward fading, and test whether the game changes voluntary next-book choice rather than only serving existing readers.</span></div>
+<div class="event"><b>Stage 3 · Add format and social breadth</b><span>Introduce the e-book portal, Household Shared Shelf, and one interdependent co-op expedition. Verify parity, safety, and unique collaborative value.</span></div>
+<div class="event"><b>Stage 4 · Pilot the library layer without deep integration</b><span>Use branch markers, event tokens, and self-serve program tools. Measure staff burden and partner value before connecting to circulation systems.</span></div>
+<div class="event"><b>Stage 5 · Integrate and scale only after gates pass</b><span>Pursue ILS/vendor partnerships, expanded content production, and institutional sales after retention, reader-bridge, semantic-fit, privacy, staff-time, and economic evidence justify the investment.</span></div>
+</div>
+<h3>Executive kill criteria</h3>
+<p class="lead">The team should narrow, reposition, or stop the concept if several of the following remain true after focused iteration:</p>
+<ul class="plain-list">
+<li>Players return mainly to scan and reveal, but do not choose to play with creatures they already own.</li>
+<li>Children cannot explain why generated creatures belong to their books in a specific, satisfying way.</li>
+<li>Engagement is concentrated among already-enthusiastic readers, with no credible bridge for hesitant readers.</li>
+<li>The e-book path feels administrative, second-class, or dependent on integrations the company cannot secure.</li>
+<li>Safe collaboration does not create a reason to invite or return with another player.</li>
+<li>Library participation requires recurring staff effort beyond the precommitted operating budget.</li>
+<li>No payer supports the full ongoing cost without compromising privacy, fairness, or child-centered design.</li>
+</ul>
+<div class="recommendation">
+<div class="label">Resulting strategic posture</div>
+<p><strong>Keep the ambition, narrow the proof.</strong> Stacklings should continue as an entertainment-first, all-ages concept, but the next phase should focus on one durable play verb, one small high-quality generation set, one mixed-motivation family cohort, and one economic hypothesis. Library integrations, expansive multiplayer, and universal content scale are earned milestones—not prerequisites for discovering whether the game is fun.</p>
+</div>
+</section>
+
+</main>
+</div>
+<footer class="footer">
+<p><strong>Stacklings · Gameplay &amp; Systems Overview</strong><br/>Entertainment-first, all-ages positioning with a child-centered design core and optional family, adult, library, and school layers.</p>
+<p>Design principle: every book can open a door; no player should have to treat reading as homework, pay for power, compete on reading speed, or surrender a private reading life to walk through it.</p>
+</footer>
+</div>
+<script>
+(function(){
+  const links=[...document.querySelectorAll('nav a[href^="#"]')];
+  const sections=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  if('IntersectionObserver' in window){
+    const io=new IntersectionObserver(entries=>{
+      const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+      if(!visible)return;
+      links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+visible.target.id));
+    },{rootMargin:'-15% 0px -70% 0px',threshold:[0,.1,.3]});
+    sections.forEach(s=>io.observe(s));
+  }
+  const btn=document.getElementById('toggleAlt');
+  if(btn){
+    btn.addEventListener('click',()=>{
+      const active=document.body.classList.toggle('hide-alt');
+      btn.textContent=active?'Show all options':'Recommended only';
+      if(active){document.querySelectorAll('details[data-recommended="true"]').forEach(d=>d.open=true);}
+    });
+  }
+})();
+</script>
+</body>
+</html>

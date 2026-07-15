@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Overview — Working Title: The Library Creature Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --card:#F1E9D6;
+    --card-deep:#E7DBBE;
+    --ink:#2B2620;
+    --ink-soft:#57503F;
+    --forest:#24463A;
+    --forest-deep:#1A3329;
+    --oxblood:#6E2B25;
+    --stamp:#B23A2E;
+    --brass:#A98444;
+    --rule:#C9BB98;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} *{animation:none!important;transition:none!important;} }
+  body{
+    background:var(--card-deep);
+    background-image:repeating-linear-gradient(0deg, rgba(43,38,32,0.025) 0 1px, transparent 1px 28px);
+    color:var(--ink);
+    font-family:'EB Garamond',Georgia,serif;
+    font-size:19px;
+    line-height:1.55;
+  }
+  .page{max-width:960px;margin:0 auto;padding:0 20px 90px;}
+
+  /* ---------- COVER ---------- */
+  .cover{
+    background:var(--forest);
+    background-image:
+      radial-gradient(ellipse at 20% -10%, rgba(255,255,255,0.06), transparent 55%),
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.10) 0 2px, transparent 2px 90px);
+    color:#EFE7CE;
+    border:1px solid var(--forest-deep);
+    border-bottom:14px solid var(--forest-deep);
+    margin:44px 0 0;
+    padding:64px 48px 56px;
+    position:relative;
+  }
+  .cover .eyebrow{
+    font-family:'Courier Prime',monospace;
+    font-size:13px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--brass);
+  }
+  .cover h1{
+    font-family:'Fraunces',serif;
+    font-weight:900;
+    font-size:clamp(40px,7vw,74px);
+    line-height:.98;
+    margin:18px 0 10px;
+    color:#F3ECD8;
+  }
+  .cover h1 .pending{
+    display:inline-block;
+    font-family:'Courier Prime',monospace;
+    font-weight:700;
+    font-size:.32em;
+    letter-spacing:.14em;
+    color:var(--stamp);
+    background:rgba(243,236,216,.92);
+    border:2px solid var(--stamp);
+    padding:4px 10px 2px;
+    transform:rotate(-4deg) translateY(-1.2em);
+    vertical-align:top;
+  }
+  .cover .tagline{
+    font-size:22px;font-style:italic;max-width:34em;color:#D9CFAE;
+  }
+  .cover .goldrule{height:3px;background:linear-gradient(90deg,var(--brass),transparent 85%);margin:26px 0 0;max-width:340px;}
+  .cover .meta{
+    font-family:'Courier Prime',monospace;font-size:13px;letter-spacing:.06em;
+    margin-top:26px;color:#BBB08C;
+  }
+
+  /* ---------- DATE DUE SLIP (signature) ---------- */
+  .dateDue{
+    background:var(--card);
+    border:1px solid var(--rule);
+    box-shadow:0 6px 0 -2px rgba(0,0,0,0.25);
+    max-width:430px;
+    margin:-34px 0 0 auto;
+    transform:rotate(1.1deg);
+    position:relative;z-index:2;
+    padding:16px 20px 20px;
+  }
+  .dateDue h3{
+    font-family:'Courier Prime',monospace;font-size:14px;font-weight:700;
+    letter-spacing:.3em;text-align:center;border-bottom:2px solid var(--ink);
+    padding-bottom:8px;text-transform:uppercase;
+  }
+  .dateDue table{width:100%;border-collapse:collapse;font-family:'Courier Prime',monospace;font-size:14px;}
+  .dateDue td{border-bottom:1px solid var(--rule);padding:9px 4px;}
+  .dateDue .stampcell{color:var(--stamp);font-weight:700;letter-spacing:.05em;transform:rotate(-2deg);display:inline-block;}
+  .dateDue .note{font-family:'Courier Prime',monospace;font-size:11.5px;color:var(--ink-soft);margin-top:10px;text-align:center;}
+
+  /* ---------- SECTION CARDS ---------- */
+  section.cardsec{
+    background:var(--card);
+    border:1px solid var(--rule);
+    border-top:6px solid var(--forest);
+    box-shadow:0 5px 0 -2px rgba(0,0,0,0.18);
+    margin:46px 0 0;
+    padding:38px 44px 42px;
+  }
+  section.cardsec.ox{border-top-color:var(--oxblood);}
+  .callno{
+    font-family:'Courier Prime',monospace;
+    font-size:13px;font-weight:700;letter-spacing:.2em;
+    color:var(--oxblood);
+    text-transform:uppercase;
+  }
+  .callno .num{color:var(--brass);}
+  h2{
+    font-family:'Fraunces',serif;font-weight:900;
+    font-size:clamp(28px,4vw,40px);line-height:1.05;
+    margin:10px 0 18px;
+  }
+  h4{
+    font-family:'Fraunces',serif;font-weight:600;font-size:21px;margin:26px 0 8px;
+  }
+  p{margin:0 0 14px;max-width:44em;}
+  p.lead{font-size:22px;line-height:1.5;}
+  em{color:var(--ink-soft);}
+  .marginnote{
+    font-family:'Courier Prime',monospace;font-size:13px;color:var(--ink-soft);
+    border-left:3px solid var(--brass);padding:6px 0 6px 14px;margin:18px 0;max-width:40em;
+  }
+
+  /* ---------- PILLARS ---------- */
+  .pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:26px;}
+  .pillar{
+    border:1px solid var(--rule);
+    background:linear-gradient(180deg,#F6F0DF,#EFE5CB);
+    padding:20px 18px 22px;
+    position:relative;
+  }
+  .pillar::before{
+    content:attr(data-spine);
+    position:absolute;top:0;left:0;right:0;
+    background:var(--forest);color:#EFE7CE;
+    font-family:'Courier Prime',monospace;font-size:11px;font-weight:700;
+    letter-spacing:.24em;text-align:center;padding:5px 0;text-transform:uppercase;
+  }
+  .pillar:nth-child(2)::before{background:var(--oxblood);}
+  .pillar:nth-child(3)::before{background:var(--brass);color:var(--ink);}
+  .pillar:nth-child(4)::before{background:var(--ink);}
+  .pillar h3{font-family:'Fraunces',serif;font-weight:900;font-size:22px;margin:26px 0 8px;}
+  .pillar p{font-size:16.5px;margin:0;}
+
+  /* ---------- LOOP ---------- */
+  .loop{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin-top:22px;font-family:'Courier Prime',monospace;}
+  .loop .step{
+    flex:1 1 130px;border:1.5px solid var(--ink);background:#F7F1E1;
+    padding:14px 12px;font-size:13.5px;line-height:1.45;
+  }
+  .loop .step b{display:block;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--oxblood);margin-bottom:6px;}
+  .loop .arrow{align-self:center;color:var(--brass);font-size:20px;font-weight:700;}
+
+  /* ---------- TABLES ---------- */
+  .tablewrap{overflow-x:auto;margin:20px 0 6px;border:1px solid var(--rule);}
+  table.ledger{
+    width:100%;border-collapse:collapse;
+    font-family:'Courier Prime',monospace;font-size:14px;line-height:1.4;
+    background:#F7F1E1;
+  }
+  table.ledger caption{
+    text-align:left;font-family:'Courier Prime',monospace;font-size:12px;
+    letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);
+    padding:10px 12px;background:var(--card-deep);border-bottom:1px solid var(--rule);
+  }
+  table.ledger th{
+    background:var(--forest);color:#EFE7CE;text-align:left;
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    padding:10px 12px;font-weight:700;
+  }
+  .ox table.ledger th{background:var(--oxblood);}
+  table.ledger td{
+    border-bottom:1px solid var(--rule);border-right:1px dashed var(--rule);
+    padding:10px 12px;vertical-align:top;
+  }
+  table.ledger td:last-child{border-right:none;}
+  table.ledger tr:nth-child(even) td{background:rgba(201,187,152,0.14);}
+  td.groupband{
+    background:var(--card-deep)!important;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;font-size:12px;color:var(--oxblood);
+  }
+  .yes{color:var(--forest);font-weight:700;}
+  .no{color:var(--ink-soft);}
+  .partial{color:var(--brass);font-weight:700;}
+
+  /* ---------- STAMPS ---------- */
+  .stamp{
+    display:inline-block;font-family:'Courier Prime',monospace;font-weight:700;
+    font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--stamp);border:2.5px solid var(--stamp);border-radius:4px;
+    padding:4px 12px 2px;transform:rotate(-2.5deg);
+    mask-image:radial-gradient(circle at 30% 40%, black 92%, transparent 100%);
+    margin:4px 6px 4px 0;
+  }
+  .stamp.green{color:var(--forest);border-color:var(--forest);transform:rotate(1.8deg);}
+
+  /* ---------- PRINCIPLES ---------- */
+  ol.principles{counter-reset:pr;list-style:none;margin-top:20px;}
+  ol.principles li{
+    counter-increment:pr;position:relative;
+    padding:16px 0 16px 74px;border-bottom:1px solid var(--rule);max-width:46em;
+  }
+  ol.principles li::before{
+    content:counter(pr,decimal-leading-zero);
+    position:absolute;left:0;top:14px;
+    font-family:'Fraunces',serif;font-weight:900;font-size:34px;color:var(--brass);
+  }
+  ol.principles b{font-family:'Fraunces',serif;font-weight:600;font-size:20px;display:block;}
+  ol.principles span{font-size:17px;}
+
+  /* ---------- TIERS ---------- */
+  .tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:22px;}
+  .tier{border:1px solid var(--rule);background:#F7F1E1;padding:0 0 18px;}
+  .tier header{
+    font-family:'Courier Prime',monospace;font-weight:700;font-size:13px;
+    letter-spacing:.18em;text-transform:uppercase;color:#EFE7CE;background:var(--ink);
+    padding:9px 16px;
+  }
+  .tier:nth-child(2) header{background:var(--forest);}
+  .tier:nth-child(3) header{background:var(--oxblood);}
+  .tier .body{padding:16px 16px 0;font-size:16.5px;}
+  .tier .body p{font-size:16.5px;}
+  .tier .req{font-family:'Courier Prime',monospace;font-size:12px;color:var(--ink-soft);letter-spacing:.08em;padding:10px 16px 0;text-transform:uppercase;}
+
+  /* ---------- OPEN QUESTIONS ---------- */
+  ul.openq{list-style:none;margin-top:18px;}
+  ul.openq li{
+    font-family:'Courier Prime',monospace;font-size:15px;
+    padding:12px 0 12px 40px;border-bottom:1px dashed var(--rule);position:relative;max-width:46em;
+  }
+  ul.openq li::before{
+    content:"☐";position:absolute;left:6px;top:9px;font-size:20px;color:var(--oxblood);
+  }
+  ul.openq b{color:var(--oxblood);}
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    margin-top:56px;text-align:center;
+    font-family:'Courier Prime',monospace;font-size:12.5px;color:var(--ink-soft);letter-spacing:.1em;
+  }
+  footer .pocket{
+    background:var(--card);border:1px solid var(--rule);max-width:420px;margin:0 auto 18px;
+    padding:22px 24px;box-shadow:0 5px 0 -2px rgba(0,0,0,0.18);
+    clip-path:polygon(0 0,100% 0,100% 100%,84% 86%,16% 86%,0 100%);
+  }
+  @media(max-width:640px){
+    section.cardsec{padding:28px 20px 32px;}
+    .cover{padding:44px 24px 44px;}
+    .dateDue{margin:-20px auto 0;transform:rotate(0);}
+    ol.principles li{padding-left:56px;}
+    ol.principles li::before{font-size:26px;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============ COVER ============ -->
+  <div class="cover">
+    <div class="eyebrow">Game Design Overview · Living Draft · Vol. 1</div>
+    <h1>The Library Creature Game <span class="pending">Title Pending</span></h1>
+    <p class="tagline">A cozy creature-collecting game where the library card is the cartridge, the stacks are the wilderness, and every book on the shelf is a monster waiting to be met.</p>
+    <div class="goldrule"></div>
+    <div class="meta">AUDIENCE: KIDS &amp; FAMILIES (ALL AGES) &nbsp;·&nbsp; STATUS: CONCEPT &nbsp;·&nbsp; PREPARED FOR: INTERNAL MUSING → FUTURE COLLABORATORS &amp; LIBRARIES</div>
+  </div>
+
+  <div class="dateDue">
+    <h3>Date Due</h3>
+    <table>
+      <tr><td>Concept &amp; input system</td><td><span class="stampcell">✓ SHELVED</span></td></tr>
+      <tr><td>Core pillars</td><td><span class="stampcell">✓ SHELVED</span></td></tr>
+      <tr><td>Mechanics &amp; inspiration bank</td><td><span class="stampcell">✓ SHELVED</span></td></tr>
+      <tr><td>Open questions</td><td><span class="stampcell" style="color:#A98444;border-color:#A98444;">ON HOLD</span></td></tr>
+      <tr><td>Prototype</td><td>&nbsp;</td></tr>
+    </table>
+    <div class="note">RETURN IDEAS TO ANY BRANCH · LATE THINKING ALWAYS ACCEPTED</div>
+  </div>
+
+  <!-- ============ PREMISE ============ -->
+  <section class="cardsec">
+    <div class="callno"><span class="num">793.932</span> — Premise</div>
+    <h2>The Premise</h2>
+    <p class="lead">Kids scan the barcode of any library book and a creature comes out of it. The same book makes the same creature anywhere on Earth. What kind of creature depends on what kind of book: horror books hide little mummies, mysteries hide hounds, science books hide bookworms.</p>
+    <p>The creatures don't want to be caught. They want a place to live. A kid's growing collection of scanned books becomes a habitat, and the more a kid reads, tends, and returns books on time, the more the world fills up. The library becomes a wilderness you can walk into for free.</p>
+    <p>This sits in the lineage of games where <em>the real world is the cartridge</em>: Skannerz turned grocery barcodes into monsters, Monster Rancher hashed CDs into companions, Pokémon Go made street corners into spawn points. All three worked because the input was abundant, free, and deterministic, so playground knowledge-trading could flourish. It rejects the opposite lineage, Tonies and amiibo, where the "collectible" is a $15 SKU and play is pay.</p>
+    <div class="marginnote">WHY LIBRARY BOOKS: every book already wears two barcodes. The collectible is free by civic design. Libraries are funded to want exactly what this game produces: more youth visits, more circulation, more reading.</div>
+  </section>
+
+  <!-- ============ PILLARS ============ -->
+  <section class="cardsec">
+    <div class="callno"><span class="num">100.4</span> — Foundations</div>
+    <h2>Four Core Pillars</h2>
+    <p>Everything else in this document is negotiable. These four are not. Any mechanic that doesn't serve at least one pillar gets cut.</p>
+    <div class="pillars">
+      <div class="pillar" data-spine="Pillar I">
+        <h3>Library Books</h3>
+        <p>The input, the venue, and the partner. Free, ubiquitous, kid-safe, and infinitely varied. No purchases, ever.</p>
+      </div>
+      <div class="pillar" data-spine="Pillar II">
+        <h3>Creature Collecting</h3>
+        <p>Deterministic generation from ISBNs. Same book, same creature, everywhere. Discovery, rarity, and completion drive the hunt.</p>
+      </div>
+      <div class="pillar" data-spine="Pillar III">
+        <h3>Creature Caring</h3>
+        <p>What you catch, you tend. Cozy, not punishing: bonding, feeding, habitats, and things that happen while you're away.</p>
+      </div>
+      <div class="pillar" data-spine="Pillar IV">
+        <h3>Reading &amp; Learning</h3>
+        <p>The invisible engine. Reading feeds growth without ever feeling like homework. The game succeeds when kids read more.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CORE LOOP ============ -->
+  <section class="cardsec ox">
+    <div class="callno"><span class="num">794.81</span> — Systems</div>
+    <h2>The Core Loop</h2>
+    <p>Capture never fails, and it never needs the internet. The creature comes from the number itself; the network only makes it richer.</p>
+    <div class="loop">
+      <div class="step"><b>Scan</b>Camera reads the ISBN off a real book. The only way in.</div>
+      <div class="arrow">→</div>
+      <div class="step"><b>Hash</b>13 digits deterministically seed a species. Instant, offline, universal.</div>
+      <div class="arrow">→</div>
+      <div class="step"><b>Reveal</b>Metadata lookup arrives a beat later: genre, era, size. The creature takes its typed form.</div>
+      <div class="arrow">→</div>
+      <div class="step"><b>Tend</b>Feed, bond, decorate. The shelf-habitat attracts wild visitors while you're gone.</div>
+      <div class="arrow">→</div>
+      <div class="step"><b>Return</b>The loan period is the lifespan. On-time returns graduate creatures into the permanent collection.</div>
+    </div>
+    <div class="marginnote">TWO-BEAT CAPTURE: hash first (never fails), metadata second (bonus delight). A dead API can never break the game. Books with weird or missing metadata become the glitch/mystery-egg rare tier — the worst data problem becomes the best treasure.</div>
+  </section>
+
+  <!-- ============ INPUT SYSTEM ============ -->
+  <section class="cardsec">
+    <div class="callno"><span class="num">025.431</span> — The Input</div>
+    <h2>What a Book Tells Us</h2>
+    <p>The ISBN identifies the <em>title</em>; the library's own barcode identifies the <em>physical copy</em>. The ISBN is structured enough to give creature taxonomy for free, and it unlocks free metadata (Open Library, Google Books) for typing. The library barcode is an opaque per-copy ID: useless to decode, perfect for "this exact famous copy" shiny mechanics.</p>
+
+    <div class="tablewrap">
+      <table class="ledger">
+        <caption>ISBN-13 Anatomy → Creature Meaning</caption>
+        <tr><th>Segment</th><th>What it stores</th><th>Game translation</th></tr>
+        <tr><td>Prefix (978/979)</td><td>"Bookland" — this is a book</td><td>The world gate: only books make creatures</td></tr>
+        <tr><td>Registration group</td><td>Country / language area</td><td>Creature region &amp; family lineage</td></tr>
+        <tr><td>Publisher code</td><td>The publishing house</td><td>Tribe / visual lineage</td></tr>
+        <tr><td>Publication digits</td><td>Specific title &amp; format</td><td>The unique species hash</td></tr>
+        <tr><td>Check digit &amp; patterns</td><td>Scan validation</td><td>Flavor traits; palindromes &amp; doubles boost shiny odds</td></tr>
+      </table>
+    </div>
+
+    <div class="tablewrap">
+      <table class="ledger">
+        <caption>Genre → Creature Type (illustrative mapping)</caption>
+        <tr><th>Creature type</th><th>Matches on</th></tr>
+        <tr><td>Mummy (horror)</td><td>Horror subject codes; keywords: ghost, scary, vampire, zombie</td></tr>
+        <tr><td>Hound (mystery)</td><td>Mystery/detective codes; keywords: sleuth, clue, case</td></tr>
+        <tr><td>Bookworm (science)</td><td>Dewey 500s; keywords: science, nature, experiments</td></tr>
+        <tr><td>Dragon (fantasy)</td><td>Fantasy codes; keywords: magic, wizard, quest</td></tr>
+        <tr><td>Robot (tech &amp; space)</td><td>Dewey 600s/629; keywords: robot, space, invention</td></tr>
+        <tr><td>Sphinx (history &amp; myth)</td><td>Dewey 900s/290s; keywords: ancient, mythology</td></tr>
+        <tr><td>??? (glitch tier)</td><td>Missing, thin, or contradictory metadata</td></tr>
+      </table>
+    </div>
+    <div class="marginnote">SOURCES OF TRUTH: subject headings via Open Library (free, bulk-downloadable) and Google Books categories; Dewey numbers double as spine-visible lore kids can learn to read themselves. Genre is a modifier on the hash, never a gate.</div>
+  </section>
+
+  <!-- ============ VARIABLES ============ -->
+  <section class="cardsec">
+    <div class="callno"><span class="num">005.74</span> — The Ledger</div>
+    <h2>Variable Inventory</h2>
+    <p>Everything the game can know, grouped by where it comes from. The top determines what the <em>creature</em> is; the middle determines who the <em>trainer</em> is; the declared tier is where the kid gets agency. Nothing here is demographic, and everything above the partnership band works fully on-device.</p>
+    <div class="tablewrap">
+      <table class="ledger">
+        <tr><th>Variable</th><th>Source</th><th>Example use</th></tr>
+        <tr><td class="groupband" colspan="3">Book-Derived (what the creature is)</td></tr>
+        <tr><td>ISBN digits &amp; structure</td><td>Scan</td><td>Species hash; region; tribe; shiny odds</td></tr>
+        <tr><td>Genre / subjects</td><td>Metadata lookup</td><td>Type assignment (mummy, hound, bookworm…)</td></tr>
+        <tr><td>Page count</td><td>Metadata lookup</td><td>Size / HP</td></tr>
+        <tr><td>Publication year</td><td>Metadata lookup</td><td>Vintage books spawn elder forms</td></tr>
+        <tr><td>Format (hardcover, board book…)</td><td>Metadata lookup</td><td>Armor / body type</td></tr>
+        <tr><td>Series membership</td><td>Metadata lookup</td><td>Evolution chains — scan the series, complete the line</td></tr>
+        <tr><td>Author</td><td>Metadata lookup</td><td>Shared lineage trait across an author's books</td></tr>
+        <tr><td>Cover palette</td><td>Metadata lookup</td><td>Creature coloring</td></tr>
+        <tr><td>Missing / weird metadata</td><td>Lookup failure</td><td>Glitch &amp; mystery-egg rare tier</td></tr>
+        <tr><td class="groupband" colspan="3">Behavior-Derived (who the trainer is)</td></tr>
+        <tr><td>Genre distribution of collection</td><td>Derived</td><td>Trainer class: Sleuth, Mage, Naturalist — earned, not declared</td></tr>
+        <tr><td>Scan time-of-day &amp; weekday</td><td>Device clock</td><td>Nocturnal vs. diurnal spawns</td></tr>
+        <tr><td>Season, date, holidays</td><td>Device calendar</td><td>October horror surge; summer events</td></tr>
+        <tr><td>Streaks &amp; cadence</td><td>Derived</td><td>Retention; streak-fed evolutions</td></tr>
+        <tr><td>First-ever scan (global)</td><td>Anonymous ledger</td><td>"Species discovered by you" credit</td></tr>
+        <tr><td>Collection obscurity</td><td>Derived</td><td>"Digger" identity for deep-stacks hunters</td></tr>
+        <tr><td>Collection diversity</td><td>Derived</td><td>Balanced-reader badges unlock hybrids</td></tr>
+        <tr><td>Repeat scans of one book</td><td>Derived</td><td>Bonding stat, not a dupe penalty</td></tr>
+        <tr><td class="groupband" colspan="3">Player-Declared (agency, zero PII)</td></tr>
+        <tr><td>Starter quiz answers</td><td>In-fiction quiz</td><td>Personality → starter mapping; replaces demographics entirely</td></tr>
+        <tr><td>Trainer name &amp; avatar</td><td>Declared</td><td>Identity with zero real-name risk</td></tr>
+        <tr><td>Home branch</td><td>Chosen from a list</td><td>Branch pride &amp; events — chosen like a team, never GPS-detected</td></tr>
+        <tr><td>Favorites &amp; nicknames</td><td>Declared</td><td>Buddy mechanics, attachment</td></tr>
+        <tr><td class="groupband" colspan="3">Partnership-Only (Tier 3, library holds the data)</td></tr>
+        <tr><td>Checkout events</td><td>Library API</td><td>Creature hatches at checkout</td></tr>
+        <tr><td>On-time return</td><td>Library API</td><td>Evolution trigger; graduation</td></tr>
+        <tr><td>Holds &amp; ILL requests</td><td>Library API</td><td>Rare summons — "the creature travels to you"</td></tr>
+      </table>
+    </div>
+    <div class="marginnote">DELIBERATELY ABSENT: age, gender, real names, GPS, contacts, camera roll. A coarse COPPA age band is checked once and never stored on the profile. Asking kids what they like (in fiction) beats asking who they are.</div>
+  </section>
+
+  <!-- ============ INSPIRATION BANK ============ -->
+  <section class="cardsec ox">
+    <div class="callno"><span class="num">793.92</span> — References</div>
+    <h2>Mechanics Inspiration Bank</h2>
+    <p>Borrowed with pride. Cozy collectors replace <em>hunt and defeat</em> with <em>invite and tend</em>, and that's the register this game lives in.</p>
+    <div class="tablewrap">
+      <table class="ledger">
+        <tr><th>Category</th><th>Mechanic</th><th>Borrowed from</th><th>Our take</th></tr>
+        <tr><td>Real clock</td><td>World runs on actual time &amp; season</td><td>Animal Crossing</td><td>Night creatures, seasonal surges, summer-reading events</td></tr>
+        <tr><td>Real clock</td><td>Timers you can't grind past</td><td>Animal Crossing</td><td>Evolutions take real days; the loan period is the incubation clock</td></tr>
+        <tr><td>Real clock</td><td>Bedtime as a game state</td><td>Digimon / Tamagotchi</td><td>Creatures sleep when kids should; 2am scans wake a grumpy variant</td></tr>
+        <tr><td>Attract</td><td>Build habitat, creatures move in</td><td>Pokémon Pokopia, Viva Piñata</td><td>The collection IS the habitat; genre density attracts matching wild types</td></tr>
+        <tr><td>Attract</td><td>Legible attraction requirements</td><td>Viva Piñata</td><td>"A Sphinx will visit once you've scanned 3 history books" — shown as a checklist</td></tr>
+        <tr><td>Attract</td><td>Learn perks from befriended creatures</td><td>Pokopia</td><td>Your Hound sniffs out mystery shelves, boosting mystery odds</td></tr>
+        <tr><td>Away-time</td><td>Things happen while you're gone</td><td>Neko Atsume</td><td>Return to visitors, gifts, and photos of what they did</td></tr>
+        <tr><td>Away-time</td><td>Absence never punished</td><td>Neko Atsume (anti-Tamagotchi)</td><td>Creatures wander off (recoverable), never die</td></tr>
+        <tr><td>Away-time</td><td>Offline behavior is the engine</td><td>Pokémon Sleep</td><td>Time away reading is exactly what the game rewards</td></tr>
+        <tr><td>Care</td><td>Daily ritual builds attachment</td><td>Tamagotchi</td><td>A one-minute morning visit: greet, feed a story-snack, done</td></tr>
+        <tr><td>Care</td><td>Diet shapes appearance</td><td>Chao Garden</td><td>Creature visibly absorbs the reading diet; fantasy-fed grows wings</td></tr>
+        <tr><td>Care</td><td>Raising outcomes branch on treatment</td><td>Digimon</td><td>Same species evolves differently for a binge-reader vs. a savorer</td></tr>
+        <tr><td>Collection</td><td>Donate to a public institution</td><td>Animal Crossing (Blathers)</td><td>Branch gallery fills communally from neighborhood kids' scans</td></tr>
+        <tr><td>Collection</td><td>Themed completion albums</td><td>Neko Atsume, AC museum</td><td>Complete the Detective Wing, the Dino Hall</td></tr>
+        <tr><td>Collection</td><td>Part-collecting from one big target</td><td>Monster Hunter</td><td>Long books are multi-chapter creatures you "break parts off" as you read</td></tr>
+        <tr><td>Contest</td><td>Playful non-combat competition</td><td>Ooblets</td><td>Trivia duels or talent shows instead of HP battles (open question)</td></tr>
+        <tr><td>Contest</td><td>Async neighbor visits</td><td>Animal Crossing</td><td>Visit a friend's shelf, leave a gift — no live play needed</td></tr>
+        <tr><td>Social</td><td>Playground knowledge economy</td><td>Skannerz, Monster Rancher</td><td>"Scan the third Dog Man book for the good one" — shared secrets ARE the game</td></tr>
+        <tr><td>Economy</td><td>Virtuous behavior as invisible fuel</td><td>Pokémon Sleep</td><td>Reading feeds growth without feeling like homework</td></tr>
+      </table>
+    </div>
+
+    <h4>Lineage Comparison: The Four Ancestors</h4>
+    <p>The full side-by-side. Digimon is the raising game, Skannerz is the input game, Monster Rancher is both at once, and Pokémon Go is the world game. Reading the columns against each other shows exactly which mechanics each ancestor owned — and which combination none of them ever claimed.</p>
+    <div class="tablewrap">
+      <table class="ledger">
+        <caption>Mechanics Across the Lineage</caption>
+        <tr><th>Mechanic</th><th>Digimon</th><th>Skannerz</th><th>Monster Rancher</th><th>Pokémon Go</th></tr>
+        <tr><td class="groupband" colspan="5">Acquisition</td></tr>
+        <tr><td>Capture wild creatures</td><td class="yes">Y</td><td class="yes">Y (scan = encounter)</td><td class="no">N (generated at the shrine)</td><td class="yes">Y</td></tr>
+        <tr><td>Real-world input generates creature</td><td class="no">N</td><td class="yes">Y (barcodes)</td><td class="yes">Y (CDs)</td><td class="yes">Y (GPS)</td></tr>
+        <tr><td>Any-input roulette</td><td class="yes">Y</td><td class="yes">Y (monster, item, or nothing)</td><td class="yes">Y (any CD could be anything)</td><td class="yes">Y (spawns)</td></tr>
+        <tr><td>Eggs &amp; hatching</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="yes">Y (walk to hatch)</td></tr>
+        <tr><td>Starter choice</td><td class="yes">Y</td><td class="partial">Partial (tribe by unit)</td><td class="partial">Partial (market monsters)</td><td class="yes">Y</td></tr>
+        <tr><td class="groupband" colspan="5">Care &amp; Bonding</td></tr>
+        <tr><td>Feeding</td><td class="yes">Y (core loop)</td><td class="no">N</td><td class="yes">Y (monthly meals)</td><td class="yes">Y (berries)</td></tr>
+        <tr><td>Neglect has consequences</td><td class="yes">Y (sickness, bad forms, death)</td><td class="no">N</td><td class="yes">Y (stress, injury, bad habits)</td><td class="no">N</td></tr>
+        <tr><td>Praise, scolding, affection</td><td class="yes">Y</td><td class="no">N</td><td class="yes">Y (loyalty system)</td><td class="yes">Y (buddy play)</td></tr>
+        <tr><td>Lifespan &amp; death</td><td class="yes">Y (permadeath, generations)</td><td class="no">N</td><td class="yes">Y (aging &amp; death; legacy via fusion)</td><td class="no">N</td></tr>
+        <tr><td>Sleep &amp; rest states</td><td class="yes">Y (lights-out bedtime)</td><td class="no">N</td><td class="partial">Partial (rest weeks)</td><td class="no">N</td></tr>
+        <tr><td class="groupband" colspan="5">Training &amp; Progression</td></tr>
+        <tr><td>Training drills &amp; minigames</td><td class="yes">Y (gym)</td><td class="yes">Y (rudimentary)</td><td class="yes">Y (drills &amp; errantry — the core loop)</td><td class="no">N</td></tr>
+        <tr><td>Raising choices shape the outcome</td><td class="yes">Y (branching evolution)</td><td class="no">N</td><td class="yes">Y (regimen sets stats &amp; techniques)</td><td class="partial">Partial (buddy/walk conditions)</td></tr>
+        <tr><td>Evolution / transformation</td><td class="yes">Y (care-dependent)</td><td class="no">N</td><td class="partial">Partial (fusion makes new species)</td><td class="yes">Y (candy, linear)</td></tr>
+        <tr><td>Trainer-side progression</td><td class="no">N</td><td class="no">N</td><td class="partial">Partial (breeder rank)</td><td class="yes">Y (trainer XP)</td></tr>
+        <tr><td class="groupband" colspan="5">Battle</td></tr>
+        <tr><td>Creature battles</td><td class="yes">Y</td><td class="yes">Y (simple attack picks)</td><td class="yes">Y (tournament circuit)</td><td class="yes">Y (tap/charge)</td></tr>
+        <tr><td>Type / tribe advantage</td><td class="yes">Y</td><td class="yes">Y (three tribes)</td><td class="partial">Partial</td><td class="yes">Y (18 types)</td></tr>
+        <tr><td>Obedience tied to bond</td><td class="partial">Partial</td><td class="no">N</td><td class="yes">Y (low loyalty ignores commands)</td><td class="no">N</td></tr>
+        <tr><td>PvP with friends</td><td class="yes">Y (link battles)</td><td class="yes">Y (link two units)</td><td class="yes">Y (vs mode)</td><td class="yes">Y (leagues)</td></tr>
+        <tr><td class="groupband" colspan="5">Collection</td></tr>
+        <tr><td>Dex / encyclopedia to complete</td><td class="yes">Y</td><td class="yes">Y (tribes)</td><td class="yes">Y (species book)</td><td class="yes">Y (the Pokédex)</td></tr>
+        <tr><td>Rarity tiers</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y (rare-CD legends)</td><td class="yes">Y (shinies)</td></tr>
+        <tr><td>Shared-secrets input metagame</td><td class="partial">Partial</td><td class="yes">Y (which barcodes give what)</td><td class="yes">Y (CD lists were the culture)</td><td class="yes">Y (nests, spawn lore)</td></tr>
+        <tr><td class="groupband" colspan="5">Social</td></tr>
+        <tr><td>Trading</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="yes">Y (friendship-gated)</td></tr>
+        <tr><td>Co-op play</td><td class="partial">Partial</td><td class="no">N</td><td class="no">N</td><td class="yes">Y (raids, community days)</td></tr>
+        <tr><td class="groupband" colspan="5">Real-World Layer</td></tr>
+        <tr><td>Physical movement required</td><td class="no">N</td><td class="partial">Partial (go find barcodes)</td><td class="no">N</td><td class="yes">Y (the engine)</td></tr>
+        <tr><td>Location-specific content</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="yes">Y</td></tr>
+        <tr><td>Real clock / weather affects play</td><td class="partial">Partial (v-pet clock)</td><td class="no">N</td><td class="no">N (in-game calendar)</td><td class="yes">Y</td></tr>
+        <tr><td>Always-with-you object</td><td class="yes">Y (keychain pet)</td><td class="yes">Y (handheld scanner)</td><td class="no">N (console session)</td><td class="yes">Y (the phone)</td></tr>
+        <tr><td class="groupband" colspan="5">Retention</td></tr>
+        <tr><td>Daily obligation</td><td class="yes">Y (or it dies)</td><td class="no">N</td><td class="no">N (session-based)</td><td class="yes">Y (streaks, dailies)</td></tr>
+        <tr><td>Long-term goal ladder</td><td class="yes">Y (raise the perfect one)</td><td class="yes">Y (complete tribes)</td><td class="yes">Y (champion lineages)</td><td class="yes">Y (dex, legendaries)</td></tr>
+      </table>
+    </div>
+    <div class="marginnote">THE CLOSEST ANCESTOR: Monster Rancher is the only one that combined a real-world input with deep raising — and its two gaps define this game. The input lived on a console instead of in a pocket, and its care model was punishing (aging, permadeath, grief as a feature). The thesis in one line: Monster Rancher's DNA, Neko Atsume's kindness, a phone in the pocket, and a free building full of cartridges.</div>
+  </section>
+
+  <!-- ============ PRINCIPLES ============ -->
+  <section class="cardsec">
+    <div class="callno"><span class="num">174.9</span> — Doctrine</div>
+    <h2>Design Principles</h2>
+    <ol class="principles">
+      <li><b>Capture never fails.</b><span>The hash is local and deterministic. No network, no account, no purchase, no failure state at the moment of magic.</span></li>
+      <li><b>Attraction over capture.</b><span>The core verb is <em>invite and tend</em>, not hunt and defeat. Creatures choose you because of what your shelf has become.</span></li>
+      <li><b>Absence is never punished.</b><span>Coming back is always a pleasant surprise. Wandering off is recoverable; nothing dies because a kid had a busy week.</span></li>
+      <li><b>Identity is earned, not asked.</b><span>The trainer's class emerges from behavior. Demographics are replaced by an in-fiction quiz kids enjoy answering.</span></li>
+      <li><b>Reading is the engine, never the chore.</b><span>Anything that smells like Accelerated Reader is out. Content checks, if any, are in-fiction bonding, never gates.</span></li>
+      <li><b>Design so cheating doesn't matter.</b><span>In a cozy solo collector, most cheating has no victim. Protect only the communal &amp; competitive rewards; let the rest be loose.</span></li>
+      <li><b>The strictest privacy is a feature.</b><span>Local-first, no PII, anonymous aggregates only. "We can't see your child's data" is marketing, not a constraint (the Seek by iNaturalist standard).</span></li>
+      <li><b>The library is the hero.</b><span>Every mechanic should be something a librarian would proudly put a poster up for.</span></li>
+    </ol>
+  </section>
+
+  <!-- ============ TRUST TIERS ============ -->
+  <section class="cardsec ox">
+    <div class="callno"><span class="num">021.2</span> — Partnerships</div>
+    <h2>Library Integration: Three Trust Tiers</h2>
+    <p>The partnership upgrades the game; it is never load-bearing. Each tier is a complete, shippable experience, and each verified tier unlocks rewards the tier below can't fake.</p>
+    <div class="tiers">
+      <div class="tier">
+        <header>Tier 1 · Anywhere</header>
+        <div class="req">Requires: nothing</div>
+        <div class="body"><p>Scan → hash → creature, enriched by free metadata. Works in any library, bookstore, or bedroom on Earth. This is the prototype and the forever-free core.</p></div>
+      </div>
+      <div class="tier">
+        <header>Tier 2 · Branch-Aware</header>
+        <div class="req">Requires: goodwill + a laminated sheet</div>
+        <div class="body"><p>Branch totems (rotating QR at the desk) prove a real visit with zero GPS. Public catalog data flavors local spawns. Receipt scans softly verify checkouts. Branch galleries open.</p></div>
+      </div>
+      <div class="tier">
+        <header>Tier 3 · Partnered</header>
+        <div class="req">Requires: formal partnership, library holds patron data</div>
+        <div class="body"><p>Checkout-aware mechanics via the library's ILS: hatch at checkout, evolve on on-time return, holds as rare summons. The library, not the game, owns the patron relationship.</p></div>
+      </div>
+    </div>
+    <div class="marginnote">CHICAGO REFERENCE STACK: CPL runs BiblioCommons (discovery) over a Polaris ILS with an available API — a stack shared by many major US urban systems, so nothing here is a one-city build. The CPL Foundation has a track record of funding patron-experience tech. A working Tier 1 that visibly pulls kids into the stacks IS the pitch.</div>
+  </section>
+
+  <!-- ============ TECHNICAL ROLLOUT ============ -->
+  <section class="cardsec">
+    <div class="callno"><span class="num">025.6</span> — Circulation Systems</div>
+    <h2>Technical Rollout: The Partnership Path</h2>
+    <p class="lead">Library lending is two separate ecosystems, and this game is lucky enough to live entirely in the open one. Digital lending (Libby, Hoopla) is vendor-gated content licensing where private-equity-owned platforms control the pipes. Physical lending is library-owned inventory managed by rented software, held together by decades-old open protocols with no licensing chokepoint.</p>
+    <p>Because the game reads barcodes off physical books and never lends content, it can skip the entire digital stack: no OverDrive partner agreement, no publisher negotiations, no existing at a platform's pleasure. The integration surface we need — patron auth and circulation events — is exactly the part of library tech that is open, standardized, and library-controlled.</p>
+
+    <div class="tablewrap">
+      <table class="ledger">
+        <caption>The Integration Surface (physical side)</caption>
+        <tr><th>Layer</th><th>What it is</th><th>What it gives the game</th></tr>
+        <tr><td>SIP2</td><td>The workhorse protocol nearly every ILS speaks — built for self-checkout kiosks; even the big digital vendors use it for patron auth</td><td>Tier 3 basics: "is this a valid patron," checkout &amp; check-in events</td></tr>
+        <tr><td>Vendor REST APIs</td><td>Sierra API, Polaris API (PAPI — CPL's stack), Symphony Web Services, Koha REST; modern but per-vendor, and the library must enable access</td><td>Richer Tier 3: holds, renewals, account state for hatch/evolve/summon mechanics</td></tr>
+        <tr><td>NCIP</td><td>XML circulation-interchange standard used in interlibrary loan and consortial borrowing</td><td>Future: ILL-powered "the creature travels to you" rare summons</td></tr>
+        <tr><td>Open-source ILS (Koha, Evergreen)</td><td>Most-deployed open ILS worldwide (Koha) and the consortium engine (Evergreen); nothing gates development against them</td><td>A free, complete dev target: build and test the whole Tier 3 layer before any partner signs</td></tr>
+        <tr><td>Aspen Discovery</td><td>Open-source discovery layer gaining share; unifies physical and digital holdings in one interface</td><td>A friendly, open distribution channel: a game hook inside Aspen rides its adoption curve</td></tr>
+        <tr><td>ILS-agnostic middleware pattern</td><td>What BiblioCommons, Aspen, and Capira each built internally to abstract over vendor differences</td><td>The architecture to copy: one thin adapter layer, five vendor plugins behind it</td></tr>
+      </table>
+    </div>
+
+    <div class="tablewrap">
+      <table class="ledger">
+        <caption>Rollout Phases</caption>
+        <tr><th>Phase</th><th>Move</th><th>Requires</th><th>Maps to</th></tr>
+        <tr><td>0 · Workbench</td><td>Stand up Koha or Evergreen locally; exercise SIP2 + REST APIs; build the ILS adapter layer against open source where nothing is gated</td><td>Nothing but time</td><td>Pre-launch engineering</td></tr>
+        <tr><td>1 · Ship the core</td><td>Launch scan → hash → creature everywhere; no library integration at all</td><td>App stores only</td><td>Tier 1</td></tr>
+        <tr><td>2 · Branch pilots</td><td>Rotating QR totems + receipt scans at a handful of friendly branches; branch galleries open</td><td>Librarian goodwill, laminated sheets</td><td>Tier 2</td></tr>
+        <tr><td>3 · One system, done right</td><td>Formal pilot with one library system (CPL's Polaris/PAPI stack is the local candidate); checkout-hatch and return-evolve go live; auth stays library-side</td><td>Partnership agreement; API access granted by the library</td><td>Tier 3</td></tr>
+        <tr><td>4 · Consortium scale</td><td>Take the working pilot to state consortia and regional networks, where one deal can mean hundreds of libraries; Evergreen-based consortia are natural targets since the integration is already built</td><td>Pilot results, municipal-speed patience</td><td>Tier 3 at scale</td></tr>
+      </table>
+    </div>
+
+    <h4>Realities to respect</h4>
+    <p>The library is the customer everywhere in this industry; patrons pay nothing, so every model is B2B or B2B2C, sales cycles run at municipal-procurement speed, and budgets are flat. The pitch that fits that reality is the one this game was designed around: a circulation-and-visits driver the library brands as its own, with pilot metrics (youth checkouts, branch visits via totem scans) that map directly onto what libraries already report to their funders.</p>
+    <p>Patron authentication is the industry's graveyard: there is no universal library identity layer, and startups have died trying to become one. The trust-tier architecture is the shield here — the game never holds library credentials, never depends on auth to function, and lets each partner library own the patron relationship entirely. Target selection is also a solved research problem: ILS and digital-vendor deployments per library are publicly trackable (Marshall Breeding's Library Technology Guides is the canonical map), so the Phase 3 and 4 pipeline can be built from a desk.</p>
+    <div class="marginnote">FILED FOR LATER: if the game ever touches ebooks, the open path exists — the Palace Project's open-source stack and the OPDS/ODL/LCP standards are the library-governed side of digital lending. Physical-first remains the strategy; this is a bookmark, not a plan.</div>
+  </section>
+
+  <!-- ============ ANTI-CHEAT ============ -->
+  <section class="cardsec">
+    <div class="callno"><span class="num">364.16</span> — Integrity</div>
+    <h2>Honesty by Design</h2>
+    <p>The reframe: don't ask "how do we stop cheating," ask "which rewards must be earned honestly." Shared ISBN lists were the social fabric of Skannerz and Monster Rancher — a kid speedrunning their own museum has no victim. Verification spends effort only where a victim exists.</p>
+    <div class="tablewrap">
+      <table class="ledger">
+        <tr><th>Concern</th><th>Tool</th><th>Cozy framing</th></tr>
+        <tr><td>Bulk ISBN entry from lists</td><td>Camera-only input; no typing</td><td>The magic requires the real book in hand</td></tr>
+        <tr><td>Shelf strip-mining</td><td>Daily bonding caps + real-clock growth</td><td>"Your satchel is full for today"</td></tr>
+        <tr><td>Grinding past timers</td><td>Evolutions take real days (no skips, no IAP)</td><td>Things grow when they grow</td></tr>
+        <tr><td>Fake branch presence</td><td>Rotating QR totems at the desk</td><td>The library is a landmark, not a coordinate</td></tr>
+        <tr><td>Fake checkouts</td><td>Receipt scan (soft) → ILS verify (Tier 3, hard)</td><td>Trust tiers: unverified always works, verified unlocks more</td></tr>
+        <tr><td>Claiming to have read</td><td>Sustained-possession re-scans (day 1 / day 8 / return); optional in-fiction story chats</td><td>Your creature asks about the story because it cares — never a quiz gate</td></tr>
+        <tr><td>Communal leaderboard abuse</td><td>Verified-tier-only credit for galleries &amp; first-discoveries</td><td>Public honors require public proof</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ OPEN QUESTIONS ============ -->
+  <section class="cardsec ox">
+    <div class="callno"><span class="num">001.4</span> — Unresolved</div>
+    <h2>Open Questions</h2>
+    <p>Held deliberately open. These get answered by prototyping and by the first library conversation, not by this document.</p>
+    <ul class="openq">
+      <li><b>Platform:</b> kid's own device, family shared device, or (Skannerz-style) something dedicated? Shapes session design, COPPA posture, and who "owns" the collection.</li>
+      <li><b>Contest vs. combat:</b> does battling exist at all, or do Ooblets-style playful contests carry the competitive itch? Skannerz DNA argues for stakes; the library venue argues for tone.</li>
+      <li><b>Business model:</b> the anti-Tonies stance rules out pay-to-play. What sustains it — grants, library licensing, philanthropy, cosmetics for grown-ups?</li>
+      <li><b>Solo vs. social at v1:</b> branch galleries and trading are powerful but multiply moderation and verification cost. What's the smallest lovable social layer?</li>
+      <li><b>Role of reading verification:</b> how far past "sustained possession" do we go before it starts smelling like homework?</li>
+      <li><b>The name.</b> Pending, and enjoying being pending.</li>
+    </ul>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>
+    <div class="pocket">
+      <span class="stamp">Living Draft</span>
+      <span class="stamp green">Free to Play, Always</span>
+      <div style="margin-top:14px;">PROPERTY OF: THE WORKING FILE · REVISE OFTEN · SHARE WHEN READY</div>
+    </div>
+    <div>COMPILED FROM DESIGN CONVERSATIONS · JULY 2026</div>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,145 @@
+// GameState: single source of truth. All mutations happen in applyEvent (pure).
+// No DOM access, no Date.now() — time arrives inside events as `event.at`.
+// Every tuning number comes from content.json.
+
+import content from './content.json' with { type: 'json' };
+import { EventTypes } from './events.js';
+
+const STATS = content.stats;
+
+// Local calendar date key ("YYYY-M-D"). Deterministic for a given `ms` on a given device.
+export function dayKeyOf(ms) {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+export function clampStat(value) {
+  return Math.min(STATS.max, Math.max(STATS.min, value));
+}
+
+export function initialState() {
+  return {
+    hatched: false,
+    name: null,
+    stage: content.species.stages[0].stage,
+    stats: { fullness: STATS.min, spirit: STATS.min, energy: STATS.min },
+    cp: 0,
+    actionsToday: 0,
+    dayKey: null,
+    stickers: [],
+    creature: null,
+    creatureHistory: [],
+    tuckedIn: false
+  };
+}
+
+// Mood is display-only, derived from Fullness and Spirit (Energy excluded).
+// Ties (fullness === spirit, both low) resolve to sleepy.
+export function moodOf(state) {
+  const { fullness, spirit } = state.stats;
+  const rules = content.mood;
+  if (fullness >= rules.beamingMin && spirit >= rules.beamingMin) return 'beaming';
+  if (fullness >= rules.contentMin && spirit >= rules.contentMin) return 'content';
+  return fullness < spirit ? 'peckish' : 'sleepy';
+}
+
+export function applyEvent(state, event) {
+  switch (event.type) {
+    case EventTypes.Hatched: {
+      return {
+        ...state,
+        hatched: true,
+        name: state.creature?.name ?? content.species.name,
+        stage: content.species.stages[0].stage,
+        stats: { ...STATS.initial },
+        dayKey: dayKeyOf(event.at)
+      };
+    }
+
+    case EventTypes.TimeElapsed: {
+      // Drift for time spent away (already clamped by ClockSystem). Energy only
+      // regenerates while the app is closed — which is exactly what this event models.
+      const hours = event.elapsedMs / content.time.msPerHour;
+      const decay = STATS.decayPerHour;
+      return {
+        ...state,
+        tuckedIn: false, // a new visit always wakes the creature
+        stats: {
+          fullness: clampStat(state.stats.fullness - decay.fullness * hours),
+          spirit: clampStat(state.stats.spirit - decay.spirit * hours),
+          energy: clampStat(state.stats.energy + STATS.energyRegenPerHourClosed * hours)
+        }
+      };
+    }
+
+    case EventTypes.DayRolledOver: {
+      return { ...state, actionsToday: 0, dayKey: event.dayKey };
+    }
+
+    case EventTypes.TuckedIn: {
+      return { ...state, tuckedIn: true };
+    }
+
+    case EventTypes.CareActionPerformed: {
+      const def = content.care.actions.find((a) => a.id === event.actionId);
+      if (!def) return state;
+      const stats = { ...state.stats };
+      for (const [statId, delta] of Object.entries(def.effects)) {
+        stats[statId] = clampStat(stats[statId] + delta);
+      }
+      return {
+        ...state,
+        stats,
+        actionsToday: state.actionsToday + 1,
+        cp: state.cp + event.cpGranted,
+        tuckedIn: false
+      };
+    }
+
+    case EventTypes.GiftGranted: {
+      // Wake-up gift after an absence: exactly one sticker, and a gentle welfare
+      // floor — Fullness/Spirit rise to at least the floor, never downward
+      // (max() can never take a stat below its plain-decay value). CP unchanged.
+      const floor = content.absence.statFloor;
+      return {
+        ...state,
+        tuckedIn: false,
+        stickers: [...state.stickers, event.stickerId],
+        stats: {
+          ...state.stats,
+          fullness: Math.max(state.stats.fullness, floor),
+          spirit: Math.max(state.stats.spirit, floor)
+        }
+      };
+    }
+
+    case EventTypes.CreatureGenerated: {
+      if (!event.creature || event.creature.kind !== 'book') return state;
+      if (state.creature?.isbn === event.creature.isbn) {
+        return { ...state, creature: event.creature, name: event.creature.name };
+      }
+      const history = state.creature
+        ? [...(state.creatureHistory ?? []), state.creature]
+        : [...(state.creatureHistory ?? [])];
+      return {
+        ...state,
+        creature: event.creature,
+        creatureHistory: history,
+        name: event.creature.name
+      };
+    }
+
+    case EventTypes.CreatureStateChanged: {
+      return { ...state, stage: event.stage };
+    }
+
+    case EventTypes.ResourceGranted: {
+      // External bonus CP: bypasses the daily cap, counts toward growth.
+      // CP is monotonic — nothing ever removes it, so negative grants are ignored.
+      return { ...state, cp: state.cp + Math.max(0, event.cp) };
+    }
+
+    default:
+      return state;
+  }
+}

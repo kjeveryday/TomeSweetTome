@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "creature-care",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["/Users/kylejohnson/Desktop/Tome Sweet Tome/tools/serve.mjs"],
+      "port": 8437
+    }
+  ]
+}
