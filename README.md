@@ -46,8 +46,8 @@ The v1 application is dependency-free vanilla JavaScript ES modules with no buil
 Local verification is a checkpoint inside each work package, not a step saved for the end. While developing a module:
 
 1. Run the full test suite before starting, to confirm a green baseline.
-2. Add or update the module's tests with each behavior change and keep `node --test test/` green locally; never hand off red.
-3. At each milestone within the module, serve the app locally and exercise the affected flow in the browser against the module's PRD acceptance criteria.
+2. Add or update the module’s tests with each behavior change and keep `node --test test/` green locally; never hand off red.
+3. At each milestone within the module, serve the app locally and exercise the affected flow in the browser against the module’s PRD acceptance criteria.
 4. Before declaring the package done, run the full suite once more and, when the module is optional, check its feature-off state locally.
 
 ## Precedence when files conflict
@@ -103,7 +103,7 @@ A work package is complete only when:
 - Its public inputs and outputs match the shared contracts.
 - Its reducer behavior is deterministic and tested.
 - Existing v1 tests remain passing.
-- The testing checkpoints in "Run and verify locally" were completed, ending with a green full suite and a browser check of the module's flows.
+- The testing checkpoints in "Run and verify locally" were completed, ending with a green full suite and a browser check of the module’s flows.
 - Its feature-off behavior is tested when the module is optional.
 - Fixture, unavailable-provider, and recovery behavior are tested when it uses a provider.
 - It does not introduce parking-lot work, social communication, public child data, duration-based power, or unapproved terminology.
