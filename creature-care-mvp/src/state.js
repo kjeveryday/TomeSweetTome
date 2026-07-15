@@ -135,8 +135,15 @@ export function applyEvent(state, event) {
 
     case EventTypes.ResourceGranted: {
       // External bonus CP: bypasses the daily cap, counts toward growth.
-      // CP is monotonic — nothing ever removes it, so negative grants are ignored.
-      return { ...state, cp: state.cp + Math.max(0, event.cp) };
+      // A grant before the creature hatches is dropped, matching every other event
+      // path (care, clock, growth all no-op while unhatched) — otherwise the CP would
+      // sit waiting and jump the creature past Stage 1 the instant it hatches.
+      if (!state.hatched) return state;
+      // CP is monotonic — nothing ever removes it — so negative grants are ignored, and
+      // non-finite amounts (NaN/Infinity from a malformed hook) are ignored rather than
+      // poisoning CP to NaN, which would silently and permanently block all growth.
+      const grant = Number.isFinite(event.cp) ? Math.max(0, event.cp) : 0;
+      return { ...state, cp: state.cp + grant };
     }
 
     default:

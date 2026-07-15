@@ -33,6 +33,7 @@ This file is the entry point for developing the Stacklings MVP. It explains whic
 | Superseded product documents: `Stacklings General Access PRD v0.2.docx`, `Stacklings General Access PRD - Hearth and Shelf v0.1.docx`, `creature-care-mvp-agent-brief.md`, the `Stacklings … Overview` `.html` files, `library-creature-game-overview.html`, `monster-generation-mechanics-report.md`, `book-values-creature-generation.md`, `physical_capture_report.md`, `cozy-game-return-loops-report.md` | Historical exploration | Do not treat them as current requirements or copy terminology from them into the MVP |
 | `Game dev prompt example.pdf` | Prompt-authoring example reference | Not a Stacklings product document; no requirements live here |
 | `workspace-changes-2026-07-15.md` | Record of the July 15, 2026 workspace reorganization | Historical record; not a requirements source |
+| `verification-report-2026-07-15.md` | Findings from the independent v1 verification pass | Historical record; lists 3 fixed defects and open product questions |
 
 ## Run and verify locally
 

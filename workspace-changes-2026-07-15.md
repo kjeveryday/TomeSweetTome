@@ -44,11 +44,15 @@ The workspace is now a git repository on branch `main`, pushed to https://github
 
 A second review of these changes prompted: `tools/serve.mjs` now binds `127.0.0.1` (it previously listened on all interfaces) and uses a separator-suffixed containment check (the old string-prefix check would have admitted sibling paths such as `creature-care-mvp-agent-brief.md`); `tools/requirements.txt` records the `python-docx` dependency; `.claude/launch.json` is classified as machine-local in the README, since the preview launcher resolves no working directory and relative paths fail; the mechanics-sheet script is marked as a non-portable one-off; and the verification note below was expanded into a defined backlog item.
 
-## Outstanding: independent baseline verification (first backlog item)
+## Independent baseline verification (first backlog item) — CLOSED July 15, 2026
 
-v1 ships with a green 63-test suite, but the tests were written by the same agent that wrote the code, and the planned independent adversarial review never ran (earlier sessions hit limits). Verification to date is therefore the automated suite, the builder's self-checks, and manual browser playtests. What is missing is review by parties that did not build the code.
+**Closed the same day.** Five independent reviewers ran the pass; findings are in [`verification-report-2026-07-15.md`](verification-report-2026-07-15.md). Result: 3 genuine defects found (all in the "unvalidated input silently corrupts state" family — two produced permanent `cp: NaN` growth freezes), all fixed and covered by regression tests. The suite grew from 63 to **164 tests, all green**. Phase 1 module work is now unblocked.
 
-This is the first item of the development backlog. No Phase 1 module work starts before it closes.
+The original definition of this item, kept for the record:
+
+v1 shipped with a green 63-test suite, but the tests were written by the same agent that wrote the code, and the planned independent adversarial review had never run (earlier sessions hit limits). Verification to that point was the automated suite, the builder's self-checks, and manual browser playtests. What was missing was review by parties that did not build the code.
+
+This was the first item of the development backlog; no Phase 1 module work started before it closed.
 
 **Method.** Independent reviewers — agents or developers who did not write the implementation — each take one area and attempt to refute the implementation against the PRD and `creature-care-mvp/BRIEF.md`, reading source and writing targeted tests or browser reproductions. One reviewer per area, at minimum:
 
