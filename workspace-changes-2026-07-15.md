@@ -1,6 +1,6 @@
 # Workspace changes — July 15, 2026
 
-Record of the workspace review and cleanup performed on July 15, 2026. These changes reorganized documents and infrastructure only; no application code or test behavior changed. The suite was green before and after (63 tests).
+Record of the workspace review and cleanup performed on July 15, 2026. Sections 1–5 reorganized documents and infrastructure only; no application code or test behavior changed, and the 63-test suite stayed green. The later verification section records the independent test expansion, defect fixes, and Phase 0 hardening completed afterward.
 
 ## 1. Build brief demoted from spec to as-built notes
 
@@ -44,9 +44,11 @@ The workspace is now a git repository on branch `main`, pushed to https://github
 
 A second review of these changes prompted: `tools/serve.mjs` now binds `127.0.0.1` (it previously listened on all interfaces) and uses a separator-suffixed containment check (the old string-prefix check would have admitted sibling paths such as `creature-care-mvp-agent-brief.md`); `tools/requirements.txt` records the `python-docx` dependency; `.claude/launch.json` is classified as machine-local in the README, since the preview launcher resolves no working directory and relative paths fail; the mechanics-sheet script is marked as a non-portable one-off; and the verification note below was expanded into a defined backlog item.
 
-## Independent baseline verification (first backlog item) — CLOSED July 15, 2026
+## Independent baseline verification (first backlog item) — CLOSED after Phase 0 follow-up, July 15, 2026
 
-**Closed the same day.** Five independent reviewers ran the pass; findings are in [`verification-report-2026-07-15.md`](verification-report-2026-07-15.md). Result: 3 genuine defects found (all in the "unvalidated input silently corrupts state" family — two produced permanent `cp: NaN` growth freezes), all fixed and covered by regression tests. The suite grew from 63 to **164 tests, all green**. Phase 1 module work is now unblocked.
+**Closed the same day.** Five independent reviewers ran the initial pass; findings are in [`verification-report-2026-07-15.md`](verification-report-2026-07-15.md). Result: 3 genuine defects found (all in the "unvalidated input silently corrupts state" family — two produced permanent `cp: NaN` growth freezes), all fixed and covered by regression tests. The initial suite grew from 63 to **164 tests, all green**.
+
+A review of that report then found incomplete checks at the same input boundaries. Phase 0 hardened required saved-state values, loaded and saved timestamps, and care-event CP without changing the v1 save key or envelope. The suite now contains **177 tests, all green**. Versioned save migration remains the first Phase 1 shared-contract task, and collection deduplication remains part of the Phase 1 collection module. With those boundaries recorded, Phase 1 module work is unblocked.
 
 The original definition of this item, kept for the record:
 

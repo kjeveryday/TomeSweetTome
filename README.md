@@ -33,13 +33,13 @@ This file is the entry point for developing the Stacklings MVP. It explains whic
 | Superseded product documents: `Stacklings General Access PRD v0.2.docx`, `Stacklings General Access PRD - Hearth and Shelf v0.1.docx`, `creature-care-mvp-agent-brief.md`, the `Stacklings … Overview` `.html` files, `library-creature-game-overview.html`, `monster-generation-mechanics-report.md`, `book-values-creature-generation.md`, `physical_capture_report.md`, `cozy-game-return-loops-report.md` | Historical exploration | Do not treat them as current requirements or copy terminology from them into the MVP |
 | `Game dev prompt example.pdf` | Prompt-authoring example reference | Not a Stacklings product document; no requirements live here |
 | `workspace-changes-2026-07-15.md` | Record of the July 15, 2026 workspace reorganization | Historical record; not a requirements source |
-| `verification-report-2026-07-15.md` | Findings from the independent v1 verification pass | Historical record; lists 3 fixed defects and open product questions |
+| `verification-report-2026-07-15.md` | Findings from the independent v1 verification pass and Phase 0 hardening | Historical record; documents the fixed defects, current validation boundary, and Phase 1 follow-ups |
 
 ## Run and verify locally
 
 The v1 application is dependency-free vanilla JavaScript ES modules with no build step.
 
-- **Tests**: from `creature-care-mvp/`, run `node --test test/`. The full suite must stay green (63 tests as of July 15, 2026).
+- **Tests**: from `creature-care-mvp/`, run `node --test test/`. The full suite must stay green (177 tests as of July 15, 2026).
 - **App**: from the workspace root, run `node tools/serve.mjs`, then open `http://localhost:8437/`. Any static file server pointed at `creature-care-mvp/` works; opening `index.html` directly from the filesystem does not, because the app uses ES modules. `.claude/launch.json` starts this same server for browser preview.
 - **Debug clock**: append `?clock=+40h`, `?clock=+26h`, `?clock=-5h` (cumulative), or `?clock=reset` to the URL to simulate device-clock movement when exercising absence and day-rollover behavior.
 - **Documents**: after editing `Stacklings MVP PRD v0.3.md` or `Stacklings MVP Parking Lot v0.1.md`, regenerate the `.docx` copies with `python3 tools/build_stacklings_mvp_docs.py`.
@@ -122,4 +122,4 @@ Official background: [FTC COPPA compliance plan](https://www.ftc.gov/business-gu
 
 The next artifact should be an ordered development backlog. Each backlog item should be small enough for one developer or agent, point to its PRD requirements, declare its module contract, and contain verifiable acceptance criteria.
 
-The backlog's first item is fixed: the independent baseline verification of v1 defined in `workspace-changes-2026-07-15.md`. No Phase 1 module work starts before that item closes.
+The backlog's first item is complete: the independent baseline verification and Phase 0 hardening recorded in `workspace-changes-2026-07-15.md`. Phase 1 begins by freezing the shared contracts and versioned save migration described in the PRD.

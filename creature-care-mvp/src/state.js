@@ -87,11 +87,15 @@ export function applyEvent(state, event) {
       for (const [statId, delta] of Object.entries(def.effects)) {
         stats[statId] = clampStat(stats[statId] + delta);
       }
+      // CareSystem owns the daily-cap decision and records its result on the event.
+      // The reducer still treats the event as an input boundary: malformed or negative
+      // grants must not poison monotonic CP, while every valid finite grant is preserved.
+      const grant = Number.isFinite(event.cpGranted) ? Math.max(0, event.cpGranted) : 0;
       return {
         ...state,
         stats,
         actionsToday: state.actionsToday + 1,
-        cp: state.cp + event.cpGranted,
+        cp: state.cp + grant,
         tuckedIn: false
       };
     }

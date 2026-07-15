@@ -438,18 +438,51 @@ test('regression: a valid grant after a (now-ignored) non-finite grant still pro
 });
 
 // ---------------------------------------------------------------------------
-// 8. Architecture note (expected to PASS — not a defect, just documenting a
-// trust boundary this review relied on while writing the tests above).
+// 8. CareActionPerformed input hardening. CareSystem still owns the daily-cap
+// decision; the reducer preserves valid grants but rejects values that could
+// violate CP monotonicity or poison later growth checks.
 // ---------------------------------------------------------------------------
 
-test('architecture note: applyEvent trusts CareActionPerformed.cpGranted at face value — the cap is enforced only by care.performAction', () => {
+test('CareActionPerformed preserves a valid grant without re-checking the CareSystem daily-cap decision', () => {
   const base = { ...initialState(), hatched: true, actionsToday: 5, cp: 3 }; // already well over the cap
   const after = applyEvent(base, careActionPerformed('feed', 1, at(0)));
   assert.equal(
     after.cp,
     4,
-    'the reducer applies whatever cpGranted the event carries; it does not re-derive or re-check the cap itself'
+    'the reducer preserves a valid grant; it does not re-derive or re-check the cap itself'
   );
+});
+
+test('regression: CareActionPerformed ignores non-finite and nonnumeric CP grants', () => {
+  const invalidGrants = [NaN, Infinity, -Infinity, '1', undefined, null];
+  for (const cpGranted of invalidGrants) {
+    const base = { ...initialState(), hatched: true, cp: 7 };
+    const after = applyEvent(base, careActionPerformed('feed', cpGranted, at(0)));
+    assert.equal(after.cp, 7, `invalid grant ${String(cpGranted)} must not change CP`);
+    assert.equal(Number.isFinite(after.cp), true, 'CP must remain a finite number');
+  }
+});
+
+test('regression: CareActionPerformed ignores a negative CP grant without blocking the care action', () => {
+  const base = {
+    ...initialState(),
+    hatched: true,
+    cp: 7,
+    stats: { fullness: 40, spirit: 40, energy: 40 }
+  };
+  const after = applyEvent(base, careActionPerformed('feed', -3, at(0)));
+  assert.equal(after.cp, 7, 'a negative grant must not lower CP');
+  assert.equal(after.stats.fullness, 85, 'the underlying care action still applies');
+  assert.equal(after.actionsToday, 1, 'the underlying care action still counts');
+});
+
+test('regression: a valid care grant after a malformed one still produces sane, increasing CP', () => {
+  const base = { ...initialState(), hatched: true, cp: 7 };
+  const ignored = applyEvent(base, careActionPerformed('feed', NaN, at(0)));
+  const after = applyEvent(ignored, careActionPerformed('tidy', 1, at(1)));
+  assert.equal(ignored.cp, 7, 'the malformed grant is ignored');
+  assert.equal(after.cp, 8, 'a later valid grant still applies normally');
+  assert.equal(Number.isFinite(after.cp), true, 'CP remains usable by growth checks');
 });
 
 // ---------------------------------------------------------------------------
