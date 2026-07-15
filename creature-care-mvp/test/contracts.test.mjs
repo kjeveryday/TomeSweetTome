@@ -17,6 +17,7 @@ import {
   isCreatureRecord,
   isEventEnvelope,
   isPlayerAccess,
+  isReadingChallenge,
   isReadingRecord,
   isbnAliasKey,
   providerEditionAliasKey,
@@ -97,6 +98,15 @@ test('ReadingRecord accepts equivalent modes and private duration but rejects ma
   assert.equal(isReadingRecord({ ...base, mode: 'lesser_route' }), false);
 });
 
+test('ReadingChallenge supports explicit local registration without a deadline', () => {
+  assert.equal(isReadingChallenge({ registeredAt: null, goalDays: 20, halfwayDays: 10 }), true);
+  assert.equal(isReadingChallenge({
+    registeredAt: '2026-07-15T12:00:00.000Z', goalDays: 20, halfwayDays: 10
+  }), true);
+  assert.equal(isReadingChallenge({ registeredAt: null, goalDays: 10, halfwayDays: 10 }), false);
+  assert.equal(isReadingChallenge({ registeredAt: null, goalDays: 30, halfwayDays: 15 }), false);
+});
+
 test('CreatureRecord requires one work identity and unique relationship days', () => {
   const record = {
     id: 'creature:1',
@@ -130,7 +140,13 @@ test('all approved shared event names have version 1 and enforce a stable envelo
     id: 'reading:recorded:1',
     type: SharedEventTypes.ReadingRecorded,
     timestamp: 0,
-    payload: { readingRecordId: 'reading:1', workId: 'work:1' }
+    payload: {
+      readingRecordId: 'reading:1', workId: 'work:1',
+      record: {
+        id: 'reading:1', workId: 'work:1',
+        occurredAt: '1970-01-01T00:00:00.000Z', localDayKey: '1970-1-1'
+      }
+    }
   });
   assert.equal(isEventEnvelope(event), true);
   assert.equal(event.timestamp, '1970-01-01T00:00:00.000Z');
@@ -153,7 +169,14 @@ test('every shared event v1 payload has an acceptance and rejection contract', (
     BookAdded: bookRecordPayload,
     BookMetadataResolved: { ...bookRecordPayload, metadataStatus: 'resolved', source: 'fixture' },
     BookWorkReconciled: { canonicalWorkId: 'work:1', aliasedWorkIds: ['work:old'], editionIds: ['edition:1'] },
-    ReadingRecorded: { readingRecordId: 'reading:1', workId: 'work:1' },
+    ReadingChallengeStarted: { registeredAt: '2026-07-15T12:00:00.000Z', goalDays: 20, halfwayDays: 10 },
+    ReadingRecorded: {
+      readingRecordId: 'reading:1', workId: 'work:1',
+      record: {
+        id: 'reading:1', workId: 'work:1',
+        occurredAt: '2026-07-15T12:00:00.000Z', localDayKey: '2026-7-15'
+      }
+    },
     ReadingDayRecorded: { readingRecordId: 'reading:1', localDayKey: '2026-7-15' },
     BookStatusChanged: { workId: 'work:1', status: 'finished' },
     CreaturePreviewCreated: { creatureId: 'creature:1', workId: 'work:1' },
@@ -184,6 +207,15 @@ test('every shared event v1 payload has an acceptance and rejection contract', (
   assert.equal(EVENT_PAYLOAD_VALIDATORS.BookAdded({
     ...payloads.BookAdded,
     work: createBookWork({ id: 'work:1', editionIds: ['edition:1', 'edition:missing'] })
+  }), false);
+  assert.equal(EVENT_PAYLOAD_VALIDATORS.ReadingRecorded({
+    ...payloads.ReadingRecorded, workId: 'work:other'
+  }), false);
+  assert.equal(EVENT_PAYLOAD_VALIDATORS.ReadingChallengeStarted({
+    registeredAt: null, goalDays: 20, halfwayDays: 20
+  }), false);
+  assert.equal(EVENT_PAYLOAD_VALIDATORS.ReadingChallengeStarted({
+    registeredAt: null, goalDays: 20, halfwayDays: 10
   }), false);
   assert.equal(EVENT_PAYLOAD_VALIDATORS.RecommendationDelivered({ ...payloads.RecommendationDelivered, source: 'mock' }), false);
   assert.equal(EVENT_PAYLOAD_VALIDATORS.RecommendationDelivered({ ...payloads.RecommendationDelivered, source: 'unavailable' }), false);

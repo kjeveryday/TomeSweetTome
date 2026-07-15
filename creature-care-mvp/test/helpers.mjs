@@ -39,7 +39,7 @@ export function openSession(storage, now) {
     state = applyEvent(state, event);
     persistence.save(state, event.at);
     log.push(event);
-    for (const grown of growth.checkGrowth(state, event.at)) commit(grown);
+    for (const grown of growth.checkGrowthAfterEvent(state, event, event.at)) commit(grown);
   }
 
   const saved = persistence.load();

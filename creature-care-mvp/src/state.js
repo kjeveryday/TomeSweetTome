@@ -111,6 +111,11 @@ function reconcileBookWork(state, payload) {
     id,
     aliasedIds.includes(record.workId) ? { ...structuredClone(record), workId: canonical.id } : structuredClone(record)
   ]));
+  const bookStatuses = structuredClone(state.reading.bookStatuses ?? {});
+  for (const workId of aliasedIds) {
+    if (!bookStatuses[canonical.id] && bookStatuses[workId]) bookStatuses[canonical.id] = bookStatuses[workId];
+    delete bookStatuses[workId];
+  }
   const counts = Object.values(creatures).reduce((result, creature) => {
     result[creature.workId] = (result[creature.workId] ?? 0) + 1;
     return result;
@@ -123,7 +128,51 @@ function reconcileBookWork(state, payload) {
     ...state,
     books: { ...state.books, works, editions, aliases, provenance },
     collection: { ...state.collection, creatures, reconciledDuplicateWorkIds },
-    reading: { ...state.reading, records: readingRecords }
+    reading: { ...state.reading, records: readingRecords, bookStatuses }
+  };
+}
+
+function startReadingChallenge(state, payload) {
+  if (!EVENT_PAYLOAD_VALIDATORS.ReadingChallengeStarted(payload)) return state;
+  if (state.reading.challenge.registeredAt !== null) return state;
+  return { ...state, reading: { ...state.reading, challenge: structuredClone(payload) } };
+}
+
+function addReadingRecord(state, payload) {
+  if (!EVENT_PAYLOAD_VALIDATORS.ReadingRecorded(payload)) return state;
+  if (state.reading.challenge.registeredAt === null) return state;
+  if (!state.books.works[payload.workId]) return state;
+  const existing = state.reading.records[payload.readingRecordId];
+  if (existing) return state;
+  const formalDayKeys = state.reading.formalDayKeys.includes(payload.record.localDayKey)
+    ? state.reading.formalDayKeys
+    : [...state.reading.formalDayKeys, payload.record.localDayKey];
+  return {
+    ...state,
+    reading: {
+      ...state.reading,
+      records: { ...state.reading.records, [payload.record.id]: structuredClone(payload.record) },
+      formalDayKeys
+    }
+  };
+}
+
+function acknowledgeReadingDay(state, payload) {
+  if (!EVENT_PAYLOAD_VALIDATORS.ReadingDayRecorded(payload)) return state;
+  const record = state.reading.records[payload.readingRecordId];
+  if (!record || record.localDayKey !== payload.localDayKey) return state;
+  return state;
+}
+
+function changeBookStatus(state, payload) {
+  if (!EVENT_PAYLOAD_VALIDATORS.BookStatusChanged(payload) || !state.books.works[payload.workId]) return state;
+  if (state.reading.bookStatuses[payload.workId] === payload.status) return state;
+  return {
+    ...state,
+    reading: {
+      ...state.reading,
+      bookStatuses: { ...state.reading.bookStatuses, [payload.workId]: payload.status }
+    }
   };
 }
 
@@ -141,7 +190,10 @@ export function initialState() {
     creatureHistory: [],
     tuckedIn: false,
     books: { works: {}, editions: {}, aliases: {}, editionAliases: {}, provenance: {} },
-    reading: { records: {}, formalDayKeys: [] },
+    reading: {
+      records: {}, formalDayKeys: [], bookStatuses: {},
+      challenge: { registeredAt: null, goalDays: 20, halfwayDays: 10 }
+    },
     collection: {
       creatures: {}, activeCreatureId: null, visibleCreatureIds: [], archivedCreatureIds: [],
       reconciledDuplicateWorkIds: []
@@ -172,6 +224,18 @@ export function applyEvent(state, event) {
 
     case EventTypes.BookWorkReconciled:
       return reconcileBookWork(state, event.payload ?? event);
+
+    case EventTypes.ReadingChallengeStarted:
+      return startReadingChallenge(state, event.payload ?? event);
+
+    case EventTypes.ReadingRecorded:
+      return addReadingRecord(state, event.payload ?? event);
+
+    case EventTypes.ReadingDayRecorded:
+      return acknowledgeReadingDay(state, event.payload ?? event);
+
+    case EventTypes.BookStatusChanged:
+      return changeBookStatus(state, event.payload ?? event);
 
     case EventTypes.Hatched: {
       return {

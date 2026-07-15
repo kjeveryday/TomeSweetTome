@@ -159,6 +159,16 @@ test('current envelope rejects dangling and duplicate cross-record references', 
     (value) => { value.state.books.aliases['invented:alias'] = 'work:1'; },
     (value) => { value.state.reading.records.bad = { id: 'different', workId: 'work:1' }; },
     (value) => { value.state.reading.formalDayKeys = ['2026-7-15', '2026-7-15']; },
+    (value) => { value.state.reading.challenge = { registeredAt: null, goalDays: 10, halfwayDays: 10 }; },
+    (value) => { value.state.reading.bookStatuses['work:missing'] = 'paused'; },
+    (value) => { value.state.reading.bookStatuses['work:1'] = 'punished'; },
+    (value) => {
+      value.state.reading.records['reading:before-start'] = {
+        id: 'reading:before-start', workId: 'work:1',
+        occurredAt: '2026-07-15T12:00:00.000Z', localDayKey: '2026-7-15'
+      };
+      value.state.reading.formalDayKeys = ['2026-7-15'];
+    },
     (value) => { value.state.collection.activeCreatureId = 'creature:missing'; }
   ];
   for (const corrupt of cases) {
@@ -166,6 +176,17 @@ test('current envelope rejects dangling and duplicate cross-record references', 
     corrupt(value);
     assert.equal(isCurrentEnvelope(value), false);
     assert.equal(migrateSave(value).status, 'corrupt');
+  }
+});
+
+test('present malformed schema-v2 reading slices are corrupt rather than defaulted', () => {
+  for (const reading of ['bad', [], null]) {
+    const envelope = migrateSave(null).envelope;
+    envelope.state.reading = reading;
+    const result = migrateSave(envelope);
+    assert.equal(result.status, 'corrupt');
+    assert.equal(isCurrentEnvelope(result.envelope), true);
+    assert.deepEqual(result.envelope.state.reading.records, {});
   }
 });
 
@@ -256,6 +277,7 @@ test('invalid current book data is refused without replacing migrated care and c
 
 test('formal reading days equal the distinct canonical day keys in accepted reading records', () => {
   const envelope = migrateSave(null).envelope;
+  envelope.state.reading.challenge.registeredAt = '2026-07-15T11:00:00.000Z';
   envelope.state.books.works['work:1'] = createBookWork({ id: 'work:1', title: 'Book' });
   envelope.state.reading.records['reading:1'] = {
     id: 'reading:1', workId: 'work:1', occurredAt: '2026-07-15T12:00:00.000Z', localDayKey: '2026-7-15'
@@ -272,6 +294,7 @@ test('formal reading days equal the distinct canonical day keys in accepted read
 test('valid populated reading slice remains byte-identical through migration and export', () => {
   const storage = new FakeStorage();
   const envelope = migrateSave(null).envelope;
+  envelope.state.reading.challenge.registeredAt = '2026-07-15T11:00:00.000Z';
   envelope.state.books.works['work:1'] = createBookWork({ id: 'work:1', title: 'Book' });
   envelope.state.reading.records['reading:1'] = {
     id: 'reading:1',

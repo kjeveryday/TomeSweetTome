@@ -121,6 +121,7 @@ test('late work reconciliation preserves both already-owned identities as an exp
       occurredAt: '2026-07-16T12:00:00.000Z', localDayKey: '2026-7-16', mode: 'listened'
     }
   };
+  state.reading.challenge.registeredAt = '2026-07-15T11:00:00.000Z';
   state.reading.formalDayKeys = ['2026-7-15', '2026-7-16'];
   const beforeReadingRecords = structuredClone(state.reading.records);
   const beforeFormalDayKeys = [...state.reading.formalDayKeys];

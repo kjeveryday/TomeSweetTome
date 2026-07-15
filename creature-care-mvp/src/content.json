@@ -40,6 +40,22 @@
   },
   "time": { "msPerHour": 3600000, "maxElapsedHours": 72 },
   "absence": { "thresholdHours": 36, "statFloor": 60 },
+  "reading": {
+    "goalDays": 20,
+    "halfwayDays": 10,
+    "modes": {
+      "independent": "I read it",
+      "shared": "We read together",
+      "read_aloud": "I read aloud",
+      "listened": "I listened"
+    },
+    "statuses": {
+      "reading": "Reading",
+      "finished": "Finished",
+      "paused": "Paused",
+      "not_for_me": "Not for me"
+    }
+  },
   "generation": {
     "seedVersion": "stacklings:v1",
     "hashAlgorithm": "SHA-256",
@@ -214,6 +230,27 @@
   },
   "copy": {
     "title": "Creature Care",
+    "readingTitle": "Reading challenge",
+    "readingIntro": "Read on 20 different days. There’s no deadline.",
+    "readingStart": "Start challenge",
+    "readingRegistered": "Ready to begin · 0 of 20 days",
+    "readingActive": "Reading · {days} of {goal} days",
+    "readingHalfway": "Halfway · {days} of {goal} days",
+    "readingCompleted": "Completed · {days} reading days",
+    "readingBookLabel": "Book",
+    "readingNoBooks": "Add a book to record reading.",
+    "readingModeLabel": "How did you read?",
+    "readingRecord": "I read this",
+    "readingRecorded": "Reading recorded for today.",
+    "readingStatusLabel": "Book status",
+    "timerStart": "Start optional timer",
+    "timerStop": "Stop timer",
+    "timerCancel": "Cancel timer",
+    "timerRunning": "Timer running · {time}",
+    "timerConfirm": "Record this reading?",
+    "timerConfirmYes": "Yes, record it",
+    "timerConfirmNo": "No, thanks",
+    "timerRecovery": "A timer was interrupted. Did you want to record that reading?",
     "bookButton": "Book magic",
     "bookDialogTitle": "Wake a book creature",
     "bookDialogBody": "Choose a barcode photo, type its ISBN, or search by title and author.",

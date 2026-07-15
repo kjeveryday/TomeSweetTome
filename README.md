@@ -41,9 +41,10 @@ This file is the entry point for developing the Stacklings MVP. It explains whic
 
 The v1 application is dependency-free vanilla JavaScript ES modules with no build step.
 
-- **Tests**: from `creature-care-mvp/`, run `node --test test/`. The current suite is 240 tests: the verified 177-test v1 baseline plus 63 shared-contract, migration, book-record, and identity tests.
+- **Tests**: from `creature-care-mvp/`, run `node --test test/`. The current suite is 270 tests: the verified 177-test v1 baseline plus 93 Phase 1 contract, migration, book, identity, reading, and timer tests.
 - **App**: from the workspace root, run `node tools/serve.mjs`, then open `http://localhost:8437/`. Any static file server pointed at `creature-care-mvp/` works; opening `index.html` directly from the filesystem does not, because the app uses ES modules. `.claude/launch.json` starts this same server for browser preview.
 - **Debug clock**: append `?clock=+40h`, `?clock=+26h`, `?clock=-5h` (cumulative), or `?clock=reset` to the URL to simulate device-clock movement when exercising absence and day-rollover behavior.
+- **Local timer preview**: append `?timer=on` on `localhost` or `127.0.0.1` to exercise the optional timer. The stored `timer` feature flag remains the production configuration boundary.
 - **Documents**: after editing `Stacklings MVP PRD v0.3.md` or `Stacklings MVP Parking Lot v0.1.md`, regenerate the `.docx` copies with `python3 tools/build_stacklings_mvp_docs.py`.
 
 ### Testing checkpoints during module development
@@ -122,4 +123,4 @@ Official background: [FTC COPPA compliance plan](https://www.ftc.gov/business-gu
 
 ## Active implementation artifact
 
-`ordered-development-backlog.md` is the active dependency-ordered backlog. The independent baseline verification, Phase 0 hardening, and Phase 1 packages 1-2 are complete. Package 3—reading records, distinct-day progress, and the optional timer—is next.
+`ordered-development-backlog.md` is the active dependency-ordered backlog. The independent baseline verification, Phase 0 hardening, and Phase 1 packages 1-3 are complete. Package 4—preview, first-reading reveal, collection, and repeated scans—is next.

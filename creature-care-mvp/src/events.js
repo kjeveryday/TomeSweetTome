@@ -92,3 +92,22 @@ export const bookWorkReconciled = ({ canonicalWorkId, aliasedWorkIds, editionIds
     aliasedWorkIds: [...aliasedWorkIds],
     editionIds: [...editionIds]
   }, id);
+
+export const readingChallengeStarted = (challenge, now, id) =>
+  compatibilityEvent(EventTypes.ReadingChallengeStarted, now, structuredClone(challenge), id);
+
+export const readingRecorded = (record, now, id) =>
+  compatibilityEvent(EventTypes.ReadingRecorded, now, {
+    readingRecordId: record.id,
+    workId: record.workId,
+    record: structuredClone(record)
+  }, id);
+
+export const readingDayRecorded = (record, now, id) =>
+  compatibilityEvent(EventTypes.ReadingDayRecorded, now, {
+    readingRecordId: record.id,
+    localDayKey: record.localDayKey
+  }, id);
+
+export const bookStatusChanged = (workId, status, now, id) =>
+  compatibilityEvent(EventTypes.BookStatusChanged, now, { workId, status }, id);

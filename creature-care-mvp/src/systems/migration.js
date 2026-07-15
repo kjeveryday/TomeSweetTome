@@ -18,6 +18,7 @@ import {
   isbnAliasKey,
   isLocalDayKey,
   isPlayerAccess,
+  isReadingChallenge,
   isReadingRecord,
   isWorkAliasKey,
   workIdForIsbn
@@ -35,7 +36,10 @@ const isTimestamp = (value) => Number.isFinite(value) && value >= 0;
 function emptyModuleState() {
   return {
     books: { works: {}, editions: {}, aliases: {}, editionAliases: {}, provenance: {} },
-    reading: { records: {}, formalDayKeys: [] },
+    reading: {
+      records: {}, formalDayKeys: [], bookStatuses: {},
+      challenge: { registeredAt: null, goalDays: 20, halfwayDays: 10 }
+    },
     collection: {
       creatures: {}, activeCreatureId: null, visibleCreatureIds: [], archivedCreatureIds: [],
       reconciledDuplicateWorkIds: []
@@ -49,6 +53,17 @@ function emptyModuleState() {
 function withModuleState(legacyState) {
   const modules = emptyModuleState();
   const legacyBooks = legacyState.books ?? {};
+  const legacyReading = Object.hasOwn(legacyState, 'reading') ? legacyState.reading : undefined;
+  const reading = legacyReading === undefined
+    ? clone(modules.reading)
+    : isObject(legacyReading)
+      ? {
+          ...clone(modules.reading),
+          ...clone(legacyReading),
+          bookStatuses: clone(legacyReading.bookStatuses ?? {}),
+          challenge: clone(legacyReading.challenge ?? modules.reading.challenge)
+        }
+      : clone(legacyReading);
   return {
     ...clone(legacyState),
     books: {
@@ -57,7 +72,7 @@ function withModuleState(legacyState) {
       editionAliases: clone(legacyBooks.editionAliases ?? {}),
       provenance: clone(legacyBooks.provenance ?? {})
     },
-    reading: clone(legacyState.reading ?? modules.reading),
+    reading,
     collection: {
       ...clone(modules.collection),
       ...clone(legacyState.collection ?? {}),
@@ -221,6 +236,12 @@ export function isCurrentState(value) {
   const recordDayKeys = new Set(Object.values(value.reading.records).map((record) => record.localDayKey));
   if (recordDayKeys.size !== value.reading.formalDayKeys.length
     || !value.reading.formalDayKeys.every((key) => recordDayKeys.has(key))) return false;
+  if (!isObject(value.reading.bookStatuses)
+    || !Object.entries(value.reading.bookStatuses).every(([workId, status]) => Object.hasOwn(works, workId)
+      && ['reading', 'finished', 'paused', 'not_for_me'].includes(status))) return false;
+  if (!isReadingChallenge(value.reading.challenge)) return false;
+  if (value.reading.challenge.registeredAt === null
+    && (Object.keys(value.reading.records).length > 0 || value.reading.formalDayKeys.length > 0)) return false;
   if (!isObject(value.collection) || !isRecordMap(value.collection.creatures, isCreatureRecord)) return false;
   const creatures = value.collection.creatures;
   if (!Object.values(creatures).every((creature) => Object.hasOwn(works, creature.workId))) return false;

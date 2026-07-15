@@ -34,6 +34,7 @@ export const SharedEventTypes = Object.freeze({
   BookAdded: 'BookAdded',
   BookMetadataResolved: 'BookMetadataResolved',
   BookWorkReconciled: 'BookWorkReconciled',
+  ReadingChallengeStarted: 'ReadingChallengeStarted',
   ReadingRecorded: 'ReadingRecorded',
   ReadingDayRecorded: 'ReadingDayRecorded',
   BookStatusChanged: 'BookStatusChanged',
@@ -162,6 +163,13 @@ export function isReadingRecord(value) {
     && (!Object.hasOwn(value, 'status') || BOOK_STATUSES.has(value.status));
 }
 
+export function isReadingChallenge(value) {
+  return isObject(value)
+    && (value.registeredAt === null || isIsoTimestamp(value.registeredAt))
+    && value.goalDays === 20
+    && value.halfwayDays === 10;
+}
+
 export function isCreatureRecord(value) {
   return hasString(value, 'id')
     && hasString(value, 'workId')
@@ -235,7 +243,9 @@ export const EVENT_PAYLOAD_VALIDATORS = Object.freeze({
     && p.metadataStatus === p.work.metadataStatus && p.source === p.provenance.source,
   [SharedEventTypes.BookWorkReconciled]: (p) => requiredStrings(p, ['canonicalWorkId'])
     && uniqueStrings(p.aliasedWorkIds) && uniqueStrings(p.editionIds) && optionalString(p, 'preservedCreatureId'),
-  [SharedEventTypes.ReadingRecorded]: (p) => requiredStrings(p, ['readingRecordId', 'workId']),
+  [SharedEventTypes.ReadingChallengeStarted]: (p) => isReadingChallenge(p) && p.registeredAt !== null,
+  [SharedEventTypes.ReadingRecorded]: (p) => requiredStrings(p, ['readingRecordId', 'workId'])
+    && isReadingRecord(p.record) && p.readingRecordId === p.record.id && p.workId === p.record.workId,
   [SharedEventTypes.ReadingDayRecorded]: (p) => requiredStrings(p, ['readingRecordId', 'localDayKey']) && isLocalDayKey(p.localDayKey),
   [SharedEventTypes.BookStatusChanged]: (p) => requiredStrings(p, ['workId', 'status']) && BOOK_STATUSES.has(p.status),
   [SharedEventTypes.CreaturePreviewCreated]: (p) => requiredStrings(p, ['creatureId', 'workId']),

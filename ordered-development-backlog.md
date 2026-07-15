@@ -49,12 +49,14 @@ This backlog follows the dependency order in PRD section 9. Phase 1 packages are
 - **Feature-off behavior:** With all optional services off and network unavailable, a guest can still add an ISBN work and continue to reading.
 - **Acceptance criteria:** Every captured edition resolves to one work record; metadata failure never blocks an honor-based reading record; owned identities never reroll.
 
-## 3. Reading records, distinct-day progress, and optional timer
+## 3. Reading records, distinct-day progress, and optional timer — complete
+
+**Implementation status (2026-07-15):** Complete and green at 270 tests. Standalone participation starts through an explicit local “Start challenge” action with a 20-day goal, a 10-day halfway state, and no deadline. Confirmed reading stores the complete record and its distinct formal day atomically; all approved reading routes, rereading, several books on one day, book statuses, and 0/10/20-day states are covered. The optional timer uses a monotonic in-memory clock and never creates CP, care power, or extra formal progress. An interrupted timer discards its duration on reload but leaves a one-time local prompt asking whether to record the reading as untimed; Yes follows the ordinary confirmation path and No clears the prompt. Browser checks passed for Start, untimed reading, same-day deduplication across books and modes, a later simulated local day, timer start/stop/cancel, one-time reload recovery, persistence, and timer-off behavior.
 
 - **Objective and PRD references:** Record equivalent reading routes, derive one formal day per local date, support private optional duration, and derive 10-day/20-day status (PRD 3, 5, 6.4, 8, 11.3-11.7).
 - **Owned files:** Reading module, reading reducer slice, timer/session adapter, reading UI, and reading tests.
 - **Shared records read/written:** Write `ReadingRecord`; read `BookWork`; write formal reading-day index and derived program status.
-- **Events consumed/emitted:** Emit `ReadingRecorded`, `ReadingDayRecorded`, and `BookStatusChanged`.
+- **Events consumed/emitted:** Emit `ReadingChallengeStarted`, `ReadingRecorded`, `ReadingDayRecorded`, and `BookStatusChanged`.
 - **Provider dependencies:** None.
 - **Feature flags:** `timer`; untimed confirmation is always available.
 - **Migration impact:** New fields default empty without changing migrated care or collection records.
@@ -176,11 +178,14 @@ Resolved for package 2:
 - **Non-ISBN identity:** `stacklings:work:v1` hashes the stable provider work key. Title and author are NFKC-normalized, trimmed, and whitespace-collapsed for search; comparison is case-insensitive without changing display text. ISBN-only publisher and language inputs use the existing neutral defaults.
 - **Late reconciliation:** Both already-owned creatures remain. Their identities and traits do not change; both route to the canonical work through a validated `reconciledDuplicateWorkIds` exception.
 
+Resolved for package 3:
+
+- **Timer recovery:** An unconfirmed timer duration does not survive reload. A local interrupted-session marker may show a one-time “Did you want to record that reading?” prompt; accepting records ordinary untimed reading, and declining clears it.
+- **Standalone registration:** The user explicitly starts the local challenge. It uses the default 20-day goal and 10-day halfway state without a deadline or library-program window.
+
 Remaining questions:
 
-1. **Timer recovery:** Decide whether an unconfirmed private timer survives reload and define its validation bounds before package 3.
-2. **Program registration/window:** Define standalone `registered` semantics and any program-goal/window record before program-specific configuration is added.
-3. **Care scope after switching:** The active-target event and compatibility projection are frozen, but product approval is still required for how inactive creatures experience drift/absence and whether the daily care cap is player-wide or per-creature before package 5.
-4. **Relationship content:** Approve response IDs/order and whether reveal day is the first relationship day before package 5.
-5. **Treat cadence/content:** Clarify first-ever versus one-per-reading-day grant cadence, category-to-treat mapping, and whether use consumes a normal daily care action before enabling `careItems`.
-6. **Availability vocabulary:** Freeze confirmed availability states, freshness rules, and official-search fallback shape before package 9.
+1. **Care scope after switching:** The active-target event and compatibility projection are frozen, but product approval is still required for how inactive creatures experience drift/absence and whether the daily care cap is player-wide or per-creature before package 5.
+2. **Relationship content:** Approve response IDs/order and whether reveal day is the first relationship day before package 5.
+3. **Treat cadence/content:** Clarify first-ever versus one-per-reading-day grant cadence, category-to-treat mapping, and whether use consumes a normal daily care action before enabling `careItems`.
+4. **Availability vocabulary:** Freeze confirmed availability states, freshness rules, and official-search fallback shape before package 9.

@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { openSession, createFakeStorage, at } from './helpers.mjs';
 import { EventTypes } from '../src/events.js';
+import { checkGrowthAfterEvent } from '../src/systems/growth.js';
 
 const stageEvents = (log) => log.filter((e) => e.type === EventTypes.CreatureStateChanged);
 
@@ -96,4 +97,22 @@ test('CP is monotonic: negative or zero grants are ignored', () => {
   s.grant(-3, at(0));
   s.grant(0, at(0));
   assert.equal(s.state.cp, 5);
+});
+
+test('reading and book events cannot trigger overdue growth', () => {
+  const staleThresholdState = {
+    hatched: true, stage: 1, cp: 12
+  };
+  for (const type of [
+    EventTypes.ReadingChallengeStarted,
+    EventTypes.ReadingRecorded,
+    EventTypes.ReadingDayRecorded,
+    EventTypes.BookStatusChanged
+  ]) {
+    assert.deepEqual(checkGrowthAfterEvent(staleThresholdState, { type }, at(0)), []);
+  }
+  assert.equal(
+    checkGrowthAfterEvent(staleThresholdState, { type: EventTypes.ResourceGranted }, at(0))[0].stage,
+    2
+  );
 });

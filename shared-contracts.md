@@ -24,12 +24,15 @@ The executable definitions and validators live in `creature-care-mvp/src/contrac
 
 ## Reading time and local-day rules
 
+- Standalone participation begins only after `ReadingChallengeStarted`. The persisted challenge has a canonical `registeredAt`, a 20-day goal, and a 10-day halfway point; it has no deadline or program window.
+- Program status is derived rather than stored: not started before registration, registered at 0 days, active at 1-9, halfway at 10-19, and completed at 20 or more distinct days.
 - `occurredAt` is the confirmation timestamp in canonical ISO format. A timer start does not determine the formal day.
 - `localDayKey` is captured from the device-local calendar date when the reading confirmation is accepted, using the existing `YYYY-M-D` form. It is stored as evidence and is not recomputed after synchronization, travel, or replay.
 - Offline replay retains the original event ID, `occurredAt`, and `localDayKey`. Replayed IDs are handled idempotently by the reading module.
 - The Phase 1 UI does not backdate reading records. A future backdating feature would require a PRD change and an explicit correction/audit rule.
 - Every accepted reading may create a `ReadingRecord`, but the formal-day index contains unique local day keys. A work relationship also contains at most one copy of a local day key.
 - `ReadingRecord.status` records the status supplied with that reading. `BookStatusChanged` is the current work-status event. A creature's permanent `finished` marker is not removed by later rereading or a later paused/not-for-me status.
+- A running timer is not part of versioned game state. Its elapsed clock is monotonic and in memory; a separate interruption marker stores only a version and `workId`. Reload discards elapsed duration, consumes the marker once, and may offer an ordinary untimed reading confirmation.
 
 ## Event envelope
 
@@ -47,6 +50,8 @@ Shared events use `{id, type, version, timestamp, payload}`. IDs are supplied by
 - optional `preservedCreatureId`
 
 The event is idempotent: applying it again with the same event ID makes no further change. It changes edition, alias, and creature routing to the canonical work but cannot rewrite a preserved creature identity. If more than one already-owned creature is affected, every identity remains and the reducer records the canonical work as a reconciled duplicate exception.
+
+`ReadingChallengeStarted` carries the validated standalone challenge. Replaying it cannot reset registration or progress. `ReadingRecorded` carries the complete validated record together with matching record and work IDs. Applying it atomically stores the record and its unique formal day so a save can never contain one without the other. `ReadingDayRecorded` is the idempotent first-day notification, and `BookStatusChanged` updates the current work status without changing reading or care history.
 
 ## Provider response rules
 
@@ -67,7 +72,7 @@ The catalog availability vocabulary beyond the three shared states, freshness ca
 - Migration reads `creatureCare.save.v1` only when a valid current save is unavailable. It is deterministic, independent of accounts and network services, and idempotent for a current envelope.
 - Migration preserves the legacy top-level state for v1 compatibility and creates explicit work, edition, and collection records. Valid v1 seeds and identity keys remain byte-for-byte unchanged.
 - A malformed optional legacy generator payload is retained inside an unlinked legacy creature record rather than allowed to create an invalid ISBN edition. Malformed required care state produces a fresh safe envelope.
-- Current-envelope validation rejects malformed records, duplicate formal days, dangling or mismatched work/edition/work-alias/edition-alias/provenance/reading/creature references, duplicate ISBN editions, unmarked duplicate creatures for one work, stale duplicate-exception markers, and invalid collection IDs. Earlier schema-2 saves deterministically receive empty edition-alias, provenance, and reconciled-duplicate indexes without changing care, collection, reading, or identity data.
+- Current-envelope validation rejects malformed records, challenge configuration, work statuses, duplicate formal days, dangling or mismatched work/edition/work-alias/edition-alias/provenance/reading/creature references, duplicate ISBN editions, unmarked duplicate creatures for one work, stale duplicate-exception markers, and invalid collection IDs. Earlier schema-2 saves deterministically receive empty edition-alias, provenance, reconciled-duplicate, and work-status indexes plus an unregistered standalone challenge without changing care, collection, reading records, or identity data.
 
 ## Feature flags
 

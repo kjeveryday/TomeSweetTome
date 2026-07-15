@@ -20,6 +20,39 @@ export function createUI(root, content, handlers) {
       <h1 class="title"></h1>
       <button class="book-open" type="button"><span>📚</span><span class="book-open-label"></span></button>
     </header>
+    <section class="reading-panel" aria-labelledby="reading-title">
+      <h2 id="reading-title" class="reading-title"></h2>
+      <div class="reading-start-view">
+        <p class="reading-intro"></p>
+        <button class="reading-start" type="button"></button>
+      </div>
+      <div class="reading-active-view" hidden>
+        <p class="reading-progress" role="status"></p>
+        <div class="reading-grid">
+          <label for="reading-book" class="reading-label reading-book-label"></label>
+          <select id="reading-book" class="reading-book"></select>
+          <label for="reading-mode" class="reading-label reading-mode-label"></label>
+          <select id="reading-mode" class="reading-mode"></select>
+          <button class="reading-record" type="button"></button>
+          <div class="reading-timer" hidden>
+            <button class="timer-start" type="button"></button>
+            <p class="timer-running" role="timer" hidden></p>
+            <div class="timer-actions" hidden>
+              <button class="timer-stop" type="button"></button>
+              <button class="timer-cancel" type="button"></button>
+            </div>
+            <div class="timer-confirm" hidden>
+              <p></p>
+              <button class="timer-confirm-yes" type="button"></button>
+              <button class="timer-confirm-no" type="button"></button>
+            </div>
+          </div>
+          <label for="reading-status" class="reading-label reading-status-label"></label>
+          <select id="reading-status" class="reading-status"></select>
+        </div>
+        <p class="reading-empty" hidden></p>
+      </div>
+    </section>
     <section class="scene">
       <span class="sun"></span>
       <span class="cloud c1"></span>
@@ -151,11 +184,49 @@ export function createUI(root, content, handlers) {
         </details>
       </div>
     </div>
+    <div class="reading-recovery" role="dialog" aria-modal="true" aria-labelledby="reading-recovery-title" hidden>
+      <div class="reading-recovery-card">
+        <h2 id="reading-recovery-title"></h2>
+        <p class="reading-recovery-book"></p>
+        <div>
+          <button class="reading-recovery-yes" type="button"></button>
+          <button class="reading-recovery-no" type="button"></button>
+        </div>
+      </div>
+    </div>
   `;
 
   const q = (sel) => root.querySelector(sel);
   const el = {
     title: q('.title'),
+    readingPanel: q('.reading-panel'),
+    readingTitle: q('.reading-title'),
+    readingStartView: q('.reading-start-view'),
+    readingIntro: q('.reading-intro'),
+    readingStart: q('.reading-start'),
+    readingActiveView: q('.reading-active-view'),
+    readingProgress: q('.reading-progress'),
+    readingBook: q('.reading-book'),
+    readingBookLabel: q('.reading-book-label'),
+    readingMode: q('.reading-mode'),
+    readingModeLabel: q('.reading-mode-label'),
+    readingRecord: q('.reading-record'),
+    readingTimer: q('.reading-timer'),
+    timerStart: q('.timer-start'),
+    timerRunning: q('.timer-running'),
+    timerActions: q('.timer-actions'),
+    timerStop: q('.timer-stop'),
+    timerCancel: q('.timer-cancel'),
+    timerConfirm: q('.timer-confirm'),
+    timerConfirmYes: q('.timer-confirm-yes'),
+    timerConfirmNo: q('.timer-confirm-no'),
+    readingStatus: q('.reading-status'),
+    readingStatusLabel: q('.reading-status-label'),
+    readingEmpty: q('.reading-empty'),
+    readingRecovery: q('.reading-recovery'),
+    readingRecoveryBook: q('.reading-recovery-book'),
+    readingRecoveryYes: q('.reading-recovery-yes'),
+    readingRecoveryNo: q('.reading-recovery-no'),
     bookOpen: q('.book-open'),
     scene: q('.scene'),
     creatureDebug: q('.creature-debug'),
@@ -231,6 +302,117 @@ export function createUI(root, content, handlers) {
   };
 
   el.title.textContent = copy.title;
+  el.readingTitle.textContent = copy.readingTitle;
+  el.readingIntro.textContent = copy.readingIntro;
+  el.readingStart.textContent = copy.readingStart;
+  el.readingBookLabel.textContent = copy.readingBookLabel;
+  el.readingModeLabel.textContent = copy.readingModeLabel;
+  el.readingRecord.textContent = copy.readingRecord;
+  el.readingStatusLabel.textContent = copy.readingStatusLabel;
+  el.readingEmpty.textContent = copy.readingNoBooks;
+  el.timerStart.textContent = copy.timerStart;
+  el.timerStop.textContent = copy.timerStop;
+  el.timerCancel.textContent = copy.timerCancel;
+  el.timerConfirm.querySelector('p').textContent = copy.timerConfirm;
+  el.timerConfirmYes.textContent = copy.timerConfirmYes;
+  el.timerConfirmNo.textContent = copy.timerConfirmNo;
+  el.readingRecovery.querySelector('h2').textContent = copy.timerRecovery;
+  el.readingRecoveryYes.textContent = copy.timerConfirmYes;
+  el.readingRecoveryNo.textContent = copy.timerConfirmNo;
+  for (const [value, label] of Object.entries(content.reading.modes)) {
+    el.readingMode.add(new Option(label, value));
+  }
+  for (const [value, label] of Object.entries(content.reading.statuses)) {
+    el.readingStatus.add(new Option(label, value));
+  }
+  let timerDisplayInterval = null;
+  let timerDisplayStartedAt = 0;
+  let interruptedWorkId = null;
+
+  function selectedReadingWorkId() {
+    return el.readingBook.value || null;
+  }
+
+  function formatTimer(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainder = seconds % 60;
+    return `${minutes}:${String(remainder).padStart(2, '0')}`;
+  }
+
+  function updateTimerDisplay() {
+    const elapsedSeconds = Math.max(0, Math.floor((performance.now() - timerDisplayStartedAt) / 1000));
+    el.timerRunning.textContent = interpolate(copy.timerRunning, { time: formatTimer(elapsedSeconds) });
+  }
+
+  function resetTimerDisplay() {
+    if (timerDisplayInterval !== null) window.clearInterval(timerDisplayInterval);
+    timerDisplayInterval = null;
+    el.timerStart.hidden = false;
+    el.timerRunning.hidden = true;
+    el.timerActions.hidden = true;
+    el.timerConfirm.hidden = true;
+  }
+
+  el.readingStart.addEventListener('click', () => handlers.onStartReadingChallenge());
+  el.readingRecord.addEventListener('click', () => {
+    const workId = selectedReadingWorkId();
+    if (workId) handlers.onRecordReading({ workId, mode: el.readingMode.value });
+  });
+  el.readingBook.addEventListener('change', () => {
+    const status = latestState?.reading?.bookStatuses?.[selectedReadingWorkId()] ?? 'reading';
+    el.readingStatus.value = status;
+  });
+  el.readingStatus.addEventListener('change', () => {
+    const workId = selectedReadingWorkId();
+    if (workId) handlers.onBookStatusChange(workId, el.readingStatus.value);
+  });
+  el.timerStart.addEventListener('click', () => {
+    const workId = selectedReadingWorkId();
+    if (!workId || !handlers.onTimerStart(workId)) return;
+    timerDisplayStartedAt = performance.now();
+    updateTimerDisplay();
+    timerDisplayInterval = window.setInterval(updateTimerDisplay, 1000);
+    el.timerStart.hidden = true;
+    el.timerRunning.hidden = false;
+    el.timerActions.hidden = false;
+  });
+  el.timerStop.addEventListener('click', () => {
+    if (!handlers.onTimerStop()) return;
+    if (timerDisplayInterval !== null) window.clearInterval(timerDisplayInterval);
+    timerDisplayInterval = null;
+    el.timerRunning.hidden = true;
+    el.timerActions.hidden = true;
+    el.timerConfirm.hidden = false;
+  });
+  el.timerCancel.addEventListener('click', () => {
+    handlers.onTimerCancel();
+    resetTimerDisplay();
+  });
+  el.timerConfirmYes.addEventListener('click', () => {
+    handlers.onTimerConfirm(el.readingMode.value);
+    resetTimerDisplay();
+  });
+  el.timerConfirmNo.addEventListener('click', () => {
+    handlers.onTimerCancel();
+    resetTimerDisplay();
+  });
+  function closeInterruptedPrompt(record) {
+    el.readingRecovery.hidden = true;
+    handlers.onInterruptedReadingDecision({ record, workId: interruptedWorkId });
+    interruptedWorkId = null;
+  }
+  el.readingRecoveryYes.addEventListener('click', () => closeInterruptedPrompt(true));
+  el.readingRecoveryNo.addEventListener('click', () => closeInterruptedPrompt(false));
+
+  function offerInterruptedReading(workId) {
+    const work = latestState?.books?.works?.[workId];
+    if (!work) return false;
+    interruptedWorkId = workId;
+    el.readingRecoveryBook.textContent = work.title || copy.readingBookLabel;
+    el.readingRecovery.hidden = false;
+    el.readingRecoveryYes.focus();
+    return true;
+  }
   el.bookOpen.querySelector('.book-open-label').textContent = copy.bookButton;
   el.eggHint.textContent = copy.tapEgg;
   el.egg.setAttribute('aria-label', `${copy.eggLabel} — ${copy.tapEgg}`);
@@ -709,6 +891,7 @@ export function createUI(root, content, handlers) {
     root.dataset.hatched = String(state.hatched);
     const stage = stageDef(state.stage);
     applyCreatureLook(state, stage);
+    renderReading(state);
     if (!state.hatched) return;
 
     el.scene.dataset.stage = String(state.stage);
@@ -742,6 +925,40 @@ export function createUI(root, content, handlers) {
       btn.disabled = resting;
       sub.textContent = resting ? copy.restingLabel : '';
     }
+  }
+
+  function renderReading(state) {
+    const registered = state.reading.challenge.registeredAt !== null;
+    el.readingStartView.hidden = registered;
+    el.readingActiveView.hidden = !registered;
+    if (!registered) return;
+
+    const progress = handlers.getReadingProgress(state.reading);
+    const progressTemplates = {
+      registered: copy.readingRegistered,
+      active: copy.readingActive,
+      halfway: copy.readingHalfway,
+      completed: copy.readingCompleted
+    };
+    el.readingProgress.textContent = interpolate(progressTemplates[progress.status], {
+      days: progress.readingDayCount,
+      goal: progress.goalDayCount
+    });
+
+    const previous = selectedReadingWorkId();
+    el.readingBook.replaceChildren();
+    const works = Object.values(state.books.works);
+    for (const work of works) el.readingBook.add(new Option(work.title || 'Untitled book', work.id));
+    if (works.some(({ id }) => id === previous)) el.readingBook.value = previous;
+    const hasBooks = works.length > 0;
+    el.readingEmpty.hidden = hasBooks;
+    for (const control of [el.readingBook, el.readingMode, el.readingRecord, el.readingStatus]) {
+      control.disabled = !hasBooks;
+    }
+    const workId = selectedReadingWorkId();
+    el.readingStatus.value = state.reading.bookStatuses[workId] ?? 'reading';
+    el.readingTimer.hidden = !handlers.isTimerEnabled();
+    el.timerStart.disabled = !hasBooks;
   }
 
   // ----- sticker shelf: the whole collection lives in the scene -----
@@ -888,5 +1105,5 @@ export function createUI(root, content, handlers) {
     }
   }
 
-  return { render, react, toast };
+  return { render, react, toast, offerInterruptedReading };
 }
