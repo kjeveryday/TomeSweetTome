@@ -24,7 +24,7 @@ function isValidStat(value) {
 // payload — is treated as corrupt and rejected, rather than handed to the reducer,
 // where a missing numeric field silently poisons CP to NaN and permanently blocks
 // growth. `dayKey` accepts both strings and null because it is null in a fresh state.
-function looksLikeGameState(s) {
+export function looksLikeGameState(s) {
   if (!s || typeof s !== 'object' || Array.isArray(s)) return false;
   const core = ['hatched', 'stats', 'stage', 'cp', 'actionsToday', 'dayKey', 'stickers'];
   if (!core.every((k) => Object.hasOwn(s, k))) return false;

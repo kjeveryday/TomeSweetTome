@@ -3,11 +3,11 @@
 
 import content from './content.json' with { type: 'json' };
 import { initialState, applyEvent } from './state.js';
-import { creatureGenerated, hatched, resourceGranted } from './events.js';
+import { createEventIdFactory, creatureGenerated, hatched, resourceGranted } from './events.js';
 import * as clock from './systems/clock.js';
 import * as care from './systems/care.js';
 import * as growth from './systems/growth.js';
-import { createPersistence } from './systems/persistence.js';
+import { LocalStorageAdapter } from './systems/storage.js';
 import { decodeBookBarcode } from './systems/barcode.js';
 import { generateCreature } from './systems/generation.js';
 import { enrichCreatureWithBookData } from './systems/book-metadata.js';
@@ -46,13 +46,17 @@ const offsetMs = loadClockOffset();
 const getNow = () => Date.now() + offsetMs;
 
 // ----- state + event flow -----
-const persistence = createPersistence(window.localStorage);
+const persistence = new LocalStorageAdapter(window.localStorage);
 const eventLog = [];
 let state = initialState();
+const nextEventId = createEventIdFactory(`local-${getNow()}`);
 
-function commit(event) {
+function commit(inputEvent) {
+  const event = inputEvent.compatibilityIdFallback
+    ? { ...inputEvent, id: nextEventId(inputEvent.type, inputEvent.at), compatibilityIdFallback: false }
+    : inputEvent;
   state = applyEvent(state, event);
-  persistence.save(state, getNow());
+  state = persistence.save(state, getNow()).state;
   eventLog.push(event);
   ui.render(state);
   ui.react(event, state);
@@ -111,12 +115,10 @@ const ui = createUI(document.querySelector('#app'), content, {
 
 (function boot() {
   document.title = content.copy.title;
-  const saved = persistence.load();
-  if (saved) {
-    state = saved.state;
-    // open -> clock -> events (drift, day rollover) -> render
-    for (const e of clock.onOpen(state, saved.lastSeen, getNow())) commit(e);
-  }
+  const saved = persistence.load(getNow());
+  state = saved.state;
+  // open -> clock -> events (drift, day rollover) -> render
+  for (const e of clock.onOpen(state, saved.lastSeen, getNow())) commit(e);
   ui.render(state);
 })();
 

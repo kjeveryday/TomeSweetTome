@@ -34,12 +34,14 @@ This file is the entry point for developing the Stacklings MVP. It explains whic
 | `Game dev prompt example.pdf` | Prompt-authoring example reference | Not a Stacklings product document; no requirements live here |
 | `workspace-changes-2026-07-15.md` | Record of the July 15, 2026 workspace reorganization | Historical record; not a requirements source |
 | `verification-report-2026-07-15.md` | Findings from the independent v1 verification pass and Phase 0 hardening | Historical record; documents the fixed defects, current validation boundary, and Phase 1 follow-ups |
+| `ordered-development-backlog.md` | Dependency-ordered implementation packages | Use for ownership, contracts, flags, tests, browser checks, and acceptance criteria for each package |
+| `shared-contracts.md` | Frozen Phase 1 record, event, provider, flag, storage, and migration decisions | Read before implementing a consuming module; executable validators live in `creature-care-mvp/src/` |
 
 ## Run and verify locally
 
 The v1 application is dependency-free vanilla JavaScript ES modules with no build step.
 
-- **Tests**: from `creature-care-mvp/`, run `node --test test/`. The full suite must stay green (177 tests as of July 15, 2026).
+- **Tests**: from `creature-care-mvp/`, run `node --test test/`. The current suite is 211 tests: the verified 177-test v1 baseline plus 34 shared-contract and migration tests.
 - **App**: from the workspace root, run `node tools/serve.mjs`, then open `http://localhost:8437/`. Any static file server pointed at `creature-care-mvp/` works; opening `index.html` directly from the filesystem does not, because the app uses ES modules. `.claude/launch.json` starts this same server for browser preview.
 - **Debug clock**: append `?clock=+40h`, `?clock=+26h`, `?clock=-5h` (cumulative), or `?clock=reset` to the URL to simulate device-clock movement when exercising absence and day-rollover behavior.
 - **Documents**: after editing `Stacklings MVP PRD v0.3.md` or `Stacklings MVP Parking Lot v0.1.md`, regenerate the `.docx` copies with `python3 tools/build_stacklings_mvp_docs.py`.
@@ -118,8 +120,6 @@ Before real synchronized accounts, library credentials, or administrator account
 
 Official background: [FTC COPPA compliance plan](https://www.ftc.gov/business-guidance/resources/childrens-online-privacy-protection-rule-six-step-compliance-plan-your-business) and [FTC COPPA FAQ](https://www.ftc.gov/business-guidance/resources/complying-coppa-frequently-asked-questions).
 
-## Next implementation artifact
+## Active implementation artifact
 
-The next artifact should be an ordered development backlog. Each backlog item should be small enough for one developer or agent, point to its PRD requirements, declare its module contract, and contain verifiable acceptance criteria.
-
-The backlog's first item is complete: the independent baseline verification and Phase 0 hardening recorded in `workspace-changes-2026-07-15.md`. Phase 1 begins by freezing the shared contracts and versioned save migration described in the PRD.
+`ordered-development-backlog.md` is the active dependency-ordered backlog. The independent baseline verification, Phase 0 hardening, and Phase 1 shared-contract/migration gate are closed. Phase 1 package 2 implements book work, edition, metadata, and alias records against the frozen contracts.

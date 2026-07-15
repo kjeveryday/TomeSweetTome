@@ -29,6 +29,7 @@ import { generateCreature, rarityFor } from '../src/systems/generation.js';
 import { decodeBookBarcode } from '../src/systems/barcode.js';
 import { applyEvent, initialState } from '../src/state.js';
 import { EventTypes, creatureGenerated, hatched } from '../src/events.js';
+import { SharedEventTypes } from '../src/contracts.js';
 
 // ---------------------------------------------------------------------------
 // Independent oracles (deliberately NOT calling into src/systems/isbn.js or
@@ -426,15 +427,17 @@ test('a successful barcode decode returns only descriptive capture metadata — 
 // E. CreatureGenerated — generation-side event contract
 // =============================================================================
 
-test('CreatureGenerated is the sole new canonical event beyond the original eight', () => {
+test('the original events, CreatureGenerated, and frozen Phase 1 shared events are all canonical', () => {
   const original = [
     'Hatched', 'TimeElapsed', 'DayRolledOver', 'CareActionPerformed',
     'CreatureStateChanged', 'GiftGranted', 'TuckedIn', 'ResourceGranted'
   ];
-  const all = Object.values(EventTypes);
-  assert.equal(all.length, original.length + 1, 'exactly one event beyond the original eight');
-  for (const name of original) assert.ok(all.includes(name), `${name} still present`);
-  assert.ok(all.includes('CreatureGenerated'));
+  const expected = new Set([...original, 'CreatureGenerated', ...Object.values(SharedEventTypes)]);
+  const all = new Set(Object.values(EventTypes));
+  assert.equal(all.size, expected.size, 'no undeclared event names are present');
+  for (const name of original) assert.ok(all.has(name), `${name} still present`);
+  assert.ok(all.has('CreatureGenerated'));
+  for (const name of Object.values(SharedEventTypes)) assert.ok(all.has(name), `${name} is frozen`);
 });
 
 test('applying CreatureGenerated with a null or non-book creature payload is a complete no-op', () => {

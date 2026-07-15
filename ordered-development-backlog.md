@@ -1,0 +1,181 @@
+# Stacklings MVP ordered development backlog
+
+Status: active implementation backlog  
+Authority: `Stacklings MVP PRD v0.3.md`  
+Last updated: July 15, 2026
+
+This backlog follows the dependency order in PRD section 9. Phase 1 packages are active. Phase 2 and Phase 3 packages remain disabled until their phase begins and the privacy gate is satisfied. The 177-test v1 baseline and Phase 0 hardening are complete.
+
+## Shared rules for every package
+
+- Run the complete test suite before work starts and after each completed package.
+- Keep all state changes in the pure reducer and communicate through the frozen shared events and provider interfaces.
+- Keep the local guest loop working with every optional flag off.
+- Use deterministic fixtures for every provider before adding a dependent module.
+- Run migration and shared-event tests for every package.
+- Exercise the affected flow in a locally served browser, including feature-off and provider-unavailable behavior where applicable.
+- Apply the revision and source-fit checks in `# WRITING.md` to documentation and user-facing copy.
+- Commit only a completed, green package. Do not push without explicit authorization.
+
+## 1. Shared contracts, storage schema, and migration — complete
+
+- **Objective and PRD references:** Freeze shared records, IDs, event envelopes and payload versions, provider interfaces, feature flags, the versioned save envelope, and deterministic migration from `creatureCare.save.v1` (PRD 5, 6.1, 7-10; acceptance 11.1, 11.8-11.9).
+- **Owned files:** `src/contracts.js`, `src/feature-flags.js`, `src/providers.js`, `src/systems/migration.js`, `src/systems/storage.js`, shared contract/migration tests, and coordinator-owned wiring changes in `src/events.js`, `src/state.js`, and `src/app.js`.
+- **Shared records read/written:** `BookWork`, `BookEdition`, `ReadingRecord`, `CreatureRecord`, `PlayerAccess`, the root Phase 1 state, and the versioned storage envelope.
+- **Events consumed/emitted:** Freeze all PRD section 5 events. Existing v1 event constructors remain compatible; new events use the shared envelope with stable ID, version, timestamp, and payload.
+- **Provider dependencies:** Contract and deterministic fixture shapes only. No live dependency.
+- **Feature flags:** Freeze `timer`, `accounts`, `careItems`, `recommendationVisitors`, `libraryCatalog`, `libraryPatronActions`, `communityEvents`, and `researchSettings`; later-phase flags default off.
+- **Migration impact:** Introduces the current schema version and migration entrypoint. Preserve the active v1 creature, prior identities, care state, stickers, CP, stage, daily-cap state, timestamps, and exact deterministic identity. Fresh, valid legacy, pre-generator, corrupted, and repeated migrations are covered.
+- **Dependencies:** Closed Phase 0 baseline only.
+- **Tests:** Record validators, stable ID/alias rules, event envelope/version tests, provider source-state tests, flag defaults/overrides, adapter contract, migration preservation, corruption recovery, and idempotency. Run all 177 existing tests.
+- **Browser checks:** Fresh guest boot and migrated legacy boot; existing hatch, scan, care, close, and reopen behavior remains intact.
+- **Feature-off behavior:** The app boots with every optional flag off and uses local storage without accounts or network services.
+- **Acceptance criteria:** Shared-contract and migration tests pass; the complete suite is green; no v1 identity or care behavior changes; corrupted saves fail safely; repeated migration produces the same current envelope.
+
+## 2. Book records and identity reconciliation
+
+- **Objective and PRD references:** Add explicit works, editions, identity inputs, metadata normalization, and aliases while preserving v1 ISBN identities (PRD 2-3, 5, 6.3, 7, 11.6, 11.8).
+- **Owned files:** Book-record module, metadata adapter and fixture, book reducer slice, book UI surface, and book tests. Shared contract files remain coordinator-owned.
+- **Shared records read/written:** Read/write `BookWork` and `BookEdition`; read creature identity contracts; write alias indexes and metadata provenance.
+- **Events consumed/emitted:** Emit `BookAdded`, `BookMetadataResolved`, and `BookWorkReconciled`; consume no private module events.
+- **Provider dependencies:** Metadata provider fixture first, then existing Open Library enrichment behind the interface. Responses identify `fixture`, `live`, or `unavailable`.
+- **Feature flags:** No required flag for core book records. Live metadata remains optional and unavailable-safe.
+- **Migration impact:** Read migrated ISBN works/editions and preserve their identity keys. Do not rewrite legacy generator inputs.
+- **Dependencies:** Package 1.
+- **Tests:** ISBN/manual/image convergence; missing metadata; deterministic title-author fallback after its normalization rule is frozen; edition aliases; repeated capture; reconciliation idempotency; v1 frozen identities; malformed/dangling aliases fail safely.
+- **Browser checks:** Manual ISBN and barcode-image capture with pinned, unavailable, and missing metadata.
+- **Feature-off behavior:** With all optional services off and network unavailable, a guest can still add an ISBN work and continue to reading.
+- **Acceptance criteria:** Every captured edition resolves to one work record; metadata failure never blocks an honor-based reading record; owned identities never reroll.
+
+## 3. Reading records, distinct-day progress, and optional timer
+
+- **Objective and PRD references:** Record equivalent reading routes, derive one formal day per local date, support private optional duration, and derive 10-day/20-day status (PRD 3, 5, 6.4, 8, 11.3-11.7).
+- **Owned files:** Reading module, reading reducer slice, timer/session adapter, reading UI, and reading tests.
+- **Shared records read/written:** Write `ReadingRecord`; read `BookWork`; write formal reading-day index and derived program status.
+- **Events consumed/emitted:** Emit `ReadingRecorded`, `ReadingDayRecorded`, and `BookStatusChanged`.
+- **Provider dependencies:** None.
+- **Feature flags:** `timer`; untimed confirmation is always available.
+- **Migration impact:** New fields default empty without changing migrated care or collection records.
+- **Dependencies:** Packages 1-2.
+- **Tests:** Same-day deduplication, replay/idempotency, distinct later days, modes, rereading, paused/not-for-me, finish independence, timer confirmation equivalence, DST/local-day boundaries, malformed timestamps, and 0/10/20-day status.
+- **Browser checks:** Untimed read, timer confirm/cancel, several books on one day, and a later simulated local day.
+- **Feature-off behavior:** Timer controls disappear; “I read this” completes the same reading-day path.
+- **Acceptance criteria:** Minutes, book count, length, format, and completion never add formal progress; missing days never reset it; reading modes are equivalent.
+
+## 4. Preview, first-reading reveal, collection, and repeated scans
+
+- **Objective and PRD references:** Change acquisition to deterministic preview followed by first-reading reveal; provide one creature per work, active selection, visible selection, and unbounded collection (PRD 3.9, 3.12-13, 6.5, 11.2, 11.4, 11.6, 11.8).
+- **Owned files:** Collection module/reducer/UI/tests and generator adapter. Shared wiring changes are integrated by the coordinator.
+- **Shared records read/written:** Read works, editions, and reading records; write `CreatureRecord`, active creature ID, visible IDs, and archived collection IDs.
+- **Events consumed/emitted:** Consume `BookAdded`, `BookWorkReconciled`, and `ReadingRecorded`; emit `CreaturePreviewCreated` and `CreatureRevealed`.
+- **Provider dependencies:** Metadata fixture only through book records; collection has no direct provider dependency.
+- **Feature flags:** None for the core collection.
+- **Migration impact:** Consume migrated active/history records without duplicating them or changing v1 base traits.
+- **Dependencies:** Packages 1-3. The active-selection event and active-care projection rules are frozen in `shared-contracts.md`; switching must initialize an uninitialized migrated care state before Package 5 begins.
+- **Tests:** Scan-only preview; first-reading reveal; repeated scans; A-to-B-to-A deduplication; several same-day reveals; edition aliases; active switching; returned books retained; migration compatibility.
+- **Browser checks:** Add, preview, read, reveal, switch active creature, repeat scan, close, and reopen.
+- **Feature-off behavior:** Every optional service off still supports the entire preview/reveal/collection loop.
+- **Acceptance criteria:** One work has one creature; repeated capture opens the existing record; several works can reveal in one compact group; every creature remains in the collection.
+
+## 5. Book relationship development and optional treats
+
+- **Objective and PRD references:** Add one relationship day per work/date, configured non-ranked responses, permanent finish response, and the optional treat seam without changing formal reading or v1 care rules (PRD 3.10-11, 6.6, 8, 11.5-11.7).
+- **Owned files:** Relationship/care-item module, reducer slice, UI, content, and tests. Existing care files are changed only by this package owner with coordinator integration.
+- **Shared records read/written:** Read reading records and works; write `CreatureRecord.relationshipDayKeys`, `finished`, and care-item inventory/provenance.
+- **Events consumed/emitted:** Consume `ReadingRecorded`, `ReadingDayRecorded`, and `BookStatusChanged`; emit `CreatureRelationshipChanged`, `CareItemGranted`, and `CareItemUsed`.
+- **Provider dependencies:** Broad category from shared book metadata only; missing category never blocks reading or care.
+- **Feature flags:** `careItems`; keep disabled until grant cadence and category-to-treat content are approved.
+- **Migration impact:** Preserve the active v1 care state exactly. The inactive-creature clock/cap policy must be frozen before implementation.
+- **Dependencies:** Packages 1-4.
+- **Tests:** Relationship-day deduplication, next configured response, long-book/reread equality, finish idempotency, no CP/stage effects, unchanged absence behavior, treat replay/atomicity/persistence, cap semantics, and flag-off behavior.
+- **Browser checks:** Continued reading on later days, finish response, unchanged care/absence flow, and treat controls on/off after approval.
+- **Feature-off behavior:** No inventory, grant, use event, or treat UI; reading, relationship, care, and persistence remain complete.
+- **Acceptance criteria:** Relationship development is distinct-day and non-ranked; finishing is permanent but optional; treats never create extra reading progress or power.
+
+## 6. Fixture recommendations
+
+- **Objective and PRD references:** Provide deterministic visiting-creature recommendations with general fallback, reasons, save/dismiss, reset/delete, and no user-to-user path (PRD 6.7, 7-8, 11.11).
+- **Owned files:** Recommendation provider contract implementation/fixture, reducer slice, visitor UI, content, and tests.
+- **Shared records read/written:** Read recent broad categories and optional branch ID; write recommendation request/result and local save/dismiss/reset state.
+- **Events consumed/emitted:** Emit `RecommendationRequested` and `RecommendationDelivered`.
+- **Provider dependencies:** Deterministic `RecommendationProvider` fixture; future live adapter remains disabled.
+- **Feature flags:** `recommendationVisitors`.
+- **Migration impact:** Empty defaults only; reset/delete never removes books, creatures, or reading history.
+- **Dependencies:** Packages 1-5 and metadata category seam from package 2.
+- **Tests:** Stable ordered fixture, new-user general result, approved inputs only, source labeling, reasons, save/dismiss, reset/delete, unavailable/no-visitor fallback, and no user/PII fields.
+- **Browser checks:** General and category-based fixture visitors; save, dismiss, reset, delete, unavailable, and flag-off states.
+- **Feature-off behavior:** No visitor surface; add/read/reveal/care/persist loop is unchanged.
+- **Acceptance criteria:** Fixture results are clearly sample data; no ability or sensitive inference; no route to another user; failure leaves the core loop complete.
+
+## 7. Settings, research explanations, export, and delete
+
+- **Objective and PRD references:** Add functional settings for guest state, provider status, export/delete, recommendation controls, and the exact approved research table with citations (PRD 6.11, 8, 11.15).
+- **Owned files:** Settings module/UI/tests and versioned research content. Storage deletion/export use package 1 public interfaces.
+- **Shared records read/written:** Read `PlayerAccess`, feature flags, provider health, and research content; invoke storage export/delete and recommendation reset/delete.
+- **Events consumed/emitted:** No direct cross-module mutation; use public storage and recommendation commands. Any resulting state change uses frozen events.
+- **Provider dependencies:** Provider health/status interfaces only.
+- **Feature flags:** `researchSettings` controls the research section, not export/delete or guest save explanation.
+- **Migration impact:** Export uses the current envelope; delete removes current and legacy app saves without touching unrelated browser data.
+- **Dependencies:** Packages 1 and 6; provider status contracts from package 1.
+- **Tests:** Seven versioned research entries and required fields, exact caveats, descriptive/source links, guest explanation, provider labels, valid export, scoped delete, recovery, and research flag off.
+- **Browser checks:** Open every source link, export, delete with confirmation, reload fresh, provider status labels, and research flag off.
+- **Feature-off behavior:** Research section is absent; privacy, export/delete, and core guest loop remain available.
+- **Acceptance criteria:** Copy does not claim that research proves the creature design or that 20 days is universally optimal; export/delete work locally.
+
+## 8. Account and synchronized-storage providers
+
+- **Objective and PRD references:** Add optional guardian-managed account and synchronized-storage fixtures without changing Phase 1 records (PRD 3.17-18, 6.1-6.2, 7-9, 11.9-11.10).
+- **Owned files:** Account provider/fixture, synchronized storage adapter, account reducer/UI/tests.
+- **Shared records read/written:** `PlayerAccess`; current storage envelope; local-to-account merge preview/result.
+- **Events consumed/emitted:** Emit `AccountSignedIn`; storage operations use the adapter contract.
+- **Provider dependencies:** Local test account and in-memory synchronized-storage fixtures first. No real child data.
+- **Feature flags:** `accounts`.
+- **Migration impact:** Merge current local envelope after explicit preview; disabling accounts returns to complete Phase 1 without data loss.
+- **Dependencies:** Phase 1 packages 1-7 and an approved privacy specification before live enablement.
+- **Tests:** Guest default, merge preview, deterministic merge/reload, service unavailable, sign-out/local fallback, no public profile, and flag off.
+- **Browser checks:** Guest explanation, fixture sign-in/merge/restore, unavailable service, sign-out, and flag off.
+- **Feature-off behavior:** No account surface is required; guest local save remains authoritative.
+- **Acceptance criteria:** Fixture synchronization restores the same records; no real child account data is collected; guest play never blocks.
+
+## 9. Catalog and patron-provider seams
+
+- **Objective and PRD references:** Add edition-level sample catalog availability and a disabled patron-action seam with official-link fallbacks (PRD 6.8-6.9, 7-9, 11.12).
+- **Owned files:** Catalog/patron provider fixtures, reducer slices, UI, and tests.
+- **Shared records read/written:** Read works/editions and `PlayerAccess`; write branch/availability results and opaque patron operation state.
+- **Events consumed/emitted:** Emit `CatalogAvailabilityResolved` and `LibraryConnected`; patron commands stay behind the provider.
+- **Provider dependencies:** `MockCatalogProvider` first; demonstration-only patron fixture. No production scraping.
+- **Feature flags:** `libraryCatalog`, `libraryPatronActions`; patron actions also require `accounts` and signed-in state.
+- **Migration impact:** Empty defaults only; disabling either module never removes personal data.
+- **Dependencies:** Packages 1-8, approved credentials for any live provider, and privacy/security approval for real patron credentials.
+- **Tests:** Edition/branch separation, fixture labels, live/unavailable distinction, freshness, official-link recovery, guest patron block, no PIN/card data, demonstration label, and independent flags.
+- **Browser checks:** Sample availability, unavailable provider/official link, signed-out patron block, demonstration flow, and each flag off.
+- **Feature-off behavior:** Patron off preserves catalog; both off preserve the complete prior-phase app.
+- **Acceptance criteria:** Fixture says “Sample availability”; provider failure is unknown rather than false unavailable; no credential secret enters state or logs.
+
+## 10. Community events and administrator registration
+
+- **Objective and PRD references:** Add authorized fixture administration, account registration, normalized daily community contribution, aggregate progress, and audit log without child-to-child communication (PRD 3.15-20, 6.10, 7-9, 11.13-11.14, 11.16).
+- **Owned files:** Community/admin provider fixture, reducer slice, admin and participant UI, audit records, and tests.
+- **Shared records read/written:** Read account/library access and reading-day records; write event registration, normalized contribution, aggregate state, and audit log.
+- **Events consumed/emitted:** Emit `EventRegistrationChanged` and `CommunityContributionRecorded`.
+- **Provider dependencies:** Local authorized-administrator fixture first; future live service requires role-based authorization.
+- **Feature flags:** `communityEvents`; requires enabled accounts and connected library for account-based participation.
+- **Migration impact:** Empty defaults only; disabling removes community surfaces without touching personal progress.
+- **Dependencies:** Packages 1-9 and the approved privacy gate before real administrator account search.
+- **Tests:** Exact/partial username fixture, minimum returned fields, registration/removal audit, one contribution per participant/day, aggregate-only display, authorization failure, no private reading fields, and flag off.
+- **Browser checks:** Authorized search/register/remove, participant aggregate view, unauthorized state, and flag off.
+- **Feature-off behavior:** No event/admin surface; personal reading and collection state remain unchanged.
+- **Acceptance criteria:** No rankings, public individual totals, chat, messaging, friend list, trading, ordinary-user search, or private reading disclosure.
+
+## Product questions carried by the backlog
+
+These are not blockers for package 1, but they must be resolved before the named dependent package is implemented.
+
+1. **Non-ISBN identity:** Freeze normalization and versioning for title-and-author fallback before package 2 generates those identities.
+2. **Late reconciliation:** Decide how to retain two already-owned edition creatures when later metadata proves they are one work, without rerolling or deleting either identity, before package 2 implements that merge case.
+3. **Timer recovery:** Decide whether an unconfirmed private timer survives reload and define its validation bounds before package 3.
+4. **Program registration/window:** Define standalone `registered` semantics and any program-goal/window record before program-specific configuration is added.
+5. **Care scope after switching:** The active-target event and compatibility projection are frozen, but product approval is still required for how inactive creatures experience drift/absence and whether the daily care cap is player-wide or per-creature before package 5.
+6. **Relationship content:** Approve response IDs/order and whether reveal day is the first relationship day before package 5.
+7. **Treat cadence/content:** Clarify first-ever versus one-per-reading-day grant cadence, category-to-treat mapping, and whether use consumes a normal daily care action before enabling `careItems`.
+8. **Availability vocabulary:** Freeze confirmed availability states, freshness rules, and official-search fallback shape before package 9.
