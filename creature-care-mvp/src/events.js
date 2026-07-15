@@ -126,3 +126,22 @@ export const creatureRevealed = ({ creatureId, workId, readingRecordId }, now, i
 
 export const activeCreatureChanged = ({ creatureId }, now, id) =>
   compatibilityEvent(EventTypes.ActiveCreatureChanged, now, { creatureId }, id);
+
+export const creatureRelationshipChanged = ({ creatureId, workId, readingRecordId, localDayKey, responseId }, now, id) =>
+  compatibilityEvent(EventTypes.CreatureRelationshipChanged, now, {
+    creatureId, workId, readingRecordId, localDayKey, responseId
+  }, id);
+
+export const careItemGranted = ({ grantId, itemId, localDayKey, sourceReadingRecordId, categoryId }, now, id) =>
+  compatibilityEvent(EventTypes.CareItemGranted, now, {
+    grantId,
+    itemId,
+    localDayKey,
+    sourceReadingRecordId,
+    ...(categoryId === undefined ? {} : { categoryId })
+  }, id);
+
+export const careItemUsed = ({ useId, itemId, creatureId, actionId, cpGranted }, now, id) =>
+  compatibilityEvent(EventTypes.CareItemUsed, now, {
+    useId, itemId, creatureId, actionId, cpGranted
+  }, id);

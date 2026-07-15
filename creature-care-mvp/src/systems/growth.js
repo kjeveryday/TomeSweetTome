@@ -28,12 +28,14 @@ export function checkGrowth(state, now) {
 const GROWTH_TRIGGER_EVENTS = new Set([
   'CareActionPerformed',
   'ResourceGranted',
-  'CreatureStateChanged'
+  'CreatureStateChanged',
+  'CareItemUsed'
 ]);
 
 // App integration gate: reading, timer, book, clock, and status events cannot
 // cause an unrelated overdue stage change. CreatureStateChanged remains a
 // trigger so one large authorized CP grant can advance one stage at a time.
+// CareItemUsed is authorized because a treat performs the normal feed effect.
 export function checkGrowthAfterEvent(state, event, now) {
   return GROWTH_TRIGGER_EVENTS.has(event?.type) ? checkGrowth(state, now) : [];
 }

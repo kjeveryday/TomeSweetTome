@@ -5,6 +5,7 @@
 import { moodOf } from './state.js';
 import { EventTypes } from './events.js';
 import { stageDef, nextStageDef } from './systems/growth.js';
+import { currentRelationshipResponse, relationshipLevel } from './systems/relationship.js';
 
 export function createUI(root, content, handlers) {
   const copy = content.copy;
@@ -86,6 +87,7 @@ export function createUI(root, content, handlers) {
       <div class="nameplate">
         <span class="name-pill"></span><span class="mood-chip"></span><span class="stage-tag"></span>
       </div>
+      <p class="relationship-line" role="status" hidden></p>
       <div class="tuck-veil" aria-hidden="true">
         <span class="tuck-text"></span>
         <span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span>
@@ -243,6 +245,7 @@ export function createUI(root, content, handlers) {
     namePill: q('.name-pill'),
     moodChip: q('.mood-chip'),
     stageTag: q('.stage-tag'),
+    relationshipLine: q('.relationship-line'),
     growthCaption: q('.growth-caption'),
     starTrail: q('.star-trail'),
     meters: q('.meters'),
@@ -955,6 +958,7 @@ export function createUI(root, content, handlers) {
     el.namePill.textContent = state.name;
     el.moodChip.textContent = `${moodDef.icon} ${moodDef.label}`;
     renderDailyCare(state, stage);
+    renderRelationship(state);
 
     renderGrowth(state, stage);
 
@@ -1114,11 +1118,46 @@ export function createUI(root, content, handlers) {
         chip.append(badge);
       }
 
+      // Finishing a book is a permanent, non-ranked completion marker.
+      if (record.finished === true) {
+        const finishedBadge = document.createElement('span');
+        finishedBadge.className = 'collection-finished';
+        finishedBadge.textContent = content.relationship.finishedResponse.icon;
+        finishedBadge.title = copy.finishedBadge;
+        finishedBadge.setAttribute('aria-label', copy.finishedBadge);
+        chip.append(finishedBadge);
+      }
+
       item.append(chip);
       el.collectionList.append(item);
     }
 
     el.collection.hidden = ordered.length === 0;
+  }
+
+  // ----- relationship line: the active creature's current non-ranked response -----
+  // Shows the response for the creature's most recent relationship day plus how many
+  // distinct reading days you've shared. Non-ranked flavor only — never a power meter.
+  function renderRelationship(state) {
+    const activeId = state.collection?.activeCreatureId ?? null;
+    const creature = activeId ? state.collection.creatures?.[activeId] : null;
+    const response = creature ? currentRelationshipResponse(creature) : null;
+    if (!creature || !response) {
+      el.relationshipLine.hidden = true;
+      el.relationshipLine.textContent = '';
+      return;
+    }
+    const days = relationshipLevel(creature);
+    const finishedSuffix = creature.finished === true
+      ? ` ${content.relationship.finishedResponse.icon}`
+      : '';
+    el.relationshipLine.textContent = interpolate(copy.relationshipLine, {
+      icon: response.icon,
+      name: state.name,
+      text: response.text,
+      days
+    }) + finishedSuffix;
+    el.relationshipLine.hidden = false;
   }
 
   // The stage pill doubles as the gentle daily stopping point: three small
@@ -1248,6 +1287,21 @@ export function createUI(root, content, handlers) {
         if (state.hatched) flash(el.creature, 'poof', 'poof');
         spawnSparks(icons.sparkle);
         toast(interpolate(copy.activeSwitched, { name: record?.baseTraits?.name ?? '' }));
+        break;
+      }
+      case EventTypes.CreatureRelationshipChanged: {
+        // A distinct new reading day with this book — a warm, non-ranked moment.
+        const creatureId = event.payload?.creatureId ?? event.creatureId;
+        const record = state.collection?.creatures?.[creatureId];
+        const response = record ? currentRelationshipResponse(record) : null;
+        if (response) {
+          if (state.collection?.activeCreatureId === creatureId) flash(el.creature, 'anim-play', 'hop');
+          toast(interpolate(copy.relationshipToast, {
+            icon: response.icon,
+            name: record?.baseTraits?.name ?? '',
+            text: response.text
+          }));
+        }
         break;
       }
       default:

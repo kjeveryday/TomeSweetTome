@@ -12,6 +12,8 @@ import {
   isCreatureRecord
 } from './contracts.js';
 import { freshCareState, selectActiveCreature } from './systems/collection.js';
+import { shouldMarkFinished } from './systems/relationship.js';
+import { applyGrant, applyUse } from './systems/care-items.js';
 
 const STATS = content.stats;
 
@@ -173,13 +175,101 @@ function acknowledgeReadingDay(state, payload) {
 
 function changeBookStatus(state, payload) {
   if (!EVENT_PAYLOAD_VALIDATORS.BookStatusChanged(payload) || !state.books.works[payload.workId]) return state;
-  if (state.reading.bookStatuses[payload.workId] === payload.status) return state;
+  const statusChanged = state.reading.bookStatuses[payload.workId] !== payload.status;
+  // Finishing a book is a PERMANENT creature marker, independent of the reversible
+  // work status: it is never cleared by a later reread or paused/not-for-me status,
+  // and it grants no CP, stage, or care power.
+  const finishTargets = payload.status === 'finished'
+    ? Object.values(state.collection.creatures)
+      .filter((creature) => creature.workId === payload.workId && shouldMarkFinished(creature, 'finished'))
+    : [];
+  if (!statusChanged && finishTargets.length === 0) return state;
+
+  let collection = state.collection;
+  if (finishTargets.length > 0) {
+    const creatures = { ...state.collection.creatures };
+    for (const creature of finishTargets) creatures[creature.id] = { ...creature, finished: true };
+    collection = { ...state.collection, creatures };
+  }
   return {
     ...state,
     reading: {
       ...state.reading,
-      bookStatuses: { ...state.reading.bookStatuses, [payload.workId]: payload.status }
+      bookStatuses: statusChanged
+        ? { ...state.reading.bookStatuses, [payload.workId]: payload.status }
+        : state.reading.bookStatuses
+    },
+    collection
+  };
+}
+
+// One relationship day per work per local date. The first-reading reveal day is the
+// creature's first relationship day; the displayed response is derived from the day
+// count (see relationship.js). Never grants CP, stage, care power, or reading progress.
+function changeRelationship(state, payload) {
+  if (!EVENT_PAYLOAD_VALIDATORS.CreatureRelationshipChanged(payload)) return state;
+  const creature = state.collection.creatures[payload.creatureId];
+  if (!creature || creature.workId !== payload.workId) return state;
+  // A relationship day can only land on a REVEALED creature — the reveal day is day 1,
+  // so recording one before the reveal (a reordered/replayed event) would desync the
+  // frozen response mapping. This boundary enforces its own invariant, like every case.
+  if (!creature.revealed) return state;
+  const record = state.reading.records[payload.readingRecordId];
+  if (!record || record.workId !== payload.workId) return state;
+  if (creature.relationshipDayKeys.includes(payload.localDayKey)) return state;
+  return {
+    ...state,
+    collection: {
+      ...state.collection,
+      creatures: {
+        ...state.collection.creatures,
+        [payload.creatureId]: {
+          ...creature,
+          relationshipDayKeys: [...creature.relationshipDayKeys, payload.localDayKey]
+        }
+      }
     }
+  };
+}
+
+// Treat seam (careItems flag). Grant adds one single-use treat to the inventory,
+// idempotent on the grant id.
+function grantCareItem(state, payload) {
+  if (!EVENT_PAYLOAD_VALIDATORS.CareItemGranted(payload)) return state;
+  const result = applyGrant(state.careItems, {
+    grantId: payload.grantId,
+    itemId: payload.itemId,
+    localDayKey: payload.localDayKey,
+    sourceReadingRecordId: payload.sourceReadingRecordId
+  });
+  if (!result.ok || !result.changed) return state;
+  return { ...state, careItems: result.careItems };
+}
+
+// Using a treat performs the normal feed effect on the ACTIVE creature (a treat is a
+// feed with a different animation) subject to the existing daily cap — the cap decision
+// arrives on the event as cpGranted, exactly like CareActionPerformed. It never grants
+// extra reading progress or power. No-op (replay-safe) if no matching treat is available.
+function useCareItem(state, payload) {
+  if (!EVENT_PAYLOAD_VALIDATORS.CareItemUsed(payload)) return state;
+  if (!state.hatched) return state;
+  if (!state.collection.activeCreatureId || payload.creatureId !== state.collection.activeCreatureId) return state;
+  // Replay-safety here relies on treats being single-use (applyGrant pins remaining: 1):
+  // a duplicate CareItemUsed finds remaining 0 and no-ops. If a multi-use treat is ever
+  // introduced, add useId-ledger deduplication before applying the feed twice.
+  const use = applyUse(state.careItems, payload.itemId);
+  if (!use.ok || !use.changed) return state;
+  const feed = content.care.actions.find((action) => action.id === 'feed');
+  const stats = { ...state.stats };
+  if (feed) for (const [statId, delta] of Object.entries(feed.effects)) stats[statId] = clampStat(stats[statId] + delta);
+  const grant = Number.isFinite(payload.cpGranted) ? Math.max(0, payload.cpGranted) : 0;
+  return {
+    ...state,
+    careItems: use.careItems,
+    stats,
+    cp: state.cp + grant,
+    actionsToday: state.actionsToday + 1,
+    tuckedIn: false
   };
 }
 
@@ -393,6 +483,15 @@ export function applyEvent(state, event) {
 
     case EventTypes.ActiveCreatureChanged:
       return changeActiveCreature(state, event.payload ?? event);
+
+    case EventTypes.CreatureRelationshipChanged:
+      return changeRelationship(state, event.payload ?? event);
+
+    case EventTypes.CareItemGranted:
+      return grantCareItem(state, event.payload ?? event);
+
+    case EventTypes.CareItemUsed:
+      return useCareItem(state, event.payload ?? event);
 
     case EventTypes.Hatched: {
       return {

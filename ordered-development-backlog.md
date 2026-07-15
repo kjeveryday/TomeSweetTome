@@ -183,9 +183,12 @@ Resolved for package 3:
 - **Timer recovery:** An unconfirmed timer duration does not survive reload. A local interrupted-session marker may show a one-time “Did you want to record that reading?” prompt; accepting records ordinary untimed reading, and declining clears it.
 - **Standalone registration:** The user explicitly starts the local challenge. It uses the default 20-day goal and 10-day halfway state without a deadline or library-program window.
 
+Resolved for package 5 (approved 2026-07-15):
+
+1. **Care scope after switching — "Gentle collection":** Inactive (non-active) creatures pause. They do not drift, decay, or accrue absence/catch-up while archived; their `careState` snapshot is frozen until reactivated. The daily care cap stays **per-creature** — each creature's own `careState.actionsToday`/`dayKey`, matching the already-frozen per-creature care state. Reactivating a creature never applies retroactive absence drift for the time it was inactive. This confirms and freezes the current behavior; Package 5 must not add inactive-creature drift.
+2. **Relationship content — "Reveal = day 1":** The first-reading reveal day counts as the creature's first relationship day. Each subsequent distinct reading day for that work advances to the next configured non-ranked response. Response IDs/order are configured in `content.json` (`relationship.responses`) and are non-ranked (cyclic, no strength).
+3. **Treats — seam only, flag OFF:** Build the `careItems` events/reducer/inventory/persistence seam behind the `careItems` feature flag (default off), no treat UI, using PRD 6.6 defaults (first formal reading day may grant one broad-category treat; using a treat performs the normal feed effect with a different animation and is subject to the existing daily care cap; treats never add reading progress or extra power). Final grant cadence, category→treat mapping, and treat UI are deferred until the flag is enabled in a later pass.
+
 Remaining questions:
 
-1. **Care scope after switching:** The active-target event and compatibility projection are frozen, but product approval is still required for how inactive creatures experience drift/absence and whether the daily care cap is player-wide or per-creature before package 5.
-2. **Relationship content:** Approve response IDs/order and whether reveal day is the first relationship day before package 5.
-3. **Treat cadence/content:** Clarify first-ever versus one-per-reading-day grant cadence, category-to-treat mapping, and whether use consumes a normal daily care action before enabling `careItems`.
 4. **Availability vocabulary:** Freeze confirmed availability states, freshness rules, and official-search fallback shape before package 9.

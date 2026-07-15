@@ -59,6 +59,32 @@
   "collection": {
     "visibleCreatureLimit": 3
   },
+  "relationship": {
+    "responses": [
+      { "id": "wiggle", "icon": "🌱", "text": "gives you a happy wiggle" },
+      { "id": "sparkle", "icon": "✨", "text": "shows off a tiny new sparkle" },
+      { "id": "hum", "icon": "🎵", "text": "hums a cozy little tune" },
+      { "id": "twirl", "icon": "🌀", "text": "does a proud slow twirl" },
+      { "id": "snuggle", "icon": "💤", "text": "settles in for a warm snuggle" },
+      { "id": "cheer", "icon": "🎉", "text": "gives a bright happy cheer" }
+    ],
+    "finishedResponse": { "id": "finished", "icon": "🏅", "text": "finished this book with you" }
+  },
+  "careItems": {
+    "treats": [
+      { "id": "acorn", "icon": "🌰", "label": "Crunchy acorn" },
+      { "id": "starcandy", "icon": "🍬", "label": "Star candy" },
+      { "id": "cookie", "icon": "🍪", "label": "Warm cookie" }
+    ],
+    "defaultTreatId": "cookie",
+    "categoryMap": {
+      "animal": "acorn",
+      "nature": "acorn",
+      "fantasy": "starcandy",
+      "magic": "starcandy",
+      "adventure": "starcandy"
+    }
+  },
   "generation": {
     "seedVersion": "stacklings:v1",
     "hashAlgorithm": "SHA-256",
@@ -326,6 +352,9 @@
     "creatureRevealedOne": "{name} woke up! ✨",
     "creatureRevealedMany": "{count} creatures woke up! ✨",
     "activeSwitched": "Now caring for {name} 💖",
-    "collectionActivateLabel": "Care for {name}"
+    "collectionActivateLabel": "Care for {name}",
+    "relationshipLine": "{icon} {name} {text} · day {days} together",
+    "relationshipToast": "{icon} {name} {text}",
+    "finishedBadge": "Finished this book"
   }
 }

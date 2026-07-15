@@ -8,8 +8,10 @@ import {
   bookAdded,
   bookStatusChanged,
   bookMetadataResolved,
+  careItemGranted,
   createEventIdFactory,
   creaturePreviewCreated,
+  creatureRelationshipChanged,
   creatureRevealed,
   hatched,
   readingChallengeStarted,
@@ -19,6 +21,8 @@ import {
 } from './events.js';
 import { SharedEventTypes } from './contracts.js';
 import { previewForBook, revealForReading } from './systems/collection.js';
+import { recordRelationshipDay } from './systems/relationship.js';
+import { selectTreat } from './systems/care-items.js';
 import { DEFAULT_FEATURE_FLAGS } from './feature-flags.js';
 import * as clock from './systems/clock.js';
 import * as care from './systems/care.js';
@@ -35,6 +39,7 @@ import { createIsbnBookRecords, createProviderWorkBookRecords } from './systems/
 import {
   createReadingRecord,
   readingProgress,
+  readingsForWork,
   recordReading,
   startStandaloneChallenge
 } from './systems/reading.js';
@@ -178,6 +183,7 @@ function commitReadingRecord(record) {
   const result = recordReading(state.reading, record);
   if (!result.ok || result.replayed) return result.ok;
   const at = Date.parse(record.occurredAt);
+  const firstReadingForWork = readingsForWork(state.reading.records, record.workId).length === 0;
   for (const { type, payload } of result.eventPayloads) {
     if (type === SharedEventTypes.ReadingRecorded) commit(readingRecorded(payload.record, at));
     else if (type === SharedEventTypes.ReadingDayRecorded) commit(readingDayRecorded(record, at));
@@ -193,6 +199,40 @@ function commitReadingRecord(record) {
       // A first-ever reveal becomes active automatically; a later reveal never
       // silently steals the active slot from what the player is already caring for.
       if (!state.collection.activeCreatureId) commit(activeCreatureChanged({ creatureId }, at));
+    }
+  }
+  // Every revealed creature for this work records at most one relationship day per date;
+  // the reveal day is day 1. Reading an archived book advances its creature even while
+  // another is active. The validated late-reconciliation exception can leave two creatures
+  // on one work, so this advances ALL of them — symmetric with the finish marker.
+  const workCreatures = Object.values(state.collection.creatures).filter(
+    (candidate) => candidate.workId === record.workId && candidate.revealed
+  );
+  for (const creature of workCreatures) {
+    const relationship = recordRelationshipDay(creature, record.localDayKey);
+    if (relationship.ok && relationship.changed) {
+      commit(creatureRelationshipChanged({
+        creatureId: creature.id,
+        workId: record.workId,
+        readingRecordId: record.id,
+        localDayKey: record.localDayKey,
+        responseId: relationship.responseId
+      }, at));
+    }
+  }
+  // Treat seam (careItems flag, default OFF): the first reading of a new work may grant
+  // one broad-category treat. Never scales with minutes or number of books.
+  if (featureFlags.careItems && firstReadingForWork && workCreatures.length > 0) {
+    const book = workCreatures[0].baseTraits?.book ?? {};
+    const treat = selectTreat([...(book.genres ?? []), ...(book.subjects ?? [])]);
+    if (treat) {
+      commit(careItemGranted({
+        grantId: `grant:${record.id}`,
+        itemId: treat.id,
+        localDayKey: record.localDayKey,
+        sourceReadingRecordId: record.id,
+        categoryId: treat.id
+      }, at));
     }
   }
   return true;
