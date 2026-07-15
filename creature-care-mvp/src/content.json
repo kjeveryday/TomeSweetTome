@@ -134,6 +134,68 @@
       }
     }
   },
+  "research": {
+    "version": 1,
+    "disclaimer": "These notes explain the thinking behind Stacklings. They don't prove the creature design is best, and the 20-day goal is a friendly, configurable target — not a number research says is right for every reader.",
+    "entries": [
+      {
+        "id": "frequent-reading",
+        "title": "Frequent reading",
+        "summary": "Stacklings records whether reading happened on a day. Research supports frequent connected-text reading, while no universal minute requirement fits every child. The exact 20-day goal is a configurable program target, not a medical dosage.",
+        "sourceLabel": "What Works Clearinghouse practice guide",
+        "sourceUrl": "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published",
+        "lastReviewedAt": "2026-07-15"
+      },
+      {
+        "id": "shared-reading-counts",
+        "title": "Shared reading counts",
+        "summary": "Reading aloud and being read to count. Shared reading supports language-rich interaction and early relationships.",
+        "sourceLabel": "American Academy of Pediatrics policy statement",
+        "sourceUrl": "https://publications.aap.org/pediatrics/article/154/6/e2024069090/199467/Literacy-Promotion-An-Essential-Component-of",
+        "lastReviewedAt": "2026-07-15"
+      },
+      {
+        "id": "choice-and-no-penalties",
+        "title": "Choice and no penalties",
+        "summary": "Players choose what and how to read. Missing days, stopping a book, or changing formats never removes progress.",
+        "sourceLabel": "Children and Libraries review of motivation in summer reading",
+        "sourceUrl": "https://journals.ala.org/index.php/cal/article/view/6236/8124",
+        "lastReviewedAt": "2026-07-15"
+      },
+      {
+        "id": "reading-related-rewards",
+        "title": "Reading-related rewards",
+        "summary": "The game avoids paying by minute or book count. Research found that a book reward or no reward sustained later reading better than an unrelated token reward.",
+        "sourceLabel": "Marinak and Gambrell, 2008",
+        "sourceUrl": "https://doi.org/10.1080/19388070701749546",
+        "lastReviewedAt": "2026-07-15"
+      },
+      {
+        "id": "limited-external-rewards",
+        "title": "Limited external rewards",
+        "summary": "Treats and recognition are capped and do not create power or competition. Broad motivation research cautions that controlling tangible rewards can undermine intrinsic motivation.",
+        "sourceLabel": "Deci, Koestner, and Ryan, 1999",
+        "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/10589297/",
+        "lastReviewedAt": "2026-07-15"
+      },
+      {
+        "id": "library-reading-programs",
+        "title": "Library reading programs",
+        "summary": "The design uses a simple goal, self-reporting, visible progress, and recognition, which are common components of established public-library summer reading programs.",
+        "sourceLabel": "Collaborative Summer Library Program",
+        "sourceUrl": "https://www.cslpreads.org/childrens-program/",
+        "lastReviewedAt": "2026-07-15"
+      },
+      {
+        "id": "program-outcomes",
+        "title": "Program outcomes",
+        "summary": "Public-library summer reading participation has been associated with positive reading and library outcomes, while the study design also had important participation and matching limitations.",
+        "sourceLabel": "The Dominican Study",
+        "sourceUrl": "https://www.ireadprogram.org/content/documents/report.pdf",
+        "lastReviewedAt": "2026-07-15"
+      }
+    ]
+  },
   "generation": {
     "seedVersion": "stacklings:v1",
     "hashAlgorithm": "SHA-256",
@@ -415,6 +477,34 @@
     "visitorReset": "Clear suggestions",
     "visitorArrivedToast": "{name} stopped by! 📚",
     "visitorNone": "No book buddy right now — try again later",
-    "visitorReasonPrefix": "Because"
+    "visitorReasonPrefix": "Because",
+    "settingsTitle": "Settings",
+    "settingsOpen": "Open settings",
+    "settingsClose": "Close settings",
+    "settingsAccountTitle": "Account & saving",
+    "settingsGuest": "Playing as guest",
+    "settingsSignedIn": "Signed in",
+    "settingsGuestNote": "Your progress is saved only on this browser.",
+    "settingsLibrary": "Library: {status}",
+    "settingsLibraryConnected": "Connected",
+    "settingsLibraryDisconnected": "Not connected",
+    "settingsServiceTitle": "Service status",
+    "settingsProviderStorage": "Saved on this device",
+    "settingsProviderRecommendations": "Book buddies",
+    "settingsSample": "Sample data",
+    "settingsAvailable": "Working",
+    "settingsUnavailable": "Unavailable",
+    "settingsDataTitle": "Your data",
+    "settingsExport": "Export my data",
+    "settingsExportHint": "Copy or download a backup of your progress.",
+    "settingsDownload": "Download",
+    "settingsDelete": "Delete everything",
+    "settingsDeleteConfirm": "Are you sure? This can't be undone.",
+    "settingsDeleteYes": "Yes, delete",
+    "settingsDeleteCancel": "Cancel",
+    "settingsClearSuggestions": "Clear saved suggestions",
+    "settingsSuggestionsCleared": "Saved suggestions cleared.",
+    "settingsResearchTitle": "Research & design",
+    "settingsResearchReviewed": "Reviewed {date}"
   }
 }

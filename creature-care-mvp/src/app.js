@@ -29,6 +29,7 @@ import { previewForBook, revealForReading } from './systems/collection.js';
 import { recordRelationshipDay } from './systems/relationship.js';
 import { selectTreat } from './systems/care-items.js';
 import { FixtureRecommendationProvider, buildRecommendationInput, deliveredFromResult } from './systems/recommendations.js';
+import { accountExplanation, classifyProviderHealth, researchSection } from './systems/settings.js';
 import { DEFAULT_FEATURE_FLAGS } from './feature-flags.js';
 import * as clock from './systems/clock.js';
 import * as care from './systems/care.js';
@@ -77,6 +78,11 @@ function localTimerPreviewEnabled() {
 function localRecommendationPreviewEnabled() {
   return ['127.0.0.1', 'localhost'].includes(window.location.hostname)
     && new URLSearchParams(window.location.search).get('recommend') === 'on';
+}
+
+function localResearchPreviewEnabled() {
+  return ['127.0.0.1', 'localhost'].includes(window.location.hostname)
+    && new URLSearchParams(window.location.search).get('research') === 'on';
 }
 
 function loadClockOffset() {
@@ -407,7 +413,33 @@ const ui = createUI(document.querySelector('#app'), content, {
   onResetRecommendations: () => {
     if (!featureFlags.recommendationVisitors) return;
     commit(recommendationReset(getNow()));
-  }
+  },
+  // ----- settings & evidence (Package 7) -----
+  // The research section is the only part gated by researchSettings; the guest-save
+  // explanation, provider status, export, and delete are always available.
+  isResearchEnabled: () => featureFlags.researchSettings === true,
+  getResearchSection: () => researchSection(featureFlags.researchSettings, content.research),
+  getAccountExplanation: () => accountExplanation(state.playerAccess),
+  getProviderStatuses: () => {
+    const statuses = [{ id: 'storage', ...classifyProviderHealth(persistence.healthCheck()) }];
+    if (featureFlags.recommendationVisitors) {
+      statuses.push({ id: 'recommendations', ...classifyProviderHealth(recommendationProvider.healthCheck(getNow())) });
+    }
+    return statuses;
+  },
+  // Export the current save envelope for the user to view/copy/download (read-only).
+  onExportSave: () => persistence.export(getNow()),
+  // Scoped delete: remove ONLY this app's saves (current + legacy) and local app markers,
+  // then reload to a fresh guest start (recovery). Unrelated browser data is untouched.
+  onDeleteSave: () => {
+    persistence.delete();
+    removeInterruptedReadingIntent();
+    try { window.localStorage.removeItem(DEBUG_CLOCK_KEY); } catch { /* best effort */ }
+    window.location.reload();
+  },
+  // Deleting recommendation preference data is a privacy control that is always available,
+  // independent of the recommendationVisitors flag (the right to clear one's own data).
+  onDeleteRecommendationData: () => commit(recommendationReset(getNow()))
 });
 
 (function boot() {
@@ -417,7 +449,8 @@ const ui = createUI(document.querySelector('#app'), content, {
   featureFlags = {
     ...saved.featureFlags,
     timer: saved.featureFlags.timer || localTimerPreviewEnabled(),
-    recommendationVisitors: saved.featureFlags.recommendationVisitors || localRecommendationPreviewEnabled()
+    recommendationVisitors: saved.featureFlags.recommendationVisitors || localRecommendationPreviewEnabled(),
+    researchSettings: saved.featureFlags.researchSettings || localResearchPreviewEnabled()
   };
   const restoredTimer = restoreReadingSession({
     timerEnabled: featureFlags.timer,

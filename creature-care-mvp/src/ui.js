@@ -20,6 +20,7 @@ export function createUI(root, content, handlers) {
     <header class="topbar">
       <h1 class="title"></h1>
       <button class="book-open" type="button"><span>📚</span><span class="book-open-label"></span></button>
+      <button class="settings-open" type="button"><span aria-hidden="true">⚙️</span></button>
     </header>
     <section class="reading-panel" aria-labelledby="reading-title">
       <h2 id="reading-title" class="reading-title"></h2>
@@ -216,6 +217,45 @@ export function createUI(root, content, handlers) {
         </div>
       </div>
     </div>
+    <div class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
+      <div class="settings-card">
+        <button class="settings-close" type="button"></button>
+        <h2 id="settings-title" class="settings-title"></h2>
+        <section class="settings-section settings-account">
+          <h3 class="settings-account-title"></h3>
+          <p class="settings-account-status"></p>
+          <p class="settings-library-status"></p>
+          <p class="settings-guest-note" hidden></p>
+        </section>
+        <section class="settings-section settings-service">
+          <h3 class="settings-service-title"></h3>
+          <ul class="settings-provider-list"></ul>
+        </section>
+        <section class="settings-section settings-data">
+          <h3 class="settings-data-title"></h3>
+          <button class="settings-export" type="button"></button>
+          <p class="settings-export-hint"></p>
+          <div class="settings-export-panel" hidden>
+            <textarea class="settings-export-text" readonly rows="6"></textarea>
+            <button class="settings-download" type="button"></button>
+          </div>
+          <button class="settings-clear-suggestions" type="button"></button>
+          <div class="settings-delete-wrap">
+            <button class="settings-delete" type="button"></button>
+            <div class="settings-delete-confirm" hidden>
+              <p></p>
+              <button class="settings-delete-yes" type="button"></button>
+              <button class="settings-delete-cancel" type="button"></button>
+            </div>
+          </div>
+        </section>
+        <section class="settings-section settings-research" hidden>
+          <h3 class="settings-research-title"></h3>
+          <p class="settings-research-disclaimer"></p>
+          <div class="settings-research-entries"></div>
+        </section>
+      </div>
+    </div>
   `;
 
   const q = (sel) => root.querySelector(sel);
@@ -335,6 +375,32 @@ export function createUI(root, content, handlers) {
     debugDerivedValues: q('.debug-derived-values'),
     debugJsonLabel: q('.debug-json-label'),
     debugJson: q('.debug-json'),
+    settingsOpen: q('.settings-open'),
+    settingsModal: q('.settings-modal'),
+    settingsCard: q('.settings-card'),
+    settingsClose: q('.settings-close'),
+    settingsTitle: q('.settings-title'),
+    settingsAccountTitle: q('.settings-account-title'),
+    settingsAccountStatus: q('.settings-account-status'),
+    settingsLibraryStatus: q('.settings-library-status'),
+    settingsGuestNote: q('.settings-guest-note'),
+    settingsServiceTitle: q('.settings-service-title'),
+    settingsProviderList: q('.settings-provider-list'),
+    settingsDataTitle: q('.settings-data-title'),
+    settingsExport: q('.settings-export'),
+    settingsExportHint: q('.settings-export-hint'),
+    settingsExportPanel: q('.settings-export-panel'),
+    settingsExportText: q('.settings-export-text'),
+    settingsDownload: q('.settings-download'),
+    settingsClearSuggestions: q('.settings-clear-suggestions'),
+    settingsDelete: q('.settings-delete'),
+    settingsDeleteConfirm: q('.settings-delete-confirm'),
+    settingsDeleteYes: q('.settings-delete-yes'),
+    settingsDeleteCancel: q('.settings-delete-cancel'),
+    settingsResearch: q('.settings-research'),
+    settingsResearchTitle: q('.settings-research-title'),
+    settingsResearchDisclaimer: q('.settings-research-disclaimer'),
+    settingsResearchEntries: q('.settings-research-entries'),
     birthmark: q('.birthmark'),
     marks: [...root.querySelectorAll('.creature .mark')]
   };
@@ -604,6 +670,23 @@ export function createUI(root, content, handlers) {
   el.debugJsonLabel.textContent = copy.debugRawJson;
   el.debugClose.textContent = '×';
   el.debugClose.setAttribute('aria-label', copy.debugClose);
+  el.settingsOpen.setAttribute('aria-label', copy.settingsOpen);
+  el.settingsClose.textContent = '×';
+  el.settingsClose.setAttribute('aria-label', copy.settingsClose);
+  el.settingsTitle.textContent = copy.settingsTitle;
+  el.settingsAccountTitle.textContent = copy.settingsAccountTitle;
+  el.settingsGuestNote.textContent = copy.settingsGuestNote;
+  el.settingsServiceTitle.textContent = copy.settingsServiceTitle;
+  el.settingsDataTitle.textContent = copy.settingsDataTitle;
+  el.settingsExport.textContent = copy.settingsExport;
+  el.settingsExportHint.textContent = copy.settingsExportHint;
+  el.settingsDownload.textContent = copy.settingsDownload;
+  el.settingsClearSuggestions.textContent = copy.settingsClearSuggestions;
+  el.settingsDelete.textContent = copy.settingsDelete;
+  el.settingsDeleteConfirm.querySelector('p').textContent = copy.settingsDeleteConfirm;
+  el.settingsDeleteYes.textContent = copy.settingsDeleteYes;
+  el.settingsDeleteCancel.textContent = copy.settingsDeleteCancel;
+  el.settingsResearchTitle.textContent = copy.settingsResearchTitle;
 
   function renderDebugRows(target, definitions, values) {
     target.replaceChildren();
@@ -701,6 +784,191 @@ export function createUI(root, content, handlers) {
   el.debugClose.addEventListener('click', closeCreatureDebug);
   el.debugModal.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeCreatureDebug();
+  });
+
+  // ----- settings & evidence modal -----
+  // Defensive by design: handlers may be missing or throw (older/partial wiring,
+  // future providers); every read goes through safeCall so a bad handler never
+  // breaks the rest of the settings surface.
+  function safeCall(fn, fallback) {
+    try {
+      const result = fn();
+      return result === undefined ? fallback : result;
+    } catch {
+      return fallback;
+    }
+  }
+
+  const providerLabelKeys = {
+    storage: 'settingsProviderStorage',
+    recommendations: 'settingsProviderRecommendations'
+  };
+
+  let lastExportedSave = null;
+
+  function renderSettingsAccount() {
+    const account = safeCall(() => handlers.getAccountExplanation(), {});
+    const isGuest = account?.accountStatus !== 'signed_in';
+    el.settingsAccountStatus.textContent = isGuest ? copy.settingsGuest : copy.settingsSignedIn;
+    el.settingsLibraryStatus.textContent = interpolate(copy.settingsLibrary, {
+      status: account?.libraryStatus === 'connected'
+        ? copy.settingsLibraryConnected
+        : copy.settingsLibraryDisconnected
+    });
+    el.settingsGuestNote.hidden = !account?.guestOnlyThisBrowser;
+  }
+
+  function renderSettingsProviders() {
+    el.settingsProviderList.replaceChildren();
+    const statuses = safeCall(() => handlers.getProviderStatuses(), []);
+    for (const status of Array.isArray(statuses) ? statuses : []) {
+      if (!status || typeof status.id !== 'string') continue;
+      const item = document.createElement('li');
+      item.className = 'settings-provider-item';
+      const label = document.createElement('span');
+      label.className = 'settings-provider-label';
+      label.textContent = copy[providerLabelKeys[status.id]] ?? status.id;
+      const state = document.createElement('span');
+      state.className = 'settings-provider-state';
+      const available = status.available === true;
+      state.dataset.available = String(available);
+      state.textContent = available ? copy.settingsAvailable : copy.settingsUnavailable;
+      item.append(label, state);
+      if (status.sample === true) {
+        const pill = document.createElement('span');
+        pill.className = 'settings-sample-pill';
+        pill.textContent = copy.settingsSample;
+        item.append(pill);
+      }
+      el.settingsProviderList.append(item);
+    }
+  }
+
+  function renderSettingsResearch() {
+    const research = safeCall(() => handlers.getResearchSection(), { enabled: false, disclaimer: null, entries: [] });
+    const enabled = research?.enabled === true;
+    el.settingsResearch.hidden = !enabled;
+    el.settingsResearchDisclaimer.textContent = '';
+    el.settingsResearchEntries.replaceChildren();
+    if (!enabled) return;
+    el.settingsResearchDisclaimer.textContent = research.disclaimer ?? '';
+    for (const entry of Array.isArray(research.entries) ? research.entries : []) {
+      if (!entry) continue;
+      const card = document.createElement('article');
+      card.className = 'settings-research-entry';
+      const heading = document.createElement('h4');
+      heading.textContent = entry.title ?? '';
+      const summary = document.createElement('p');
+      summary.textContent = entry.summary ?? '';
+      const link = document.createElement('a');
+      link.className = 'settings-research-link';
+      link.href = entry.sourceUrl ?? '#';
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = entry.sourceLabel ?? entry.sourceUrl ?? '';
+      const reviewed = document.createElement('p');
+      reviewed.className = 'settings-research-reviewed';
+      reviewed.textContent = interpolate(copy.settingsResearchReviewed, { date: entry.lastReviewedAt ?? '' });
+      card.append(heading, summary, link, reviewed);
+      el.settingsResearchEntries.append(card);
+    }
+  }
+
+  function resetSettingsDeleteConfirm() {
+    el.settingsDelete.hidden = false;
+    el.settingsDeleteConfirm.hidden = true;
+  }
+
+  function resetSettingsExportPanel() {
+    lastExportedSave = null;
+    el.settingsExportPanel.hidden = true;
+    el.settingsExportText.value = '';
+  }
+
+  function renderSettings() {
+    resetSettingsDeleteConfirm();
+    resetSettingsExportPanel();
+    renderSettingsAccount();
+    renderSettingsProviders();
+    renderSettingsResearch();
+  }
+
+  let settingsReturnFocus = null;
+
+  function openSettingsModal() {
+    settingsReturnFocus = el.settingsOpen;
+    renderSettings();
+    el.settingsModal.hidden = false;
+    el.settingsClose.focus();
+  }
+
+  function closeSettingsModal() {
+    el.settingsModal.hidden = true;
+    if (settingsReturnFocus) settingsReturnFocus.focus();
+  }
+
+  el.settingsOpen.addEventListener('click', openSettingsModal);
+  el.settingsClose.addEventListener('click', closeSettingsModal);
+  el.settingsModal.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeSettingsModal();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = [...el.settingsCard.querySelectorAll('button:not(:disabled), textarea:not(:disabled), a[href]')]
+      .filter((control) => !control.closest('[hidden]'));
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (!first || !last) return;
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
+  el.settingsExport.addEventListener('click', () => {
+    const json = safeCall(() => handlers.onExportSave(), null);
+    if (typeof json !== 'string') return;
+    lastExportedSave = json;
+    el.settingsExportText.value = json;
+    el.settingsExportPanel.hidden = false;
+    el.settingsExportText.focus();
+    el.settingsExportText.select();
+  });
+
+  el.settingsDownload.addEventListener('click', () => {
+    if (typeof lastExportedSave !== 'string') return;
+    const blob = new Blob([lastExportedSave], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'tome-sweet-tome-save.json';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  el.settingsClearSuggestions.addEventListener('click', () => {
+    safeCall(() => handlers.onDeleteRecommendationData(), null);
+    toast(copy.settingsSuggestionsCleared);
+    renderSettingsProviders();
+  });
+
+  el.settingsDelete.addEventListener('click', () => {
+    el.settingsDelete.hidden = true;
+    el.settingsDeleteConfirm.hidden = false;
+    el.settingsDeleteYes.focus();
+  });
+  el.settingsDeleteCancel.addEventListener('click', () => {
+    resetSettingsDeleteConfirm();
+    el.settingsDelete.focus();
+  });
+  el.settingsDeleteYes.addEventListener('click', () => {
+    safeCall(() => handlers.onDeleteSave(), null);
   });
 
   function openBookModal() {
