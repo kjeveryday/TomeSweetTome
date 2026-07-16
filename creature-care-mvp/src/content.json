@@ -505,6 +505,23 @@
     "settingsClearSuggestions": "Clear saved suggestions",
     "settingsSuggestionsCleared": "Saved suggestions cleared.",
     "settingsResearchTitle": "Research & design",
-    "settingsResearchReviewed": "Reviewed {date}"
+    "settingsResearchReviewed": "Reviewed {date}",
+    "navDiscover": "Discover",
+    "navCare": "Care",
+    "navHabitat": "Habitat",
+    "navProgress": "Progress",
+    "navBooks": "Books",
+    "navSettings": "Settings",
+    "discoverTitle": "Discover",
+    "underConstruction": "Under construction 🚧",
+    "booksUnderConstructionNote": "We're still building this cozy corner. Check back soon for new ways to browse and discover books!",
+    "eventsUnderConstructionNote": "Fun reading events are on the way — check back soon!",
+    "habitatEditTitle": "Edit habitat",
+    "habitatEditUnderConstructionNote": "Decorating your creatures' habitat is coming soon!",
+    "progressTitle": "Your progress",
+    "progressHistoryTitle": "Everything you've read",
+    "progressHistoryEmpty": "No reading recorded yet. Log a book on Pet Care to start your history!",
+    "progressBooksTitle": "Your books",
+    "eventsTitle": "Events"
   }
 }

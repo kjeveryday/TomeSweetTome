@@ -19,126 +19,13 @@ export function createUI(root, content, handlers) {
   root.innerHTML = `
     <header class="topbar">
       <h1 class="title"></h1>
-      <button class="book-open" type="button"><span>📚</span><span class="book-open-label"></span></button>
-      <button class="settings-open" type="button"><span aria-hidden="true">⚙️</span></button>
     </header>
-    <section class="reading-panel" aria-labelledby="reading-title">
-      <h2 id="reading-title" class="reading-title"></h2>
-      <div class="reading-start-view">
-        <p class="reading-intro"></p>
-        <button class="reading-start" type="button"></button>
-      </div>
-      <div class="reading-active-view" hidden>
-        <p class="reading-progress" role="status"></p>
-        <div class="reading-grid">
-          <label for="reading-book" class="reading-label reading-book-label"></label>
-          <select id="reading-book" class="reading-book"></select>
-          <label for="reading-mode" class="reading-label reading-mode-label"></label>
-          <select id="reading-mode" class="reading-mode"></select>
-          <button class="reading-record" type="button"></button>
-          <div class="reading-timer" hidden>
-            <button class="timer-start" type="button"></button>
-            <p class="timer-running" role="timer" hidden></p>
-            <div class="timer-actions" hidden>
-              <button class="timer-stop" type="button"></button>
-              <button class="timer-cancel" type="button"></button>
-            </div>
-            <div class="timer-confirm" hidden>
-              <p></p>
-              <button class="timer-confirm-yes" type="button"></button>
-              <button class="timer-confirm-no" type="button"></button>
-            </div>
-          </div>
-          <label for="reading-status" class="reading-label reading-status-label"></label>
-          <select id="reading-status" class="reading-status"></select>
-        </div>
-        <p class="reading-empty" hidden></p>
-      </div>
-    </section>
-    <section class="scene">
-      <span class="sun"></span>
-      <span class="cloud c1"></span>
-      <span class="cloud c2"></span>
-      <div class="shelf" role="list"></div>
-      <div class="stage-area">
-        <button class="creature-debug" type="button"><span aria-hidden="true">⚙️</span></button>
-        <button class="egg" type="button">
-          <span class="egg-shell"></span>
-          <span class="crack k1"></span><span class="crack k2"></span><span class="crack k3"></span>
-        </button>
-        <div class="creature">
-          <span class="sprout"></span>
-          <span class="wing wl"></span><span class="wing wr"></span>
-          <span class="feature f1"></span><span class="feature f2"></span>
-          <div class="body">
-            <span class="mark m1"></span><span class="mark m2"></span>
-            <span class="mark m3"></span><span class="mark m4"></span>
-            <span class="birthmark"></span>
-            <span class="eye el"></span><span class="eye er"></span>
-            <span class="cheek chl"></span><span class="cheek chr"></span>
-            <span class="mouth"></span>
-          </div>
-          <span class="shadow"></span>
-          <span class="zzz"></span>
-        </div>
-        <div class="fx"></div>
-        <div class="burst-layer"></div>
-      </div>
-      <p class="egg-hint"></p>
-      <div class="nameplate">
-        <span class="name-pill"></span><span class="mood-chip"></span><span class="stage-tag"></span>
-      </div>
-      <p class="relationship-line" role="status" hidden></p>
-      <div class="tuck-veil" aria-hidden="true">
-        <span class="tuck-text"></span>
-        <span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span>
-      </div>
-    </section>
-    <section class="growth">
-      <p class="growth-caption"></p>
-      <div class="star-trail" aria-hidden="true"></div>
-    </section>
-    <section class="meters"></section>
-    <section class="actions"></section>
-    <section class="collection" aria-labelledby="collection-title" hidden>
-      <h2 id="collection-title" class="collection-title"></h2>
-      <div class="collection-list" role="list"></div>
-    </section>
-    <section class="visitor" aria-labelledby="visitor-title" hidden>
-      <h2 id="visitor-title" class="visitor-title"></h2>
-      <button class="visitor-ask" type="button"></button>
-      <div class="visitor-card" hidden>
-        <p class="visitor-greeting"></p>
-        <p class="visitor-reason"></p>
-        <p class="visitor-sample-note"></p>
-        <ul class="visitor-books"></ul>
-        <div class="visitor-card-actions">
-          <button class="visitor-save" type="button"></button>
-          <span class="visitor-saved" hidden></span>
-          <button class="visitor-dismiss" type="button"></button>
-        </div>
-      </div>
-      <button class="visitor-reset" type="button"></button>
-    </section>
-    <button class="tuck-btn" type="button">
-      <span class="a-icon"></span><span class="t-label"></span>
-    </button>
-    <div class="toast" role="status"></div>
-    <div class="welcome" role="dialog" aria-modal="true" aria-labelledby="welcome-title" aria-describedby="welcome-body gift-line" hidden>
-      <div class="welcome-card">
-        <h2 class="welcome-title" id="welcome-title"></h2>
-        <p class="welcome-body" id="welcome-body"></p>
-        <div class="gift-stack"></div>
-        <p class="gift-line" id="gift-line"></p>
-        <button class="welcome-btn" type="button"></button>
-      </div>
-    </div>
-    <div class="book-modal" role="dialog" aria-modal="true" aria-labelledby="book-title" aria-describedby="book-body book-privacy" hidden>
+
+    <div class="page page-discover" id="page-discover" role="tabpanel" aria-labelledby="tab-discover" hidden>
       <div class="book-card">
-        <button class="book-close" type="button" aria-label=""></button>
-        <h2 id="book-title" class="book-title"></h2>
-        <p id="book-body" class="book-body"></p>
-        <p id="book-privacy" class="book-privacy"></p>
+        <h2 class="book-title"></h2>
+        <p class="book-body"></p>
+        <p class="book-privacy"></p>
         <label class="photo-btn">
           <span>📷</span><span class="photo-label"></span>
           <input class="photo-input visually-hidden" type="file" accept="image/*" capture="environment" />
@@ -180,6 +67,213 @@ export function createUI(root, content, handlers) {
         </section>
       </div>
     </div>
+
+    <div class="page page-care" id="page-care" role="tabpanel" aria-labelledby="tab-care">
+      <section class="reading-panel" aria-labelledby="reading-title">
+        <h2 id="reading-title" class="reading-title"></h2>
+        <div class="reading-start-view">
+          <p class="reading-intro"></p>
+          <button class="reading-start" type="button"></button>
+        </div>
+        <div class="reading-active-view" hidden>
+          <p class="reading-progress" role="status"></p>
+          <div class="reading-grid">
+            <label for="reading-book" class="reading-label reading-book-label"></label>
+            <select id="reading-book" class="reading-book"></select>
+            <label for="reading-mode" class="reading-label reading-mode-label"></label>
+            <select id="reading-mode" class="reading-mode"></select>
+            <button class="reading-record" type="button"></button>
+            <div class="reading-timer" hidden>
+              <button class="timer-start" type="button"></button>
+              <p class="timer-running" role="timer" hidden></p>
+              <div class="timer-actions" hidden>
+                <button class="timer-stop" type="button"></button>
+                <button class="timer-cancel" type="button"></button>
+              </div>
+              <div class="timer-confirm" hidden>
+                <p></p>
+                <button class="timer-confirm-yes" type="button"></button>
+                <button class="timer-confirm-no" type="button"></button>
+              </div>
+            </div>
+            <label for="reading-status" class="reading-label reading-status-label"></label>
+            <select id="reading-status" class="reading-status"></select>
+          </div>
+          <p class="reading-empty" hidden></p>
+        </div>
+      </section>
+      <section class="scene">
+        <span class="sun"></span>
+        <span class="cloud c1"></span>
+        <span class="cloud c2"></span>
+        <div class="shelf" role="list"></div>
+        <div class="stage-area">
+          <button class="creature-debug" type="button"><span aria-hidden="true">⚙️</span></button>
+          <button class="egg" type="button">
+            <span class="egg-shell"></span>
+            <span class="crack k1"></span><span class="crack k2"></span><span class="crack k3"></span>
+          </button>
+          <div class="creature">
+            <span class="sprout"></span>
+            <span class="wing wl"></span><span class="wing wr"></span>
+            <span class="feature f1"></span><span class="feature f2"></span>
+            <div class="body">
+              <span class="mark m1"></span><span class="mark m2"></span>
+              <span class="mark m3"></span><span class="mark m4"></span>
+              <span class="birthmark"></span>
+              <span class="eye el"></span><span class="eye er"></span>
+              <span class="cheek chl"></span><span class="cheek chr"></span>
+              <span class="mouth"></span>
+            </div>
+            <span class="shadow"></span>
+            <span class="zzz"></span>
+          </div>
+          <div class="fx"></div>
+          <div class="burst-layer"></div>
+        </div>
+        <p class="egg-hint"></p>
+        <div class="nameplate">
+          <span class="name-pill"></span><span class="mood-chip"></span><span class="stage-tag"></span>
+        </div>
+        <p class="relationship-line" role="status" hidden></p>
+        <div class="tuck-veil" aria-hidden="true">
+          <span class="tuck-text"></span>
+          <span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span>
+        </div>
+      </section>
+      <section class="growth">
+        <p class="growth-caption"></p>
+        <div class="star-trail" aria-hidden="true"></div>
+      </section>
+      <section class="meters"></section>
+      <section class="actions"></section>
+      <button class="tuck-btn" type="button">
+        <span class="a-icon"></span><span class="t-label"></span>
+      </button>
+    </div>
+
+    <div class="page page-habitat" id="page-habitat" role="tabpanel" aria-labelledby="tab-habitat" hidden>
+      <section class="collection" aria-labelledby="collection-title" hidden>
+        <h2 id="collection-title" class="collection-title"></h2>
+        <div class="collection-list" role="list"></div>
+      </section>
+      <section class="visitor" aria-labelledby="visitor-title" hidden>
+        <h2 id="visitor-title" class="visitor-title"></h2>
+        <button class="visitor-ask" type="button"></button>
+        <div class="visitor-card" hidden>
+          <p class="visitor-greeting"></p>
+          <p class="visitor-reason"></p>
+          <p class="visitor-sample-note"></p>
+          <ul class="visitor-books"></ul>
+          <div class="visitor-card-actions">
+            <button class="visitor-save" type="button"></button>
+            <span class="visitor-saved" hidden></span>
+            <button class="visitor-dismiss" type="button"></button>
+          </div>
+        </div>
+        <button class="visitor-reset" type="button"></button>
+      </section>
+      <section class="habitat-edit under-construction">
+        <h2 class="habitat-edit-title"></h2>
+        <p class="habitat-edit-note"></p>
+      </section>
+    </div>
+
+    <div class="page page-progress" id="page-progress" role="tabpanel" aria-labelledby="tab-progress" hidden>
+      <h2 class="progress-title"></h2>
+      <p class="progress-status" role="status"></p>
+      <section class="progress-history">
+        <h3 class="progress-history-title"></h3>
+        <ul class="progress-history-list"></ul>
+        <p class="progress-history-empty" hidden></p>
+      </section>
+      <section class="progress-books">
+        <h3 class="progress-books-title"></h3>
+        <ul class="progress-books-list"></ul>
+      </section>
+      <section class="progress-events under-construction">
+        <h3 class="events-title"></h3>
+        <p class="events-note"></p>
+      </section>
+    </div>
+
+    <div class="page page-books" id="page-books" role="tabpanel" aria-labelledby="tab-books" hidden>
+      <section class="books-placeholder under-construction">
+        <h2 class="books-title"></h2>
+        <p class="books-note"></p>
+      </section>
+    </div>
+
+    <div class="page page-settings" id="page-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+      <div class="settings-card">
+        <h2 class="settings-title"></h2>
+        <section class="settings-section settings-account">
+          <h3 class="settings-account-title"></h3>
+          <p class="settings-account-status"></p>
+          <p class="settings-library-status"></p>
+          <p class="settings-guest-note" hidden></p>
+        </section>
+        <section class="settings-section settings-service">
+          <h3 class="settings-service-title"></h3>
+          <ul class="settings-provider-list"></ul>
+        </section>
+        <section class="settings-section settings-data">
+          <h3 class="settings-data-title"></h3>
+          <button class="settings-export" type="button"></button>
+          <p class="settings-export-hint"></p>
+          <div class="settings-export-panel" hidden>
+            <textarea class="settings-export-text" readonly rows="6"></textarea>
+            <button class="settings-download" type="button"></button>
+          </div>
+          <button class="settings-clear-suggestions" type="button"></button>
+          <div class="settings-delete-wrap">
+            <button class="settings-delete" type="button"></button>
+            <div class="settings-delete-confirm" hidden>
+              <p></p>
+              <button class="settings-delete-yes" type="button"></button>
+              <button class="settings-delete-cancel" type="button"></button>
+            </div>
+          </div>
+        </section>
+        <section class="settings-section settings-research" hidden>
+          <h3 class="settings-research-title"></h3>
+          <p class="settings-research-disclaimer"></p>
+          <div class="settings-research-entries"></div>
+        </section>
+      </div>
+    </div>
+
+    <nav class="tabbar" role="tablist">
+      <button class="tab tab-discover" id="tab-discover" data-page="discover" role="tab" type="button" aria-selected="false" aria-controls="page-discover">
+        <span class="tab-icon" aria-hidden="true">🔍</span><span class="tab-label"></span>
+      </button>
+      <button class="tab tab-care" id="tab-care" data-page="care" role="tab" type="button" aria-selected="true" aria-controls="page-care">
+        <span class="tab-icon" aria-hidden="true">🐾</span><span class="tab-label"></span>
+      </button>
+      <button class="tab tab-habitat" id="tab-habitat" data-page="habitat" role="tab" type="button" aria-selected="false" aria-controls="page-habitat">
+        <span class="tab-icon" aria-hidden="true">🏡</span><span class="tab-label"></span>
+      </button>
+      <button class="tab tab-progress" id="tab-progress" data-page="progress" role="tab" type="button" aria-selected="false" aria-controls="page-progress">
+        <span class="tab-icon" aria-hidden="true">📈</span><span class="tab-label"></span>
+      </button>
+      <button class="tab tab-books" id="tab-books" data-page="books" role="tab" type="button" aria-selected="false" aria-controls="page-books">
+        <span class="tab-icon" aria-hidden="true">📚</span><span class="tab-label"></span>
+      </button>
+      <button class="tab tab-settings" id="tab-settings" data-page="settings" role="tab" type="button" aria-selected="false" aria-controls="page-settings">
+        <span class="tab-icon" aria-hidden="true">⚙️</span><span class="tab-label"></span>
+      </button>
+    </nav>
+
+    <div class="toast" role="status"></div>
+    <div class="welcome" role="dialog" aria-modal="true" aria-labelledby="welcome-title" aria-describedby="welcome-body gift-line" hidden>
+      <div class="welcome-card">
+        <h2 class="welcome-title" id="welcome-title"></h2>
+        <p class="welcome-body" id="welcome-body"></p>
+        <div class="gift-stack"></div>
+        <p class="gift-line" id="gift-line"></p>
+        <button class="welcome-btn" type="button"></button>
+      </div>
+    </div>
     <div class="debug-modal" role="dialog" aria-modal="true" aria-labelledby="debug-title" hidden>
       <div class="debug-card">
         <button class="debug-close" type="button"></button>
@@ -217,45 +311,6 @@ export function createUI(root, content, handlers) {
         </div>
       </div>
     </div>
-    <div class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
-      <div class="settings-card">
-        <button class="settings-close" type="button"></button>
-        <h2 id="settings-title" class="settings-title"></h2>
-        <section class="settings-section settings-account">
-          <h3 class="settings-account-title"></h3>
-          <p class="settings-account-status"></p>
-          <p class="settings-library-status"></p>
-          <p class="settings-guest-note" hidden></p>
-        </section>
-        <section class="settings-section settings-service">
-          <h3 class="settings-service-title"></h3>
-          <ul class="settings-provider-list"></ul>
-        </section>
-        <section class="settings-section settings-data">
-          <h3 class="settings-data-title"></h3>
-          <button class="settings-export" type="button"></button>
-          <p class="settings-export-hint"></p>
-          <div class="settings-export-panel" hidden>
-            <textarea class="settings-export-text" readonly rows="6"></textarea>
-            <button class="settings-download" type="button"></button>
-          </div>
-          <button class="settings-clear-suggestions" type="button"></button>
-          <div class="settings-delete-wrap">
-            <button class="settings-delete" type="button"></button>
-            <div class="settings-delete-confirm" hidden>
-              <p></p>
-              <button class="settings-delete-yes" type="button"></button>
-              <button class="settings-delete-cancel" type="button"></button>
-            </div>
-          </div>
-        </section>
-        <section class="settings-section settings-research" hidden>
-          <h3 class="settings-research-title"></h3>
-          <p class="settings-research-disclaimer"></p>
-          <div class="settings-research-entries"></div>
-        </section>
-      </div>
-    </div>
   `;
 
   const q = (sel) => root.querySelector(sel);
@@ -289,7 +344,6 @@ export function createUI(root, content, handlers) {
     readingRecoveryBook: q('.reading-recovery-book'),
     readingRecoveryYes: q('.reading-recovery-yes'),
     readingRecoveryNo: q('.reading-recovery-no'),
-    bookOpen: q('.book-open'),
     scene: q('.scene'),
     creatureDebug: q('.creature-debug'),
     egg: q('.egg'),
@@ -332,9 +386,8 @@ export function createUI(root, content, handlers) {
     giftStack: q('.gift-stack'),
     giftLine: q('.gift-line'),
     welcomeBtn: q('.welcome-btn'),
-    bookModal: q('.book-modal'),
+    discoverPage: q('#page-discover'),
     bookCard: q('.book-card'),
-    bookClose: q('.book-close'),
     bookTitle: q('.book-title'),
     bookBody: q('.book-body'),
     bookPrivacy: q('.book-privacy'),
@@ -375,10 +428,8 @@ export function createUI(root, content, handlers) {
     debugDerivedValues: q('.debug-derived-values'),
     debugJsonLabel: q('.debug-json-label'),
     debugJson: q('.debug-json'),
-    settingsOpen: q('.settings-open'),
-    settingsModal: q('.settings-modal'),
+    settingsPage: q('#page-settings'),
     settingsCard: q('.settings-card'),
-    settingsClose: q('.settings-close'),
     settingsTitle: q('.settings-title'),
     settingsAccountTitle: q('.settings-account-title'),
     settingsAccountStatus: q('.settings-account-status'),
@@ -402,7 +453,37 @@ export function createUI(root, content, handlers) {
     settingsResearchDisclaimer: q('.settings-research-disclaimer'),
     settingsResearchEntries: q('.settings-research-entries'),
     birthmark: q('.birthmark'),
-    marks: [...root.querySelectorAll('.creature .mark')]
+    marks: [...root.querySelectorAll('.creature .mark')],
+    habitatEditTitle: q('.habitat-edit-title'),
+    habitatEditNote: q('.habitat-edit-note'),
+    progressTitle: q('.progress-title'),
+    progressStatus: q('.progress-status'),
+    progressHistoryTitle: q('.progress-history-title'),
+    progressHistoryList: q('.progress-history-list'),
+    progressHistoryEmpty: q('.progress-history-empty'),
+    progressBooksTitle: q('.progress-books-title'),
+    progressBooksList: q('.progress-books-list'),
+    eventsTitle: q('.events-title'),
+    eventsNote: q('.events-note'),
+    booksTitle: q('.books-title'),
+    booksNote: q('.books-note'),
+    tabbar: q('.tabbar'),
+    tabs: {
+      discover: q('.tab-discover'),
+      care: q('.tab-care'),
+      habitat: q('.tab-habitat'),
+      progress: q('.tab-progress'),
+      books: q('.tab-books'),
+      settings: q('.tab-settings')
+    },
+    pages: {
+      discover: q('#page-discover'),
+      care: q('#page-care'),
+      habitat: q('#page-habitat'),
+      progress: q('#page-progress'),
+      books: q('#page-books'),
+      settings: q('#page-settings')
+    }
   };
 
   el.title.textContent = copy.title;
@@ -517,7 +598,6 @@ export function createUI(root, content, handlers) {
     el.readingRecoveryYes.focus();
     return true;
   }
-  el.bookOpen.querySelector('.book-open-label').textContent = copy.bookButton;
   el.eggHint.textContent = copy.tapEgg;
   el.egg.setAttribute('aria-label', `${copy.eggLabel} — ${copy.tapEgg}`);
   el.zzz.textContent = icons.sleep;
@@ -642,11 +722,10 @@ export function createUI(root, content, handlers) {
   let scanRequest = 0;
   let debugReturnFocus = null;
 
+  el.discoverPage.setAttribute('aria-label', copy.discoverTitle);
   el.bookTitle.textContent = copy.bookDialogTitle;
   el.bookBody.textContent = copy.bookDialogBody;
   el.bookPrivacy.textContent = copy.bookPrivacy;
-  el.bookClose.textContent = '×';
-  el.bookClose.setAttribute('aria-label', copy.bookClose);
   el.photoLabel.textContent = copy.choosePhoto;
   el.manualDivider.textContent = copy.manualDivider;
   el.isbnLabel.textContent = copy.isbnLabel;
@@ -670,9 +749,7 @@ export function createUI(root, content, handlers) {
   el.debugJsonLabel.textContent = copy.debugRawJson;
   el.debugClose.textContent = '×';
   el.debugClose.setAttribute('aria-label', copy.debugClose);
-  el.settingsOpen.setAttribute('aria-label', copy.settingsOpen);
-  el.settingsClose.textContent = '×';
-  el.settingsClose.setAttribute('aria-label', copy.settingsClose);
+  el.settingsPage.setAttribute('aria-label', copy.settingsTitle);
   el.settingsTitle.textContent = copy.settingsTitle;
   el.settingsAccountTitle.textContent = copy.settingsAccountTitle;
   el.settingsGuestNote.textContent = copy.settingsGuestNote;
@@ -687,6 +764,55 @@ export function createUI(root, content, handlers) {
   el.settingsDeleteYes.textContent = copy.settingsDeleteYes;
   el.settingsDeleteCancel.textContent = copy.settingsDeleteCancel;
   el.settingsResearchTitle.textContent = copy.settingsResearchTitle;
+
+  // ----- under-construction placeholders (static, kid-friendly notes) -----
+  el.habitatEditTitle.textContent = copy.habitatEditTitle;
+  el.habitatEditNote.textContent = copy.habitatEditUnderConstructionNote;
+  el.progressTitle.textContent = copy.progressTitle;
+  el.progressHistoryTitle.textContent = copy.progressHistoryTitle;
+  el.progressHistoryEmpty.textContent = copy.progressHistoryEmpty;
+  el.progressBooksTitle.textContent = copy.progressBooksTitle;
+  el.eventsTitle.textContent = copy.eventsTitle;
+  el.eventsNote.textContent = copy.eventsUnderConstructionNote;
+  el.booksTitle.textContent = copy.underConstruction;
+  el.booksNote.textContent = copy.booksUnderConstructionNote;
+
+  // ----- bottom tab bar: 6 pages, one visible at a time -----
+  const tabLabelKeys = {
+    discover: 'navDiscover',
+    care: 'navCare',
+    habitat: 'navHabitat',
+    progress: 'navProgress',
+    books: 'navBooks',
+    settings: 'navSettings'
+  };
+  const pageIds = Object.keys(el.pages);
+  let currentPage = 'care';
+
+  for (const pageId of pageIds) {
+    const tab = el.tabs[pageId];
+    if (!tab) continue;
+    tab.querySelector('.tab-label').textContent = copy[tabLabelKeys[pageId]] ?? pageId;
+  }
+
+  function showPage(pageId) {
+    if (!pageIds.includes(pageId)) return;
+    currentPage = pageId;
+    for (const id of pageIds) {
+      const page = el.pages[id];
+      if (page) page.hidden = id !== pageId;
+      const tab = el.tabs[id];
+      if (!tab) continue;
+      tab.setAttribute('aria-selected', String(id === pageId));
+      tab.classList.toggle('active', id === pageId);
+    }
+    if (pageId === 'settings') renderSettings();
+  }
+
+  for (const pageId of pageIds) {
+    const tab = el.tabs[pageId];
+    if (tab) tab.addEventListener('click', () => showPage(pageId));
+  }
 
   function renderDebugRows(target, definitions, values) {
     target.replaceChildren();
@@ -885,49 +1011,21 @@ export function createUI(root, content, handlers) {
     el.settingsExportText.value = '';
   }
 
-  function renderSettings() {
-    resetSettingsDeleteConfirm();
-    resetSettingsExportPanel();
+  // Refreshed on every render(): informational only, never clobbers a
+  // mid-interaction export panel or delete confirmation.
+  function renderSettingsContent() {
     renderSettingsAccount();
     renderSettingsProviders();
     renderSettingsResearch();
   }
 
-  let settingsReturnFocus = null;
-
-  function openSettingsModal() {
-    settingsReturnFocus = el.settingsOpen;
-    renderSettings();
-    el.settingsModal.hidden = false;
-    el.settingsClose.focus();
+  // Full reset + refresh: run once at boot and each time the Settings tab
+  // is opened, mirroring the old "fresh state every time you open settings" feel.
+  function renderSettings() {
+    resetSettingsDeleteConfirm();
+    resetSettingsExportPanel();
+    renderSettingsContent();
   }
-
-  function closeSettingsModal() {
-    el.settingsModal.hidden = true;
-    if (settingsReturnFocus) settingsReturnFocus.focus();
-  }
-
-  el.settingsOpen.addEventListener('click', openSettingsModal);
-  el.settingsClose.addEventListener('click', closeSettingsModal);
-  el.settingsModal.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      closeSettingsModal();
-      return;
-    }
-    if (event.key !== 'Tab') return;
-    const focusable = [...el.settingsCard.querySelectorAll('button:not(:disabled), textarea:not(:disabled), a[href]')]
-      .filter((control) => !control.closest('[hidden]'));
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    if (!first || !last) return;
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  });
 
   el.settingsExport.addEventListener('click', () => {
     const json = safeCall(() => handlers.onExportSave(), null);
@@ -971,46 +1069,8 @@ export function createUI(root, content, handlers) {
     safeCall(() => handlers.onDeleteSave(), null);
   });
 
-  function openBookModal() {
-    setScanBusy(false);
-    pendingCreature = null;
-    pendingBookRecords = null;
-    el.bookResult.hidden = true;
-    showScanStatus('');
-    el.bookModal.hidden = false;
-    el.isbnInput.focus();
-  }
-
-  function closeBookModal() {
-    scanRequest += 1;
-    setScanBusy(false);
-    el.bookModal.hidden = true;
-    el.bookOpen.focus();
-  }
-
-  el.bookOpen.addEventListener('click', openBookModal);
-  el.bookClose.addEventListener('click', closeBookModal);
-  el.bookModal.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      closeBookModal();
-      return;
-    }
-    if (event.key !== 'Tab') return;
-    const focusable = [...el.bookCard.querySelectorAll('button:not(:disabled), input:not(:disabled)')]
-      .filter((control) => !control.closest('[hidden]'));
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  });
-
   function setScanBusy(busy) {
-    el.bookModal.dataset.busy = String(busy);
+    el.discoverPage.dataset.busy = String(busy);
     el.photoInput.disabled = busy;
     el.isbnInput.disabled = busy;
     el.isbnSubmit.disabled = busy;
@@ -1160,9 +1220,13 @@ export function createUI(root, content, handlers) {
     handlers.onUseCreature(pendingCreature, pendingBookRecords);
     pendingCreature = null;
     pendingBookRecords = null;
-    el.bookModal.hidden = true;
-    if (wasHatched) el.bookOpen.focus();
-    else el.egg.focus();
+    // Discover is a permanent page now (no "open" event resets it for next time),
+    // so clear the just-used preview here rather than leaving it stale on screen.
+    el.bookResult.hidden = true;
+    showScanStatus('');
+    // The creature/egg lives on Pet Care — hop over there after a successful use.
+    showPage('care');
+    if (!wasHatched) el.egg.focus();
   });
 
   // ----- meters (built once from content) -----
@@ -1330,6 +1394,10 @@ export function createUI(root, content, handlers) {
     const stage = stageDef(state.stage);
     applyCreatureLook(state, stage);
     renderReading(state);
+    // These pages are always reachable (even pre-hatch), so their renderers run
+    // unconditionally, above the early return below.
+    renderProgress(state);
+    renderSettingsContent();
     if (!state.hatched) return;
 
     el.scene.dataset.stage = String(state.stage);
@@ -1400,6 +1468,99 @@ export function createUI(root, content, handlers) {
     el.readingStatus.value = state.reading.bookStatuses[workId] ?? 'reading';
     el.readingTimer.hidden = !handlers.isTimerEnabled();
     el.timerStart.disabled = !hasBooks;
+  }
+
+  // ----- Progress & Events page: program status, full history, your books -----
+  // Independent of the Pet Care reading-progress echo — reads the same handler
+  // and templates, but never touches the Care page's own elements. Entirely
+  // defensive: a malformed record or missing work never throws.
+  function renderProgress(state) {
+    try {
+      const reading = state?.reading ?? {};
+      const registered = reading?.challenge?.registeredAt != null;
+      let statusText = copy.readingIntro;
+      if (registered) {
+        const progress = safeCall(() => handlers.getReadingProgress(reading), null);
+        const progressTemplates = {
+          registered: copy.readingRegistered,
+          active: copy.readingActive,
+          halfway: copy.readingHalfway,
+          completed: copy.readingCompleted
+        };
+        const template = progress ? progressTemplates[progress.status] : null;
+        if (template) {
+          statusText = interpolate(template, {
+            days: progress.readingDayCount,
+            goal: progress.goalDayCount
+          });
+        }
+      }
+      el.progressStatus.textContent = statusText;
+    } catch {
+      el.progressStatus.textContent = copy.readingIntro;
+    }
+
+    // Full reading history, newest first.
+    el.progressHistoryList.replaceChildren();
+    let records = [];
+    try {
+      records = Object.values(state?.reading?.records ?? {}).filter(Boolean);
+      records.sort((a, b) => {
+        const at = Date.parse(a?.occurredAt ?? '') || 0;
+        const bt = Date.parse(b?.occurredAt ?? '') || 0;
+        if (bt !== at) return bt - at;
+        return String(a?.id ?? '').localeCompare(String(b?.id ?? ''));
+      });
+    } catch {
+      records = [];
+    }
+    for (const record of records) {
+      try {
+        const work = state?.books?.works?.[record.workId];
+        const title = work?.title || copy.readingBookLabel || 'Untitled book';
+        const modeLabel = content.reading.modes?.[record.mode] ?? '';
+        const item = document.createElement('li');
+        item.className = 'progress-history-item';
+        const titleEl = document.createElement('span');
+        titleEl.className = 'progress-history-book';
+        titleEl.textContent = title;
+        const metaEl = document.createElement('span');
+        metaEl.className = 'progress-history-meta';
+        metaEl.textContent = [record.localDayKey, modeLabel].filter(Boolean).join(' · ');
+        item.append(titleEl, metaEl);
+        el.progressHistoryList.append(item);
+      } catch {
+        // Skip a malformed record rather than breaking the whole list.
+      }
+    }
+    el.progressHistoryEmpty.hidden = records.length > 0;
+
+    // "Your books": a small read-only status list (the changer stays on Pet Care).
+    el.progressBooksList.replaceChildren();
+    let works = [];
+    try {
+      works = Object.values(state?.books?.works ?? {}).filter(Boolean);
+    } catch {
+      works = [];
+    }
+    for (const work of works) {
+      try {
+        const statusId = state?.reading?.bookStatuses?.[work.id] ?? 'reading';
+        const statusLabel = content.reading.statuses?.[statusId] ?? statusId;
+        const item = document.createElement('li');
+        item.className = 'progress-books-item';
+        const titleEl = document.createElement('span');
+        titleEl.className = 'progress-books-book';
+        titleEl.textContent = work.title || copy.readingBookLabel || 'Untitled book';
+        const statusEl = document.createElement('span');
+        statusEl.className = 'progress-books-status';
+        statusEl.textContent = statusLabel;
+        item.append(titleEl, statusEl);
+        el.progressBooksList.append(item);
+      } catch {
+        // Skip a malformed work rather than breaking the whole list.
+      }
+    }
   }
 
   // ----- sticker shelf: the whole collection lives in the scene -----
@@ -1694,6 +1855,11 @@ export function createUI(root, content, handlers) {
         break;
     }
   }
+
+  // Boot: Settings starts fresh (mirrors the old "open" reset), Pet Care is
+  // the default visible page.
+  renderSettings();
+  showPage('care');
 
   return { render, react, toast, offerInterruptedReading };
 }
