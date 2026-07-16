@@ -201,5 +201,11 @@ Approved after Phase 1 (2026-07-15) — navigation and visitor presentation:
 Remaining questions:
 
 4. **Availability vocabulary:** Freeze confirmed availability states, freshness rules, and official-search fallback shape before package 9.
-7. **Recommendation identity keys:** Decision 6 requires `content.recommendations.entries[*].books[]` to carry a **real** identity (ISBN-13 or an Open Library `/works/OL…W` key) instead of today's invented `work:fixture:*` ids, so the visitor can render its true deterministic creature. Until then a visitor cannot show the creature you would actually get. Freeze the fixture book identities before building the visitor-as-creature presentation.
-8. **Habitat editing:** New scope (not in PRD v0.3). Decide what earns habitat cosmetics before building. Pillars constrain it: no monetization, no shop or currency, treats "cannot be purchased or traded", and rewards are capped and never create power or competition. Cosmetic-only unlocks are probably compatible — the open question is the earn rule.
+
+Parked (see `Stacklings MVP Parking Lot v0.1.md`, "Deferred product work"), not implementation requirements until moved into a future PRD:
+
+- **Habitat editing** — new scope; needs an approved earn rule that does not pay by minute, page, or book count.
+- **Visitors that are the recommended book's real creature** (decision 6 above) — needs the guest-signal treatment and the prerequisite below.
+- **Real identities for recommendation fixtures** — today's invented `work:fixture:*` ids prevent a visitor from rendering the creature the player would actually get.
+
+Decision 5 (the six-tab phone shell) is built as of commit `7a609d4`. Decision 6 is approved in principle but parked until its fixture identities exist.

@@ -1,7 +1,7 @@
 # Stacklings MVP Parking Lot
 
 Version 0.1  
-Date: July 15, 2026
+Date: July 16, 2026
 
 This document contains approved ideas that are intentionally excluded from the current MVP, deferred decisions, and known access gaps. Items here are not implementation requirements until moved into a future PRD.
 
@@ -23,6 +23,9 @@ This document contains approved ideas that are intentionally excluded from the c
 | Collaboration-specific cosmetic result | Shared activity may create a non-power result | Community participation is tested without it |
 | Full preference summary | Private, explainable, correctable, and deletable | The minimal per-recommendation explanation is insufficient |
 | Environment changes from long-term reading patterns | Non-ranked and private | Full preference controls exist |
+| Habitat editing | Player-directed cosmetic decoration of the habitat. Cosmetic only: no shop, currency, purchase, or trade, and it never creates power, ranking, or competition. Distinct from pattern-driven environment changes above, which are automatic rather than chosen | An earn rule is approved that does not pay by minute, page, or book count |
+| Visitors that are the recommended book's real creature | A recommendation visitor renders the true deterministic creature for the book it suggests — mechanically an unrequested preview that becomes owned only after its book is read. Because a creature's colours are generated from its book, the guest signal must be non-hue (for example dashed outline, travel bag, outside the fence). A visitor must never read as an owned creature, and never as another player's pet | Recommendation fixtures carry real ISBN or Open Library work identities and their age suitability is reviewed |
+| Real identities for recommendation fixtures | Fixture recommendation books currently carry invented `work:fixture:*` ids, so a visitor cannot render the creature the player would actually get. Real identities are a prerequisite for the visitor item above | Fixture titles and their identities are chosen and age-suitability reviewed |
 
 ## Library and program work
 
@@ -52,6 +55,8 @@ This document contains approved ideas that are intentionally excluded from the c
 - Creature harm, death, permanent decay, or guilt after absence.
 - Production dependence on unauthorized catalog scraping.
 - Creature photography and public sharing.
+- Any visitor or creature that represents, or reads as, another player's pet. Visiting creatures are characters carrying a book suggestion, never another child.
+- Time-limited visitors, countdowns, streak loss, or "leaving soon" pressure of any kind.
 
 ## Parking-lot entry requirements
 
