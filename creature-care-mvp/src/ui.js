@@ -8,6 +8,9 @@ import { stageDef, nextStageDef } from './systems/growth.js';
 import { currentRelationshipResponse, relationshipLevel } from './systems/relationship.js';
 import { DEFAULT_THEME, THEMES } from './systems/theme.js';
 import { iconMarkup } from './icons.js';
+import { spriteLookFor, layoutFor, MINI_SCALE } from './systems/sprite-map.js';
+
+const SPRITE_BASE = 'assets/creatures/';
 
 export function createUI(root, content, handlers) {
   const copy = content.copy;
@@ -368,6 +371,7 @@ export function createUI(root, content, handlers) {
     egg: q('.egg'),
     eggHint: q('.egg-hint'),
     creature: q('.creature'),
+    creatureBody: q('.creature .body'),
     zzz: q('.zzz'),
     fx: q('.fx'),
     burstLayer: q('.burst-layer'),
@@ -1228,6 +1232,36 @@ export function createUI(root, content, handlers) {
     });
   }
 
+  // Paint sprite <img> layers (from systems/sprite-map.js's spriteLookFor/
+  // layoutFor) into `frameEl`. Clears and rebuilds every call — renders are
+  // event-driven, not a tight loop, so this stays cheap and always correct.
+  // `cssScale: true` (hero) positions via calc(var(--scale) * Npx) so the
+  // existing --scale-driven growth animation keeps working unchanged;
+  // `cssScale: false` (mini) writes plain px pre-multiplied by `factor`.
+  function paintSpriteLayers(frameEl, look, { includeIds, cssScale, factor = 1 } = {}) {
+    frameEl.querySelectorAll(':scope > img.sl-part').forEach((img) => img.remove());
+    const { parts } = layoutFor(look);
+    const px = (n) => {
+      const scaled = n * factor;
+      return cssScale ? `calc(var(--scale) * ${scaled}px)` : `${scaled}px`;
+    };
+    for (const part of parts) {
+      if (includeIds && !includeIds.has(part.id)) continue;
+      const img = document.createElement('img');
+      img.className = `sl-part sl-${part.id}${part.mirror ? ' sl-mirror' : ''}`;
+      img.alt = '';
+      img.src = `${SPRITE_BASE}${part.file}`;
+      img.style.zIndex = String(part.z);
+      img.style.left = px(part.left);
+      img.style.top = px(part.top);
+      img.style.width = px(part.w);
+      img.style.height = px(part.h);
+      frameEl.append(img);
+    }
+  }
+
+  const MINI_PART_IDS = new Set(['body', 'eye', 'eyeL', 'eyeR', 'nose', 'mouth']);
+
   // Paint an existing .book-orb element from a creature look (baseTraits shape).
   // Reused by the book preview AND the collection chips so they share one look.
   function paintMiniOrb(orb, creature) {
@@ -1237,6 +1271,25 @@ export function createUI(root, content, handlers) {
     orb.style.setProperty('--hue', String(creature.palette.hue));
     orb.style.setProperty('--accent', String(creature.palette.accentHue));
     positionMarks([...orb.querySelectorAll('.mini-mark')], creature.pattern.placements ?? []);
+
+    const generated = creature.kind === 'book';
+    const miniSprite = orb.querySelector('.mini-sprite');
+    if (!generated || !miniSprite) {
+      delete orb.dataset.shape;
+      if (miniSprite) miniSprite.replaceChildren();
+      return;
+    }
+    // Mini orbs never grow with stage and never show mood overlays (the old
+    // static mini-face glyph didn't either) - a neutral fixed stage/mood
+    // gives a stable body+eye+mouth+nose look, same for every render.
+    const look = spriteLookFor(creature, 3, 'content');
+    const { shape } = look.body;
+    const factor = MINI_SCALE[shape] ?? 0.3;
+    const { frame } = layoutFor(look);
+    orb.dataset.shape = shape;
+    miniSprite.style.width = `${frame.w * factor}px`;
+    miniSprite.style.height = `${frame.h * factor}px`;
+    paintSpriteLayers(miniSprite, look, { includeIds: MINI_PART_IDS, cssScale: false, factor });
   }
 
   // Build a fresh .book-orb mini-creature element (same markup as the preview orb).
@@ -1249,10 +1302,9 @@ export function createUI(root, content, handlers) {
       mark.className = `mini-mark mm${n}`;
       orb.append(mark);
     }
-    const face = document.createElement('span');
-    face.className = 'mini-face';
-    face.textContent = '•ᴗ•';
-    orb.append(face);
+    const sprite = document.createElement('div');
+    sprite.className = 'mini-sprite';
+    orb.append(sprite);
     return orb;
   }
 
@@ -1480,8 +1532,6 @@ export function createUI(root, content, handlers) {
     const hue = (Number(creature.palette.hue) + Number(stage.theme.hueShift ?? 0)) % 360;
     el.creature.style.setProperty('--hue', String(hue));
     el.creature.style.setProperty('--accent', String(creature.palette.accentHue));
-    el.creature.style.setProperty('--body-width', creature.family.width);
-    el.creature.style.setProperty('--body-height', creature.family.height);
     el.creature.style.setProperty('--body-radius', creature.family.radius);
     el.creature.dataset.body = creature.family.body;
     el.creature.dataset.appendage = creature.family.appendage;
@@ -1495,6 +1545,23 @@ export function createUI(root, content, handlers) {
     el.egg.style.setProperty('--egg-accent', String(creature.palette.accentHue));
     el.eggHint.textContent = interpolate(copy.bookEggHint, { name: creature.name });
     el.egg.setAttribute('aria-label', `${copy.eggLabel} — ${el.eggHint.textContent}`);
+
+    // Monster Builder sprite assembly, painted inside .creature .body. Mood
+    // folds in tuckedIn here (both are already-deterministic derived state)
+    // so sprite-map.js's spriteLookFor() only ever sees one effective mood.
+    const mood = state.tuckedIn ? 'sleepy' : moodOf(state);
+    const look = spriteLookFor(creature, stage.stage, mood);
+    el.creature.dataset.shape = look.body.shape;
+    if (el.creatureBody) {
+      const { frame } = layoutFor(look);
+      el.creature.style.setProperty('--body-width', `${frame.w}px`);
+      el.creature.style.setProperty('--body-height', `${frame.h}px`);
+      const includeIds = new Set(['body', 'eye', 'eyeL', 'eyeR', 'nose', 'mouth']);
+      if (look.partsVisible.legs) { includeIds.add('legL'); includeIds.add('legR'); }
+      if (look.partsVisible.arms) { includeIds.add('armL'); includeIds.add('armR'); }
+      if (look.partsVisible.detail) { includeIds.add('detailL'); includeIds.add('detailR'); }
+      paintSpriteLayers(el.creatureBody, look, { includeIds, cssScale: true, factor: 1 });
+    }
   }
 
   // ----- render: state -> DOM (idempotent) -----

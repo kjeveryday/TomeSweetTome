@@ -2218,3 +2218,69 @@ button.collection-chip:active { transform: translateY(2px) scale(0.98); }
   mix-blend-mode: soft-light;
   pointer-events: none;
 }
+
+/* =========================================================================
+   Monster Builder sprite rendering (book-generated creatures only).
+   Additive: the CSS-blob rendering above is untouched and still what draws
+   the rare default/no-book creature (before any book has ever been applied).
+   Scoped to .creature[data-generated="true"] (hero) and .book-orb[data-shape]
+   (mini) so the two systems never collide. Part geometry itself is computed
+   in src/systems/sprite-map.js and painted as inline styles by ui.js's
+   paintSpriteLayers(); this section only carries structure + the parts of
+   the old face/appendage/growth-reveal system that a sprite now replaces.
+   ========================================================================= */
+
+/* Hide the old CSS-drawn face/appendage/growth-reveal pieces once a sprite
+   takes their place. Declared after their base rules (this section is last
+   in the file) so equal-specificity cascade order resolves in favor of
+   hiding them, without needing !important. */
+.creature[data-generated="true"] .eye,
+.creature[data-generated="true"] .cheek,
+.creature[data-generated="true"] .mouth,
+.creature[data-generated="true"] .feature,
+.creature[data-generated="true"] .sprout,
+.creature[data-generated="true"] .wing {
+  display: none;
+}
+.creature[data-generated="true"] .body {
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  animation: none;
+}
+.creature[data-generated="true"][data-rarity="luminous"] .body {
+  animation: luminous-glow 2.4s ease-in-out infinite;
+}
+
+/* ISBN-seeded marks + the publisher birthmark stay exactly as before
+   (positionMarks() untouched) but now sit above every sprite layer — the
+   sprite's own highest z-index is 24 (mouth). */
+.creature[data-generated="true"] .mark { z-index: 26; }
+.creature[data-generated="true"] .birthmark { z-index: 28; }
+
+.sl-part {
+  position: absolute;
+  user-select: none;
+  pointer-events: none;
+  max-width: none;
+}
+.sl-mirror { transform: scaleX(-1); }
+
+/* ---------- mini (book-orb) sprite: body + eyes + mouth + nose only ---------- */
+
+.book-orb {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.book-orb[data-shape] {
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+.mini-sprite {
+  position: relative;
+  flex: none;
+}
+.mini-sprite .sl-part { position: absolute; }
+.book-orb .mini-mark { z-index: 26; }
