@@ -6,6 +6,7 @@ import { moodOf } from './state.js';
 import { EventTypes } from './events.js';
 import { stageDef, nextStageDef } from './systems/growth.js';
 import { currentRelationshipResponse, relationshipLevel } from './systems/relationship.js';
+import { DEFAULT_THEME, THEMES } from './systems/theme.js';
 
 export function createUI(root, content, handlers) {
   const copy = content.copy;
@@ -175,6 +176,10 @@ export function createUI(root, content, handlers) {
     <div class="page page-settings" id="page-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
       <div class="settings-card">
         <h2 class="settings-title"></h2>
+        <section class="settings-section settings-appearance">
+          <h3 class="settings-appearance-title"></h3>
+          <div class="theme-picker" role="radiogroup" aria-label="Theme"></div>
+        </section>
         <section class="settings-section settings-account">
           <h3 class="settings-account-title"></h3>
           <p class="settings-account-status"></p>
@@ -441,6 +446,8 @@ export function createUI(root, content, handlers) {
     settingsPage: q('#page-settings'),
     settingsCard: q('.settings-card'),
     settingsTitle: q('.settings-title'),
+    settingsAppearanceTitle: q('.settings-appearance-title'),
+    themePicker: q('.theme-picker'),
     settingsAccountTitle: q('.settings-account-title'),
     settingsAccountStatus: q('.settings-account-status'),
     settingsLibraryStatus: q('.settings-library-status'),
@@ -796,6 +803,47 @@ export function createUI(root, content, handlers) {
   el.settingsDeleteYes.textContent = copy.settingsDeleteYes;
   el.settingsDeleteCancel.textContent = copy.settingsDeleteCancel;
   el.settingsResearchTitle.textContent = copy.settingsResearchTitle;
+
+  // ----- theme picker (Settings) -----
+  // Static: theme metadata never changes at runtime, so this is built once here
+  // (not inside the per-render settings function) and works even pre-hatch.
+  el.settingsAppearanceTitle.textContent = copy.settingsAppearanceTitle;
+
+  function markSelectedTheme(id) {
+    for (const btn of el.themePicker.querySelectorAll('.theme-opt')) {
+      const selected = btn.dataset.themeId === id;
+      btn.classList.toggle('selected', selected);
+      btn.setAttribute('aria-checked', String(selected));
+      btn.setAttribute('tabindex', selected ? '0' : '-1');
+    }
+  }
+
+  for (const theme of THEMES) {
+    const btn = document.createElement('button');
+    btn.className = 'theme-opt';
+    btn.dataset.themeId = theme.id;
+    btn.setAttribute('role', 'radio');
+    btn.type = 'button';
+
+    const swatch = document.createElement('span');
+    swatch.className = 'theme-swatch';
+    swatch.style.setProperty('--sw1', theme.swatch[0]);
+    swatch.style.setProperty('--sw2', theme.swatch[1]);
+    swatch.style.setProperty('--sw3', theme.swatch[2]);
+
+    const name = document.createElement('span');
+    name.className = 'theme-opt-name';
+    name.textContent = theme.name;
+
+    btn.append(swatch, name);
+    btn.addEventListener('click', () => {
+      const applied = handlers.onSelectTheme(theme.id);
+      markSelectedTheme(applied);
+    });
+    el.themePicker.append(btn);
+  }
+
+  markSelectedTheme(document.documentElement.dataset.theme || DEFAULT_THEME);
 
   // ----- under-construction placeholders (static, kid-friendly notes) -----
   el.progressTitle.textContent = copy.progressTitle;

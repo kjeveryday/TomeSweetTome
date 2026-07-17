@@ -494,6 +494,7 @@
     "settingsTitle": "Settings",
     "settingsOpen": "Open settings",
     "settingsClose": "Close settings",
+    "settingsAppearanceTitle": "Theme",
     "settingsAccountTitle": "Account & saving",
     "settingsGuest": "Playing as guest",
     "settingsSignedIn": "Signed in",

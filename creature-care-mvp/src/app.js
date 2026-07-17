@@ -35,6 +35,7 @@ import * as clock from './systems/clock.js';
 import * as care from './systems/care.js';
 import * as growth from './systems/growth.js';
 import { LocalStorageAdapter } from './systems/storage.js';
+import { applyTheme, readTheme, writeTheme } from './systems/theme.js';
 import { decodeBookBarcode } from './systems/barcode.js';
 import { generateCreature } from './systems/generation.js';
 import {
@@ -61,6 +62,10 @@ import {
   stopReadingTimer
 } from './systems/reading-session.js';
 import { createUI } from './ui.js';
+
+// ----- theme (device-local UI preference; not part of the event-sourced state) -----
+// Applied before UI creation so there is no flash of the wrong theme on load.
+applyTheme(document.documentElement, readTheme(window.localStorage));
 
 // ----- debug clock -----
 // getNow() = Date.now() + offsetMs. The offset persists across reloads and is
@@ -439,7 +444,14 @@ const ui = createUI(document.querySelector('#app'), content, {
   },
   // Deleting recommendation preference data is a privacy control that is always available,
   // independent of the recommendationVisitors flag (the right to clear one's own data).
-  onDeleteRecommendationData: () => commit(recommendationReset(getNow()))
+  onDeleteRecommendationData: () => commit(recommendationReset(getNow())),
+  // Theme is a device-local UI preference: persisted directly to localStorage and applied
+  // to the document, never routed through the event-sourced state/reducer.
+  onSelectTheme: (id) => {
+    const applied = writeTheme(window.localStorage, id);
+    applyTheme(document.documentElement, applied);
+    return applied;
+  }
 });
 
 (function boot() {
