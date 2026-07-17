@@ -117,6 +117,7 @@ export function createUI(root, content, handlers) {
     </div>
 
     <div class="page page-habitat" id="page-habitat" role="tabpanel" aria-labelledby="tab-habitat" hidden>
+      <h2 class="habitat-page-title"></h2>
       <section class="habitat-window">
         <span class="hb-lamp" aria-hidden="true"></span>
         <span class="hb-plant" aria-hidden="true"></span>
@@ -371,6 +372,7 @@ export function createUI(root, content, handlers) {
     tuckText: q('.tuck-text'),
     toast: q('.toast'),
     shelf: q('.shelf'),
+    habitatTitle: q('.habitat-page-title'),
     habitatWindow: q('.habitat-window'),
     habitatStage: q('.habitat-stage'),
     habitatEmpty: q('.habitat-empty'),
@@ -633,6 +635,7 @@ export function createUI(root, content, handlers) {
     star.textContent = icons.sparkle;
   }
   el.shelf.setAttribute('aria-label', copy.shelfLabel);
+  el.habitatTitle.textContent = interpolate(copy.habitatTitle, { owner: copy.habitatOwnerName });
   el.habitatWindow.setAttribute('aria-label', copy.habitatWindowLabel);
   el.habitatEmpty.textContent = copy.habitatEmpty;
   el.habitatEmpty.hidden = false;

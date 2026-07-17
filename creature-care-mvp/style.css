@@ -860,10 +860,20 @@ button:focus-visible {
   overflow: hidden;
 }
 
+.habitat-page-title {
+  flex: none;
+  margin: 0;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  letter-spacing: 0.01em;
+}
+
 .habitat-window {
   position: relative;
   flex: none;
-  height: 310px;
+  height: 292px;
   border-radius: var(--radius-big);
   box-shadow: var(--shadow);
   overflow: hidden;
