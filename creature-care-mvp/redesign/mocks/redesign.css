@@ -1,0 +1,535 @@
+/* Stacklings redesign — layered on top of base.css (an unmodified copy of the
+   live app's style.css). Everything in here is additive: new @font-face rules,
+   Eczar application per the design manifest's weightMap, an inline-SVG icon
+   sizing/color system, the monster-builder creature-assembly layout, the
+   parchment paper-grain treatment, and a few mock-only chrome pieces (theme
+   switcher, icon before/after board, creature lineup) that don't exist in the
+   real app. Do not edit base.css — everything theme-related still flows
+   through the same --variables it already defines. */
+
+/* =========================================================================
+   1. Eczar @font-face (5 static weights, .ttf — see README for the woff2 TODO)
+   ========================================================================= */
+
+@font-face {
+  font-family: "Eczar";
+  src: url("../assets/fonts/Eczar-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Eczar";
+  src: url("../assets/fonts/Eczar-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Eczar";
+  src: url("../assets/fonts/Eczar-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Eczar";
+  src: url("../assets/fonts/Eczar-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Eczar";
+  src: url("../assets/fonts/Eczar-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* =========================================================================
+   2. Unify --font-display to Eczar across all 3 themes.
+   base.css sets --font-display per data-theme block; these selectors match
+   the same specificity but load after base.css, so source order wins.
+   ========================================================================= */
+
+:root,
+:root[data-theme="nook"],
+:root[data-theme="schoolhouse"],
+:root[data-theme="spellbook"] {
+  --font-display: "Eczar", "Iowan Old Style", Georgia, "Times New Roman", serif;
+}
+
+/* =========================================================================
+   3. Eczar weight application, per manifest.font.weightMap.
+   base.css already points .habitat-page-title/.collection-title/.settings-title/
+   .name-pill/.book-name/.progress-title/.reading-title at var(--font-display);
+   this section adds the weights, plus the selectors base.css doesn't cover
+   (h1/h2/h3, .book-title, .welcome-title, large numerals).
+   ========================================================================= */
+
+h1, h2, .habitat-page-title, .welcome-title {
+  font-family: var(--font-display);
+  font-weight: 700; /* page titles */
+}
+h3, .book-title, .book-name, .name-pill, .collection-title, .settings-title, .progress-title {
+  font-family: var(--font-display);
+  font-weight: 600; /* card titles / nameplate */
+}
+.mock-eczar-500 { font-family: var(--font-display); font-weight: 500; }
+
+/* large numerals: grow-chip count, stage numeral, meter-adjacent stat numbers */
+.grow-chip .grow-num,
+.numeral {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================================
+   4. Inline-SVG icon system. Every SVG in assets/icons/ has fill="currentColor"
+   baked into its single <path>, so it recolors automatically off whatever
+   `color` the wrapping element resolves to (themed by data-theme already).
+   ========================================================================= */
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+.icon svg { width: 100%; height: 100%; display: block; }
+
+/* size slots, per manifest px values */
+.i-16 { width: 16px; height: 16px; }
+.i-18 { width: 18px; height: 18px; }
+.i-20 { width: 20px; height: 20px; }
+.i-22 { width: 22px; height: 22px; }
+.i-24 { width: 24px; height: 24px; }
+.i-26 { width: 26px; height: 26px; }
+
+/* semantic color slots, per manifest activeColor. Nav-tab icons are left to
+   inherit .tab / .tab.active's own color rule from base.css (ink-soft resting,
+   ink-strong on the gold active pill) rather than forcing --accent-ink here —
+   ink-strong is what actually reads on the gold pill; see README. */
+.ic-warm { color: var(--warm); }
+.ic-ink-soft { color: var(--ink-soft); }
+.ic-accent { color: var(--accent-ink); }
+.ic-good { color: var(--good); }
+.ic-gold { color: var(--gold); }
+.ic-muted { color: var(--line); }
+
+/* =========================================================================
+   5. Mock-only chrome: theme switcher, icon before/after board, creature
+   lineup. None of this exists in the real app — it's review scaffolding.
+   ========================================================================= */
+
+/* base.css puts `display:flex; justify-content:center` on <body>, sized
+   around a SINGLE child (#app) that stretches to the body's full height for
+   free (default cross-axis "stretch" in a row-flex) — .page-habitat then
+   relies on that definite height for its own `height:calc(100dvh - 12px);
+   overflow:hidden` single-screen design. Rather than switching body to a
+   column layout (which would starve that whole chain of a definite height
+   and collapse it — do not do that), keep body exactly as base.css defines
+   it and take the theme bar OUT of flow entirely, `position:fixed` like the
+   real tabbar already is. That leaves #app/.mock-shell as body's only
+   in-flow child again, so every height-dependent rule in base.css keeps
+   working unmodified; we just pad the content down to clear the fixed bar. */
+.mock-theme-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  box-sizing: border-box;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: var(--card);
+  border-bottom: 2px solid var(--line);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+/* Space for the fixed theme bar (a fixed height, guaranteed single-line by
+   the max-width:480px rule below, so this reservation is exact rather than
+   a guess). .mock-shell sets its own margin-top further down (kept there so
+   its later `margin: auto` shorthand doesn't reset this back to 0). */
+#app {
+  margin-top: 60px;
+}
+.page-habitat {
+  height: calc(100dvh - 60px - 12px);
+}
+.mock-theme-bar .mock-theme-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex: none;
+}
+.theme-picker--row {
+  flex-direction: row;
+  flex: 1 1 auto;
+}
+.theme-picker--row .theme-opt {
+  flex: 1 1 0;
+  gap: 6px;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+.theme-picker--row .theme-opt.selected { padding: 5px 9px; }
+.theme-picker--row .theme-opt-name {
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.theme-picker--row .theme-swatch { width: 24px; height: 24px; }
+
+.mock-shell {
+  width: min(430px, 100vw);
+  margin: 60px auto 0;
+  padding: 16px 14px 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.mock-section-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* --- index.html: tabbar showcase --- */
+.mock-tabbar-frame {
+  position: relative;
+  height: 84px;
+  border-radius: var(--radius-big);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.mock-tabbar-frame .tabbar {
+  position: absolute;
+  width: 100%;
+}
+
+/* --- icon before/after board --- */
+.icon-board {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 6px 14px;
+}
+.icon-board-row {
+  display: grid;
+  grid-template-columns: 34px 20px 34px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.icon-board-row:last-child { border-bottom: none; }
+.icon-board-old {
+  font-size: 20px;
+  text-align: center;
+  opacity: 0.75;
+}
+.icon-board-arrow { color: var(--ink-soft); text-align: center; }
+.icon-board-new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-ink);
+}
+.icon-board-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.icon-board-slot-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.icon-board-slot-note {
+  font-size: 10px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- creature lineup (index.html) --- */
+.stackling-lineup {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.stackling-lineup-item {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 10px 6px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.stackling-lineup-item .stackling-frame {
+  width: 100%;
+  height: 112px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+}
+.stackling-lineup-item .stackling-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+}
+.stackling-lineup-item .stackling-vibe {
+  font-size: 10px;
+  color: var(--ink-soft);
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* =========================================================================
+   6. Creature assembly. Kenney monster-builder parts are individually-cropped
+   sprites, not canvas-aligned — each layer below is a hand-tuned absolute
+   position derived proportionally from the body sprite's own box (see
+   README "known polish TODOs" for the parts we're least sure about).
+   Z-order: leg(5) < arm(8) < body(10) < detail(12) < eye(20) < nose(22) < mouth(24).
+   ========================================================================= */
+
+.stackling {
+  position: relative;
+  flex: none;
+}
+.stackling img {
+  position: absolute;
+  user-select: none;
+  pointer-events: none;
+  max-width: none;
+}
+.sl-leg { z-index: 5; }
+.sl-arm { z-index: 8; }
+.sl-body { z-index: 10; }
+.sl-detail { z-index: 12; }
+.sl-eye { z-index: 20; }
+.sl-nose { z-index: 22; }
+.sl-mouth { z-index: 24; }
+.sl-mirror { transform: scaleX(-1); }
+
+/* ---- Ember (red / round / warm) ---- */
+.stackling--ember { width: 245px; height: 247px; }
+.stackling--ember .sl-body { left: 40px; top: 48px; width: 165px; height: 165px; }
+.stackling--ember .sl-leg.sl-l { left: 58px; top: 58px; width: 72px; height: 167px; }
+.stackling--ember .sl-leg.sl-r { left: 115px; top: 58px; width: 72px; height: 167px; }
+.stackling--ember .sl-arm.sl-l { left: 18px; top: 101px; width: 82px; height: 176px; }
+.stackling--ember .sl-arm.sl-r { left: 145px; top: 101px; width: 82px; height: 176px; }
+.stackling--ember .sl-detail.sl-l { left: 56px; top: 31px; width: 54px; height: 54px; }
+.stackling--ember .sl-detail.sl-r { left: 135px; top: 31px; width: 54px; height: 54px; }
+.stackling--ember .sl-eye { left: 90px; top: 63px; width: 64px; height: 69px; }
+.stackling--ember .sl-nose { left: 99px; top: 110px; width: 47px; height: 51px; }
+.stackling--ember .sl-mouth { left: 82px; top: 155px; width: 80px; height: 24px; }
+
+/* ---- Marigold (yellow / round / curious) ---- */
+.stackling--marigold { width: 272px; height: 274px; }
+.stackling--marigold .sl-body { left: 40px; top: 48px; width: 192px; height: 192px; }
+.stackling--marigold .sl-leg.sl-l { left: 76px; top: 103px; width: 55px; height: 149px; }
+.stackling--marigold .sl-leg.sl-r { left: 141px; top: 103px; width: 55px; height: 149px; }
+.stackling--marigold .sl-arm.sl-l { left: 18px; top: 109px; width: 51px; height: 161px; }
+.stackling--marigold .sl-arm.sl-r { left: 203px; top: 109px; width: 51px; height: 161px; }
+.stackling--marigold .sl-detail.sl-l { left: 77px; top: 39px; width: 26px; height: 42px; }
+.stackling--marigold .sl-detail.sl-r { left: 169px; top: 39px; width: 26px; height: 42px; }
+.stackling--marigold .sl-eye { left: 104px; top: 71px; width: 64px; height: 69px; }
+.stackling--marigold .sl-nose { left: 113px; top: 131px; width: 46px; height: 38px; }
+.stackling--marigold .sl-mouth { left: 96px; top: 174px; width: 80px; height: 24px; }
+
+/* ---- Cinder (dark / tall egg / spooky-cozy) ---- */
+.stackling--cinder { width: 221px; height: 276px; }
+.stackling--cinder .sl-body { left: 40px; top: 48px; width: 141px; height: 194px; }
+.stackling--cinder .sl-leg.sl-l { left: 47px; top: 130px; width: 79px; height: 124px; }
+.stackling--cinder .sl-leg.sl-r { left: 95px; top: 130px; width: 79px; height: 124px; }
+.stackling--cinder .sl-arm.sl-l { left: 18px; top: 110px; width: 98px; height: 181px; }
+.stackling--cinder .sl-arm.sl-r { left: 105px; top: 110px; width: 98px; height: 181px; }
+.stackling--cinder .sl-detail.sl-l { left: 61px; top: 46px; width: 31px; height: 27px; }
+.stackling--cinder .sl-detail.sl-r { left: 129px; top: 46px; width: 31px; height: 27px; }
+/* Cinder's eye (eye_closed_happy) IS a genuine single closed-eye curve, so
+   unlike Ember/Marigold it gets two positioned + mirrored copies. */
+.stackling--cinder .sl-eye.sl-l { left: 67px; top: 101px; width: 42px; height: 18px; }
+.stackling--cinder .sl-eye.sl-r { left: 112px; top: 101px; width: 42px; height: 18px; }
+.stackling--cinder .sl-nose { left: 84px; top: 127px; width: 54px; height: 48px; }
+.stackling--cinder .sl-mouth { left: 70px; top: 176px; width: 80px; height: 24px; }
+
+/* Scaled-down instances for the lineup cards, habitat window and collection
+   chips, where the full ~250px assemblies would overwhelm the layout.
+   transform:scale keeps every hand-tuned offset above intact; anchoring the
+   transform-origin to bottom-center means the "feet" stay put at whatever
+   bottom/flex position the wrapper gives the (unscaled, full-size) box, so
+   scaled creatures still line up on a shared floor. */
+.stackling--tiny { transform: scale(0.4); transform-origin: bottom center; }
+.stackling--chip { transform: scale(0.21); transform-origin: bottom center; }
+
+/* =========================================================================
+   7. Mood badge overlay (vector-emoji face, care-state indicator — kept
+   separate from the creature body per the manifest's assembly notes).
+   ========================================================================= */
+
+.mood-badge {
+  position: absolute;
+  z-index: 30;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--pill-bg);
+  border: 2px solid var(--edge);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mood-badge img { width: 100%; height: 100%; display: block; }
+
+/* =========================================================================
+   8. Parchment paper-grain — very-low-opacity warm texture on paper surfaces
+   only (nameplate, collection cards). NOT on the dark app background.
+   ========================================================================= */
+
+.parchment { position: relative; }
+.parchment::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background-image: url("../assets/textures/FelisChaus_ParchmentBackground.jpg");
+  background-size: 190px 210px;
+  background-repeat: repeat;
+  opacity: 0.07;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+.parchment > * { position: relative; z-index: 1; }
+
+/* =========================================================================
+   9. Care-page mock additions: affection meter re-icon, sparkle FX, camera
+   quick action, "today's care complete" check badge, sleep(zzz) indicator.
+   ========================================================================= */
+
+.meter .m-icon.icon { width: 26px; }
+
+.care-fx-sparkle {
+  position: absolute;
+  z-index: 21;
+  color: var(--accent-ink);
+  opacity: 0.9;
+  animation: mock-twinkle 2.4s ease-in-out infinite;
+}
+@keyframes mock-twinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.85) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.1) rotate(8deg); }
+}
+
+.sleep-badge {
+  position: absolute;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--pill-bg);
+  border: 2px solid var(--edge);
+  border-radius: 999px;
+  padding: 3px 8px 3px 6px;
+  color: var(--ink-soft);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.care-quick-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.care-quick-btn {
+  background: linear-gradient(180deg, var(--sky-btn), var(--sky-btn-deep));
+  border-bottom: 5px solid var(--sky-btn-deep);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 9px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.care-quick-btn:active { transform: translateY(2px) scale(0.98); }
+
+.care-complete-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: color-mix(in srgb, var(--good) 20%, var(--pill-bg));
+  border: 2px solid var(--good);
+  color: var(--good);
+  border-radius: 999px;
+  padding: 3px 10px 3px 7px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* =========================================================================
+   10. Habitat-page mock additions.
+   ========================================================================= */
+
+.habitat-window .stackling--tiny {
+  position: absolute;
+  bottom: 16px;
+  z-index: 3;
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.35));
+}
+/* left is the UNSCALED box's left edge; transform-origin:bottom center means
+   scaling shrinks toward the box's own horizontal center, not toward 0 — so
+   these are hand-computed per creature (box width differs: ember 245,
+   marigold 272, cinder 221) to land visual centers at ~18/50/82% of a
+   ~400px-wide habitat window without clipping either edge. */
+.habitat-window .stackling--ember.hb-pos-1 { left: -50px; }
+.habitat-window .stackling--marigold.hb-pos-2 { left: 64px; }
+.habitat-window .stackling--cinder.hb-pos-3 { left: 218px; }
+
+.collection-chip .stackling-chip-wrap {
+  width: 52px;
+  height: 46px;
+  flex: none;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+@media (max-width: 380px) {
+  .stackling-lineup { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+}
+/* Our page content is capped at 430px wide (#app / .mock-shell), so any
+   viewport in that range is phone-width — hide the swatch labels there to
+   guarantee the fixed theme bar stays a single compact row. .page-habitat's
+   height:calc(100dvh - Npx) budget (below) assumes that fixed height, so an
+   unexpected second line would eat into the "no-scroll" habitat layout. */
+@media (max-width: 480px) {
+  .theme-picker--row .theme-opt-name { display: none; }
+}

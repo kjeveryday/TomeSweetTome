@@ -2,13 +2,6 @@
    Theme id lives on <html data-theme="nook|schoolhouse|spellbook">.
    Base :root mirrors "nook" so an unset attribute still looks right. */
 
-/* Eczar — cozy display serif (SIL OFL 1.1). Attribution in Settings > Credits. */
-@font-face { font-family: "Eczar"; font-weight: 400; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-Regular.ttf") format("truetype"); }
-@font-face { font-family: "Eczar"; font-weight: 500; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-Medium.ttf") format("truetype"); }
-@font-face { font-family: "Eczar"; font-weight: 600; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-SemiBold.ttf") format("truetype"); }
-@font-face { font-family: "Eczar"; font-weight: 700; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-Bold.ttf") format("truetype"); }
-@font-face { font-family: "Eczar"; font-weight: 800; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-ExtraBold.ttf") format("truetype"); }
-
 :root {
   /* ---- shared, theme-independent ---- */
   --radius-big: 30px;
@@ -51,7 +44,7 @@
   --good: #9cb46b;
   --good-soft: #c8dba0;
   --shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
-  --font-display: "Eczar", "Iowan Old Style", Georgia, serif;
+  --font-display: "Iowan Old Style", Georgia, "Times New Roman", serif;
   --font: Seravek, "Trebuchet MS", Verdana, system-ui, sans-serif;
 }
 
@@ -87,7 +80,7 @@
   --good: #9cb46b;
   --good-soft: #c8dba0;
   --shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
-  --font-display: "Eczar", "Iowan Old Style", Georgia, serif;
+  --font-display: "Iowan Old Style", Georgia, "Times New Roman", serif;
   --font: Seravek, "Trebuchet MS", Verdana, system-ui, sans-serif;
 }
 
@@ -123,7 +116,7 @@
   --good: #a7e8b8;
   --good-soft: #d3f5dd;
   --shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
-  --font-display: "Eczar", "Chalkboard SE", "Trebuchet MS", cursive;
+  --font-display: "Chalkboard SE", "Comic Sans MS", "Trebuchet MS", casual, cursive;
   --font: "Trebuchet MS", Verdana, Tahoma, system-ui, sans-serif;
 }
 
@@ -159,7 +152,7 @@
   --good: #7de2a8;
   --good-soft: #b0f0cc;
   --shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
-  --font-display: "Eczar", Palatino, "Book Antiqua", Georgia, serif;
+  --font-display: Palatino, "Book Antiqua", "Palatino Linotype", Georgia, serif;
   --font: Optima, Candara, Seravek, "Gill Sans", system-ui, sans-serif;
 }
 
@@ -1879,10 +1872,6 @@ button.collection-chip:active { transform: translateY(2px) scale(0.98); }
   padding: 2px 0;
 }
 .settings-research-reviewed { margin: 7px 0 0 !important; font-size: 10px; color: var(--ink-soft); }
-.settings-credits-intro { margin: 0 0 8px; font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
-.settings-credits-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.settings-credit { font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
-.settings-credits-link { color: var(--link); text-decoration: underline; word-break: break-word; }
 
 /* ---------- progress & events page ---------- */
 
@@ -2178,43 +2167,4 @@ button.collection-chip:active { transform: translateY(2px) scale(0.98); }
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* ============ redesign: inline SVG icons + parchment grain ============ */
-/* Icons are inline <svg class="ui-icon"> from game-icons.net recolored to
-   fill:currentColor, so they follow each theme automatically. Sized at 1em so
-   they drop in exactly where the emoji placeholders were. */
-.ui-icon { width: 1em; height: 1em; display: inline-block; vertical-align: -0.125em; fill: currentColor; flex: none; }
-
-/* nav tab glyphs: a touch larger than body emoji for line-art legibility */
-.tab .tab-icon { display: flex; align-items: center; justify-content: center; }
-.tab .tab-icon .ui-icon { width: 23px; height: 23px; }
-@media (max-width: 380px) { .tab .tab-icon .ui-icon { width: 20px; height: 20px; } }
-
-/* daily-care star pips: earned = gold, remaining = dimmed */
-.stage-tag .pip { display: inline-flex; }
-.stage-tag .pip.filled { color: var(--accent-ink); }
-.stage-tag .pip:not(.filled) { opacity: 0.32; }
-
-/* growth chip: green sprout lead + gold pips (empty pips dimmed by the
-   existing .grow-chip .st opacity filter, which still applies to the SVG) */
-.grow-chip .grow-lead { color: var(--good); }
-.grow-chip .st { color: var(--accent-ink); }
-
-/* collection "active" check badge — dark check on the gold pip */
-.collection-badge .ui-icon { width: 15px; height: 15px; }
-
-/* Parchment paper-grain: a whisper of warm texture on paper surfaces only.
-   soft-light at 6% warms the card without lightening the dark theme. The three
-   surfaces already carry position:relative, so ::before anchors cleanly. */
-.nameplate::before, .book-card::before, .reading-modal-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background-image: url("assets/textures/FelisChaus_ParchmentBackground.jpg");
-  background-size: 380px 421px;
-  opacity: 0.06;
-  mix-blend-mode: soft-light;
-  pointer-events: none;
 }

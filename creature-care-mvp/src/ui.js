@@ -7,6 +7,7 @@ import { EventTypes } from './events.js';
 import { stageDef, nextStageDef } from './systems/growth.js';
 import { currentRelationshipResponse, relationshipLevel } from './systems/relationship.js';
 import { DEFAULT_THEME, THEMES } from './systems/theme.js';
+import { iconMarkup } from './icons.js';
 
 export function createUI(root, content, handlers) {
   const copy = content.copy;
@@ -212,6 +213,11 @@ export function createUI(root, content, handlers) {
           <h3 class="settings-research-title"></h3>
           <p class="settings-research-disclaimer"></p>
           <div class="settings-research-entries"></div>
+        </section>
+        <section class="settings-section settings-credits">
+          <h3 class="settings-credits-title"></h3>
+          <p class="settings-credits-intro"></p>
+          <ul class="settings-credits-list"></ul>
         </section>
       </div>
     </div>
@@ -469,6 +475,9 @@ export function createUI(root, content, handlers) {
     settingsResearchTitle: q('.settings-research-title'),
     settingsResearchDisclaimer: q('.settings-research-disclaimer'),
     settingsResearchEntries: q('.settings-research-entries'),
+    settingsCreditsTitle: q('.settings-credits-title'),
+    settingsCreditsIntro: q('.settings-credits-intro'),
+    settingsCreditsList: q('.settings-credits-list'),
     birthmark: q('.birthmark'),
     marks: [...root.querySelectorAll('.creature .mark')],
     progressTitle: q('.progress-title'),
@@ -633,13 +642,13 @@ export function createUI(root, content, handlers) {
   }
   el.eggHint.textContent = copy.tapEgg;
   el.egg.setAttribute('aria-label', `${copy.eggLabel} — ${copy.tapEgg}`);
-  el.zzz.textContent = icons.sleep;
+  el.zzz.innerHTML = iconMarkup('sleep');
   el.tuckText.textContent = copy.tuckInLine;
   el.tuckBtn.querySelector('.a-icon').textContent = copy.tuckInIcon;
   el.tuckBtn.querySelector('.t-label').textContent = copy.tuckInButton;
   el.tuckBtn.addEventListener('click', () => handlers.onTuckIn());
   for (const star of el.tuckVeil.querySelectorAll('.star')) {
-    star.textContent = icons.sparkle;
+    star.innerHTML = iconMarkup('sparkle');
   }
   el.shelf.setAttribute('aria-label', copy.shelfLabel);
   el.habitatTitle.textContent = interpolate(copy.habitatTitle, { owner: copy.habitatOwnerName });
@@ -803,6 +812,26 @@ export function createUI(root, content, handlers) {
   el.settingsDeleteYes.textContent = copy.settingsDeleteYes;
   el.settingsDeleteCancel.textContent = copy.settingsDeleteCancel;
   el.settingsResearchTitle.textContent = copy.settingsResearchTitle;
+  el.settingsCreditsTitle.textContent = copy.settingsCreditsTitle;
+  el.settingsCreditsIntro.textContent = copy.settingsCreditsIntro;
+  el.settingsCreditsList.replaceChildren(...(content.credits ?? []).map((credit) => {
+    const item = document.createElement('li');
+    item.className = 'settings-credit';
+    const source = document.createElement('a');
+    source.className = 'settings-credits-link';
+    source.href = credit.url;
+    source.target = '_blank';
+    source.rel = 'noopener noreferrer';
+    source.textContent = credit.by ? `${credit.name} by ${credit.by}` : credit.name;
+    const license = document.createElement('a');
+    license.className = 'settings-credits-link';
+    license.href = credit.licenseUrl;
+    license.target = '_blank';
+    license.rel = 'noopener noreferrer';
+    license.textContent = credit.license;
+    item.append(source, document.createTextNode(' — '), license);
+    return item;
+  }));
 
   // ----- theme picker (Settings) -----
   // Static: theme metadata never changes at runtime, so this is built once here
@@ -871,6 +900,9 @@ export function createUI(root, content, handlers) {
     const tab = el.tabs[pageId];
     if (!tab) continue;
     tab.querySelector('.tab-label').textContent = copy[tabLabelKeys[pageId]] ?? pageId;
+    const tabIcon = tab.querySelector('.tab-icon');
+    // Overwrite the emoji fallback in the template with a themed inline SVG.
+    if (tabIcon) tabIcon.innerHTML = iconMarkup(pageId);
   }
 
   function showPage(pageId) {
@@ -1810,7 +1842,7 @@ export function createUI(root, content, handlers) {
       if (isActive) {
         const badge = document.createElement('span');
         badge.className = 'collection-badge';
-        badge.textContent = '✓';
+        badge.innerHTML = iconMarkup('check');
         badge.setAttribute('aria-label', copy.collectionActiveBadge);
         chip.append(badge);
       }
@@ -1873,8 +1905,13 @@ export function createUI(root, content, handlers) {
   function renderDailyCare(state, stage) {
     const total = content.care.dailyCpCap;
     const done = Math.min(state.actionsToday, total);
-    const pips = icons.star.repeat(done) + icons.emptyStar.repeat(total - done);
-    el.stageTag.textContent = `${stage.label} · ${pips}`;
+    el.stageTag.replaceChildren(document.createTextNode(`${stage.label} · `));
+    for (let i = 0; i < total; i += 1) {
+      const pip = document.createElement('span');
+      pip.className = i < done ? 'pip filled' : 'pip';
+      pip.innerHTML = iconMarkup('star');
+      el.stageTag.append(pip);
+    }
     el.stageTag.setAttribute(
       'aria-label',
       copy.dailyCareLabel.replace('{done}', String(done)).replace('{total}', String(total))
@@ -1891,7 +1928,7 @@ export function createUI(root, content, handlers) {
     if (!next) {
       const heart = document.createElement('span');
       heart.className = 'st filled';
-      heart.textContent = icons.heart;
+      heart.innerHTML = iconMarkup('heart');
       el.growChip.append(heart);
       el.growChip.title = copy.allGrown;
       el.growChip.setAttribute('aria-label', copy.allGrown);
@@ -1902,12 +1939,12 @@ export function createUI(root, content, handlers) {
     const filled = span > 0 ? Math.round((into / span) * GROW_PIPS) : 0;
     const lead = document.createElement('span');
     lead.className = 'grow-lead';
-    lead.textContent = icons.sprout;
+    lead.innerHTML = iconMarkup('sprout');
     el.growChip.append(lead);
     for (let i = 0; i < GROW_PIPS; i += 1) {
       const star = document.createElement('span');
       star.className = i < filled ? 'st filled' : 'st';
-      star.textContent = icons.star;
+      star.innerHTML = iconMarkup('star');
       el.growChip.append(star);
     }
     const label = fill(copy.growLabel, state);
@@ -1966,7 +2003,7 @@ export function createUI(root, content, handlers) {
         el.giftStack.replaceChildren();
         const box = document.createElement('span');
         box.className = 'gift-box';
-        box.textContent = icons.gift;
+        box.innerHTML = iconMarkup('gift');
         const reveal = document.createElement('span');
         reveal.className = 'gift-sticker';
         reveal.textContent = sticker ? sticker.icon : icons.star;

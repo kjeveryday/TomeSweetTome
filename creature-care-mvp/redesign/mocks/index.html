@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stacklings — Redesign Review</title>
+<link rel="icon" href="data:," />
+<link rel="stylesheet" href="base.css" />
+<link rel="stylesheet" href="redesign.css" />
+</head>
+<body>
+
+<div class="mock-theme-bar">
+  <span class="mock-theme-label">Theme</span>
+  <div class="theme-picker theme-picker--row" role="radiogroup" aria-label="Theme">
+    <button class="theme-opt" type="button" data-theme-id="nook" aria-pressed="true">
+      <span class="theme-swatch" style="--sw1:#191210;--sw2:#f0b13d;--sw3:#f6ead6"></span>
+      <span class="theme-opt-name">Candlewick Nook</span>
+    </button>
+    <button class="theme-opt" type="button" data-theme-id="schoolhouse" aria-pressed="false">
+      <span class="theme-swatch" style="--sw1:#142019;--sw2:#ecc25f;--sw3:#a7e8b8"></span>
+      <span class="theme-opt-name">Chalk &amp; Moss Schoolhouse</span>
+    </button>
+    <button class="theme-opt" type="button" data-theme-id="spellbook" aria-pressed="false">
+      <span class="theme-swatch" style="--sw1:#12141d;--sw2:#9ff2c8;--sw3:#c9b3f5"></span>
+      <span class="theme-opt-name">Moonlit Spellbook</span>
+    </button>
+  </div>
+</div>
+
+<main class="mock-shell">
+
+  <header>
+    <h1 style="margin:0 0 4px;font-size:22px;">Stacklings — Redesign Review</h1>
+    <p style="margin:0;font-size:13px;color:var(--ink-soft);font-weight:700;">
+      Inline currentColor icons (game-icons.net), monster-builder Stacklings, and Eczar display type —
+      switch themes above to see everything recolor live. See also
+      <a href="care.html" style="color:var(--link);">care.html</a> and
+      <a href="habitat.html" style="color:var(--link);">habitat.html</a>.
+    </p>
+  </header>
+
+  <section>
+    <h2 class="mock-section-title">Tab bar</h2>
+    <div class="mock-tabbar-frame">
+      <nav class="tabbar" role="tablist">
+        <button class="tab tab-discover" data-page="discover" role="tab" type="button" aria-selected="false">
+          <span class="tab-icon icon i-24" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M333.78 20.188c-39.97 0-79.96 15.212-110.405 45.656-58.667 58.667-60.796 152.72-6.406 213.97l-15.782 15.748 13.25 13.25 15.75-15.78c61.248 54.39 155.3 52.26 213.968-6.407 60.887-60.886 60.888-159.894 0-220.78C413.713 35.4 373.753 20.187 333.78 20.187zm0 18.562c35.15 0 70.285 13.44 97.158 40.313 53.745 53.745 53.744 140.6 0 194.343-51.526 51.526-133.46 53.643-187.5 6.375l.218-.217c-2.35-2.05-4.668-4.17-6.906-6.407-2.207-2.206-4.288-4.496-6.313-6.812l-.218.22c-47.27-54.04-45.152-135.976 6.374-187.502C263.467 52.19 298.63 38.75 333.78 38.75zm0 18.813c-30.31 0-60.63 11.6-83.81 34.78-46.362 46.362-46.362 121.234 0 167.594 10.14 10.142 21.632 18.077 33.905 23.782-24.91-19.087-40.97-49.133-40.97-82.94 0-15.323 3.292-29.888 9.22-43-4.165 20.485.44 40.88 14.47 54.907 24.583 24.585 68.744 20.318 98.624-9.562 29.88-29.88 34.146-74.04 9.56-98.625a52.379 52.379 0 0 0-7.655-6.313c45.13 8.648 79.954 46.345 84.25 92.876 4.44-35.07-6.82-71.726-33.813-98.72-23.18-23.18-53.47-34.78-83.78-34.78zM176.907 297.688 42.094 432.5l34.562 34.563L211.47 332.25l-34.564-34.563zM40 456.813 24 472.78 37.22 486l15.968-16L40 456.812z"/></svg></span>
+          <span class="tab-label">Discover</span>
+        </button>
+        <button class="tab tab-care active" data-page="care" role="tab" type="button" aria-selected="true">
+          <span class="tab-icon icon i-24" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M314.78 19.47c-18.84 33-23.783 72.886 5.876 69.56 24.07-2.696 16.35-40.304-5.875-69.56zm-122.217 4c-17.095 33.8-19.95 73.854 9.5 69.218 23.9-3.764 14.227-40.983-9.5-69.22zm222.125 75.343c-21.958 30.365-30.705 69.304-.813 69.687 24.262.312 20.163-37.94.813-69.688zm-318.063 3.25C79.9 134.972 79 173.245 103.25 171.22c29.88-2.498 17.868-40.543-6.625-69.157zm217.594 8.374c-55.61 2.262-50.322 118.727 2.592 116.594 52.018-2.088 52.118-118.81-2.593-116.593zm-107.095 1.844c-.828.016-1.648.084-2.5.157-55.42 4.785-43.925 120.847 8.813 116.313 51.033-4.38 45.872-117.42-6.313-116.47zm-82.875 83.44a35.508 35.508 0 0 0-4.938.28c-55.146 6.99-38.225 122.506 14.25 115.875 49.975-6.31 40.645-115.58-9.312-116.156zm278.625 1.343c-55.653-1.027-58.487 115.502-5.53 116.5 52.054.986 60.284-115.482 5.53-116.5zm-145 67.218c-57.02 1.258-12.988 60.186-113.78 94.44-78.123 26.548-30.808 106.533 36.06 106.81 36.702.154 49.8-28.817 79.845-28.686 34.116.144 36.844 26.134 86.78 26.344 63.76.263 100.665-80.2 27.72-107.532-92.875-34.798-54-90.786-113.813-91.375-.957-.008-1.907-.02-2.812 0z"/></svg></span>
+          <span class="tab-label">Care</span>
+        </button>
+        <button class="tab tab-habitat" data-page="habitat" role="tab" type="button" aria-selected="false">
+          <span class="tab-icon icon i-24" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M297 41v30h78V41h-78zM80 48c-12.56 22.13-19.5 54.6-22.07 77.2-.59.2-1.17.5-1.74.7-5.58-17.9-17.63-33.58-33.8-46.62 6.47 18.29 15.93 35.52 19.71 54.62-4.23 2.9-8.01 6-11.3 9.4-3.16 3.3-5.68 14.2-5.9 27.1-.17 12.9 1.1 27 .1 38.4v18.3c24.32-9.1 49.03-21.4 74.63-31.3 29.77-11.6 61.07-19.5 94.17-12.6h.1c25.2 5.3 41.1 10.6 62.8 29.4 37.2-26.3 84.7-42.1 129.8-29.3L487 212.1v-29.8c-5.8-2.2-11.7-4.3-17.5-6.4 4.6-25.7 12-44.4 24.2-71.2-21.1 17.4-40.5 31.6-50.4 51.9 2.4-20.1-7.9-28.1-25.5-45.7 5.2 21.2 3.8 30.9-2.2 46.8-74.1-23.5-146.1-39.7-208.1-45.9-18.3-1.8-35.7-2.8-51.9-2.8-2.3 0-4.6.1-6.9.1-16.4.2-31.7 1.4-45.6 3.5-2.8-11.8-.4-25.02 11.9-40.56C98.7 83.9 84.47 96.35 76.54 110.5 76.33 90.05 78.65 68.87 80 48zm233 41v22.1c15.1 3.4 30.5 7.1 46 11.3V89h-46zm41.6 107.9c-32.5-.4-66 13.7-93.2 34.3l-6 4.5-5.5-5.1c-19.2-18-29.3-22.8-47.8-27.2-2.9 9.7-9.2 19.9-14.6 30 .5-10.4 1.6-21-5.6-29.5-3 8.8-10.3 16.5-24 22.6 2.9-9.9 6.9-19 6.9-27.8-19.5.6-38.9 6.2-58.7 13.8-26.37 10.2-53.15 24.2-81.1 34V487h462V230.8l-105.5-30.1c-8.8-2.5-17.8-3.7-26.9-3.8zM384 215c40.2 0 73 32.8 73 73s-32.8 73-73 73-73-32.8-73-73 32.8-73 73-73zm-9 18.7c-23.3 3.8-41.5 22.1-45.3 45.3H375v-45.3zm18 0V279h45.3c-3.8-23.2-22-41.5-45.3-45.3zM160 247c57.9 0 105 47.1 105 105 0 27.4-10.5 52.3-27.7 71H249v50H71v-50h11.71C65.52 404.3 55 379.4 55 352c0-57.9 47.1-105 105-105zm0 18c-9 0-17.7 1.4-25.9 3.9l-8.5 44-3.6-39.2c-29.06 14-49 43.8-49 78.3 0 29.4 14.41 55.3 36.6 71h71.3l7.3-44.6 7.3 44.6h14.9c22.2-15.7 36.6-41.6 36.6-71 0-48.2-38.8-87-87-87zm169.7 32c3.8 23.2 22 41.5 45.3 45.3V297h-45.3zm63.3 0v45.3c23.3-3.8 41.5-22.1 45.3-45.3H393zm-175 45a9.999 9.999 0 0 1 10 10 9.999 9.999 0 0 1-10 10 9.999 9.999 0 0 1-10-10 9.999 9.999 0 0 1 10-10zm61 49h194v50h-16v32h-50v-32h-62v32h-50v-32h-16v-50zm18 18v14h158v-14H297zM89 441v14h142v-14H89zm224 0v14h14v-14h-14zm112 0v14h14v-14h-14z"/></svg></span>
+          <span class="tab-label">Habitat</span>
+        </button>
+        <button class="tab tab-progress" data-page="progress" role="tab" type="button" aria-selected="false">
+          <span class="tab-icon icon i-24" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 33.78C205.2 119.6 154.2 177 103.7 228.7c101.3-39.2 203.3-39.2 304.6 0C357.8 177 306.8 119.6 256 33.78zm0 183.02c-10.4 0-20.8.5-31.3 1.4 6.5 104.2-48.4 216.9-158.29 268.8H445.6c-109.9-51.9-164.8-164.6-158.3-268.8-10.5-.9-20.9-1.4-31.3-1.4z"/></svg></span>
+          <span class="tab-label">Progress</span>
+        </button>
+        <button class="tab tab-books" data-page="books" role="tab" type="button" aria-selected="false">
+          <span class="tab-icon icon i-24" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M169 57v430h78V57h-78zM25 105v190h46V105H25zm158 23h18v320h-18V128zm128.725 7.69-45.276 8.124 61.825 344.497 45.276-8.124-61.825-344.497zM89 153v270h62V153H89zm281.502 28.68-27.594 11.773 5.494 12.877 27.594-11.773-5.494-12.877zm12.56 29.433-27.597 11.772 5.494 12.877 27.593-11.772-5.492-12.877zm12.555 29.434-27.594 11.77 99.674 233.628 27.594-11.773-99.673-233.625zM25 313v30h46v-30H25zm190 7h18v128h-18V320zM25 361v126h46V361H25zm64 80v46h62v-46H89z"/></svg></span>
+          <span class="tab-label">Books</span>
+        </button>
+        <button class="tab tab-settings" data-page="settings" role="tab" type="button" aria-selected="false">
+          <span class="tab-icon icon i-24" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M234.875 18.78c-26.087 2.367-51.557 8.56-74.875 18.782 15.37 32.763 14.222 66.706-6.72 82.407-20.835 15.617-54.055 7.965-81.124-15.69-16.246 19.452-29.336 41.36-38.875 65.626 33.83 12.333 56.635 37.665 52.94 63.5-3.698 25.835-32.697 43.74-68.626 46.094 2.338 25.796 8.91 50.778 18.937 73.875 17.81-8.182 35.793-11.09 51.095-8.938 13.032 1.87 23.927 7.015 31.156 16.657 15.817 21.097 7.603 54.713-16.78 81.97 19.516 16.35 42.216 29.444 66.594 39.03 12.33-33.828 37.655-56.634 63.5-52.938 25.844 3.697 43.74 32.696 46.094 68.625 26.087-2.365 51.557-8.555 74.875-18.78-15.766-32.997-14.26-67.588 6.843-83.406 9.64-7.23 22.568-9.022 35.594-7.125 15.112 2.16 31.19 10.25 45.563 22.78 16.088-19.345 29.4-41.51 38.875-65.594-33.83-12.332-56.635-37.653-52.938-63.5 3.697-25.846 32.665-43.772 68.594-46.125-2.36-25.944-8.774-50.663-18.906-73.874-32.612 15.117-66.66 13.145-82.282-7.687-15.696-20.944-7.252-53.86 16.688-81-19.52-16.352-42.248-29.447-66.625-39.032-12.332 33.828-37.657 56.66-63.5 52.968-25.846-3.693-43.744-32.696-46.095-68.625zm21.656 95.126c79.626 0 144.376 64.752 144.376 144.375 0 79.626-64.75 144.376-144.375 144.376-79.624 0-144.374-64.75-144.374-144.375 0-79.624 64.75-144.374 144.375-144.374zm0 18.688c-69.524 0-125.686 56.162-125.686 125.687 0 69.526 56.162 125.69 125.687 125.69 69.526 0 125.69-56.164 125.69-125.69 0-69.522-56.164-125.686-125.69-125.686zm.033 15.125c61.094 0 110.625 49.53 110.625 110.624 0 61.095-49.53 110.625-110.625 110.625s-110.625-49.53-110.625-110.626c0-61.095 49.53-110.625 110.625-110.625z"/></svg></span>
+          <span class="tab-label">Settings</span>
+        </button>
+      </nav>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="mock-section-title">Icon before / after</h2>
+    <div class="icon-board">
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">🔍</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-24"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M333.78 20.188c-39.97 0-79.96 15.212-110.405 45.656-58.667 58.667-60.796 152.72-6.406 213.97l-15.782 15.748 13.25 13.25 15.75-15.78c61.248 54.39 155.3 52.26 213.968-6.407 60.887-60.886 60.888-159.894 0-220.78C413.713 35.4 373.753 20.187 333.78 20.187zm0 18.562c35.15 0 70.285 13.44 97.158 40.313 53.745 53.745 53.744 140.6 0 194.343-51.526 51.526-133.46 53.643-187.5 6.375l.218-.217c-2.35-2.05-4.668-4.17-6.906-6.407-2.207-2.206-4.288-4.496-6.313-6.812l-.218.22c-47.27-54.04-45.152-135.976 6.374-187.502C263.467 52.19 298.63 38.75 333.78 38.75zm0 18.813c-30.31 0-60.63 11.6-83.81 34.78-46.362 46.362-46.362 121.234 0 167.594 10.14 10.142 21.632 18.077 33.905 23.782-24.91-19.087-40.97-49.133-40.97-82.94 0-15.323 3.292-29.888 9.22-43-4.165 20.485.44 40.88 14.47 54.907 24.583 24.585 68.744 20.318 98.624-9.562 29.88-29.88 34.146-74.04 9.56-98.625a52.379 52.379 0 0 0-7.655-6.313c45.13 8.648 79.954 46.345 84.25 92.876 4.44-35.07-6.82-71.726-33.813-98.72-23.18-23.18-53.47-34.78-83.78-34.78zM176.907 297.688 42.094 432.5l34.562 34.563L211.47 332.25l-34.564-34.563zM40 456.813 24 472.78 37.22 486l15.968-16L40 456.812z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">nav.discover</span><span class="icon-board-slot-note">Discover tab · 24px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">🐾</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-24"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M314.78 19.47c-18.84 33-23.783 72.886 5.876 69.56 24.07-2.696 16.35-40.304-5.875-69.56zm-122.217 4c-17.095 33.8-19.95 73.854 9.5 69.218 23.9-3.764 14.227-40.983-9.5-69.22zm222.125 75.343c-21.958 30.365-30.705 69.304-.813 69.687 24.262.312 20.163-37.94.813-69.688zm-318.063 3.25C79.9 134.972 79 173.245 103.25 171.22c29.88-2.498 17.868-40.543-6.625-69.157zm217.594 8.374c-55.61 2.262-50.322 118.727 2.592 116.594 52.018-2.088 52.118-118.81-2.593-116.593zm-107.095 1.844c-.828.016-1.648.084-2.5.157-55.42 4.785-43.925 120.847 8.813 116.313 51.033-4.38 45.872-117.42-6.313-116.47zm-82.875 83.44a35.508 35.508 0 0 0-4.938.28c-55.146 6.99-38.225 122.506 14.25 115.875 49.975-6.31 40.645-115.58-9.312-116.156zm278.625 1.343c-55.653-1.027-58.487 115.502-5.53 116.5 52.054.986 60.284-115.482 5.53-116.5zm-145 67.218c-57.02 1.258-12.988 60.186-113.78 94.44-78.123 26.548-30.808 106.533 36.06 106.81 36.702.154 49.8-28.817 79.845-28.686 34.116.144 36.844 26.134 86.78 26.344 63.76.263 100.665-80.2 27.72-107.532-92.875-34.798-54-90.786-113.813-91.375-.957-.008-1.907-.02-2.812 0z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">nav.care</span><span class="icon-board-slot-note">Care tab · 24px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">🏡</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-24"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M297 41v30h78V41h-78zM80 48c-12.56 22.13-19.5 54.6-22.07 77.2-.59.2-1.17.5-1.74.7-5.58-17.9-17.63-33.58-33.8-46.62 6.47 18.29 15.93 35.52 19.71 54.62-4.23 2.9-8.01 6-11.3 9.4-3.16 3.3-5.68 14.2-5.9 27.1-.17 12.9 1.1 27 .1 38.4v18.3c24.32-9.1 49.03-21.4 74.63-31.3 29.77-11.6 61.07-19.5 94.17-12.6h.1c25.2 5.3 41.1 10.6 62.8 29.4 37.2-26.3 84.7-42.1 129.8-29.3L487 212.1v-29.8c-5.8-2.2-11.7-4.3-17.5-6.4 4.6-25.7 12-44.4 24.2-71.2-21.1 17.4-40.5 31.6-50.4 51.9 2.4-20.1-7.9-28.1-25.5-45.7 5.2 21.2 3.8 30.9-2.2 46.8-74.1-23.5-146.1-39.7-208.1-45.9-18.3-1.8-35.7-2.8-51.9-2.8-2.3 0-4.6.1-6.9.1-16.4.2-31.7 1.4-45.6 3.5-2.8-11.8-.4-25.02 11.9-40.56C98.7 83.9 84.47 96.35 76.54 110.5 76.33 90.05 78.65 68.87 80 48zm233 41v22.1c15.1 3.4 30.5 7.1 46 11.3V89h-46zm41.6 107.9c-32.5-.4-66 13.7-93.2 34.3l-6 4.5-5.5-5.1c-19.2-18-29.3-22.8-47.8-27.2-2.9 9.7-9.2 19.9-14.6 30 .5-10.4 1.6-21-5.6-29.5-3 8.8-10.3 16.5-24 22.6 2.9-9.9 6.9-19 6.9-27.8-19.5.6-38.9 6.2-58.7 13.8-26.37 10.2-53.15 24.2-81.1 34V487h462V230.8l-105.5-30.1c-8.8-2.5-17.8-3.7-26.9-3.8zM384 215c40.2 0 73 32.8 73 73s-32.8 73-73 73-73-32.8-73-73 32.8-73 73-73zm-9 18.7c-23.3 3.8-41.5 22.1-45.3 45.3H375v-45.3zm18 0V279h45.3c-3.8-23.2-22-41.5-45.3-45.3zM160 247c57.9 0 105 47.1 105 105 0 27.4-10.5 52.3-27.7 71H249v50H71v-50h11.71C65.52 404.3 55 379.4 55 352c0-57.9 47.1-105 105-105zm0 18c-9 0-17.7 1.4-25.9 3.9l-8.5 44-3.6-39.2c-29.06 14-49 43.8-49 78.3 0 29.4 14.41 55.3 36.6 71h71.3l7.3-44.6 7.3 44.6h14.9c22.2-15.7 36.6-41.6 36.6-71 0-48.2-38.8-87-87-87zm169.7 32c3.8 23.2 22 41.5 45.3 45.3V297h-45.3zm63.3 0v45.3c23.3-3.8 41.5-22.1 45.3-45.3H393zm-175 45a9.999 9.999 0 0 1 10 10 9.999 9.999 0 0 1-10 10 9.999 9.999 0 0 1-10-10 9.999 9.999 0 0 1 10-10zm61 49h194v50h-16v32h-50v-32h-62v32h-50v-32h-16v-50zm18 18v14h158v-14H297zM89 441v14h142v-14H89zm224 0v14h14v-14h-14zm112 0v14h14v-14h-14z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">nav.habitat</span><span class="icon-board-slot-note">Habitat tab · 24px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">📈</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-24"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 33.78C205.2 119.6 154.2 177 103.7 228.7c101.3-39.2 203.3-39.2 304.6 0C357.8 177 306.8 119.6 256 33.78zm0 183.02c-10.4 0-20.8.5-31.3 1.4 6.5 104.2-48.4 216.9-158.29 268.8H445.6c-109.9-51.9-164.8-164.6-158.3-268.8-10.5-.9-20.9-1.4-31.3-1.4z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">nav.progress</span><span class="icon-board-slot-note">Progress tab · 24px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">📚</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-24"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M169 57v430h78V57h-78zM25 105v190h46V105H25zm158 23h18v320h-18V128zm128.725 7.69-45.276 8.124 61.825 344.497 45.276-8.124-61.825-344.497zM89 153v270h62V153H89zm281.502 28.68-27.594 11.773 5.494 12.877 27.594-11.773-5.494-12.877zm12.56 29.433-27.597 11.772 5.494 12.877 27.593-11.772-5.492-12.877zm12.555 29.434-27.594 11.77 99.674 233.628 27.594-11.773-99.673-233.625zM25 313v30h46v-30H25zm190 7h18v128h-18V320zM25 361v126h46V361H25zm64 80v46h62v-46H89z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">nav.books</span><span class="icon-board-slot-note">Books tab · 24px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">⚙️</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-24"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M234.875 18.78c-26.087 2.367-51.557 8.56-74.875 18.782 15.37 32.763 14.222 66.706-6.72 82.407-20.835 15.617-54.055 7.965-81.124-15.69-16.246 19.452-29.336 41.36-38.875 65.626 33.83 12.333 56.635 37.665 52.94 63.5-3.698 25.835-32.697 43.74-68.626 46.094 2.338 25.796 8.91 50.778 18.937 73.875 17.81-8.182 35.793-11.09 51.095-8.938 13.032 1.87 23.927 7.015 31.156 16.657 15.817 21.097 7.603 54.713-16.78 81.97 19.516 16.35 42.216 29.444 66.594 39.03 12.33-33.828 37.655-56.634 63.5-52.938 25.844 3.697 43.74 32.696 46.094 68.625 26.087-2.365 51.557-8.555 74.875-18.78-15.766-32.997-14.26-67.588 6.843-83.406 9.64-7.23 22.568-9.022 35.594-7.125 15.112 2.16 31.19 10.25 45.563 22.78 16.088-19.345 29.4-41.51 38.875-65.594-33.83-12.332-56.635-37.653-52.938-63.5 3.697-25.846 32.665-43.772 68.594-46.125-2.36-25.944-8.774-50.663-18.906-73.874-32.612 15.117-66.66 13.145-82.282-7.687-15.696-20.944-7.252-53.86 16.688-81-19.52-16.352-42.248-29.447-66.625-39.032-12.332 33.828-37.657 56.66-63.5 52.968-25.846-3.693-43.744-32.696-46.095-68.625zm21.656 95.126c79.626 0 144.376 64.752 144.376 144.375 0 79.626-64.75 144.376-144.375 144.376-79.624 0-144.374-64.75-144.374-144.375 0-79.624 64.75-144.374 144.375-144.374zm0 18.688c-69.524 0-125.686 56.162-125.686 125.687 0 69.526 56.162 125.69 125.687 125.69 69.526 0 125.69-56.164 125.69-125.69 0-69.522-56.164-125.686-125.69-125.686zm.033 15.125c61.094 0 110.625 49.53 110.625 110.624 0 61.095-49.53 110.625-110.625 110.625s-110.625-49.53-110.625-110.626c0-61.095 49.53-110.625 110.625-110.625z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">nav.settings</span><span class="icon-board-slot-note">Settings tab · 24px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">⚙️</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-24"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M234.875 18.78c-26.087 2.367-51.557 8.56-74.875 18.782 15.37 32.763 14.222 66.706-6.72 82.407-20.835 15.617-54.055 7.965-81.124-15.69-16.246 19.452-29.336 41.36-38.875 65.626 33.83 12.333 56.635 37.665 52.94 63.5-3.698 25.835-32.697 43.74-68.626 46.094 2.338 25.796 8.91 50.778 18.937 73.875 17.81-8.182 35.793-11.09 51.095-8.938 13.032 1.87 23.927 7.015 31.156 16.657 15.817 21.097 7.603 54.713-16.78 81.97 19.516 16.35 42.216 29.444 66.594 39.03 12.33-33.828 37.655-56.634 63.5-52.938 25.844 3.697 43.74 32.696 46.094 68.625 26.087-2.365 51.557-8.555 74.875-18.78-15.766-32.997-14.26-67.588 6.843-83.406 9.64-7.23 22.568-9.022 35.594-7.125 15.112 2.16 31.19 10.25 45.563 22.78 16.088-19.345 29.4-41.51 38.875-65.594-33.83-12.332-56.635-37.653-52.938-63.5 3.697-25.846 32.665-43.772 68.594-46.125-2.36-25.944-8.774-50.663-18.906-73.874-32.612 15.117-66.66 13.145-82.282-7.687-15.696-20.944-7.252-53.86 16.688-81-19.52-16.352-42.248-29.447-66.625-39.032-12.332 33.828-37.657 56.66-63.5 52.968-25.846-3.693-43.744-32.696-46.095-68.625zm21.656 95.126c79.626 0 144.376 64.752 144.376 144.375 0 79.626-64.75 144.376-144.375 144.376-79.624 0-144.374-64.75-144.374-144.375 0-79.624 64.75-144.374 144.375-144.374zm0 18.688c-69.524 0-125.686 56.162-125.686 125.687 0 69.526 56.162 125.69 125.687 125.69 69.526 0 125.69-56.164 125.69-125.69 0-69.522-56.164-125.686-125.69-125.686zm.033 15.125c61.094 0 110.625 49.53 110.625 110.624 0 61.095-49.53 110.625-110.625 110.625s-110.625-49.53-110.625-110.626c0-61.095 49.53-110.625 110.625-110.625z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">debug.gear</span><span class="icon-board-slot-note">.preview-debug / .creature-debug · 24px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">📷</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-18"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M41 122.496v14h62v-14zm154.73 0-32 32H137v46h30.682C192.4 159.898 237.08 132.738 288 132.738s95.6 27.16 120.318 67.758H487v-46h-74.73l-32-32c-92.27-9-92.27-9-184.54 0zM288 150.738c-67.903 0-122.758 54.855-122.758 122.758 0 67.903 54.855 122.758 122.758 122.758 67.903 0 122.758-54.855 122.758-122.758 0-67.903-54.855-122.758-122.758-122.758zm-263 3.758v46h94v-46zm263 14.713c57.49 0 104.287 46.796 104.287 104.286S345.49 377.783 288 377.783c-57.49 0-104.287-46.797-104.287-104.287 0-57.49 46.797-104.287 104.287-104.287zm-21.787 22.042c-12.173.42-25.717 6.526-36.78 16.578-20.025 18.19-26.342 43.853-14.11 57.318 12.232 13.465 38.38 9.634 58.406-8.558 20.023-18.192 26.34-43.855 14.108-57.32-5-5.504-12.62-8.33-21.625-8.018zM25 218.496v142h94v-142zm112 0v142h40.412c-18.888-23.96-30.17-54.183-30.17-87 0-19.507 3.988-38.096 11.188-55zm280.57 0c7.2 16.904 11.188 35.493 11.188 55 0 32.817-11.282 63.04-30.17 87H487v-142zM25 378.496v14h94v-14zm112 0v14h75.89a141.492 141.492 0 0 1-18.536-14zm244.646 0a141.616 141.616 0 0 1-18.535 14H487v-14z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">inline.camera</span><span class="icon-board-slot-note">.photo-btn snapshot · 18px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">🎁</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-26"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M149.518 78.38c-6.55.117-12.45 1.736-17.35 4.91-7.465 4.84-11.765 12.904-13.063 21.34-2.595 16.874 4.747 36.355 19.862 52.31C154.08 172.893 177.643 185 208 185h2.438l-9.118-18.234c-22.194-1.554-38.46-10.777-49.287-22.205-11.885-12.545-16.543-28.064-15.138-37.19.702-4.564 2.402-7.25 5.062-8.974 2.66-1.724 7.113-2.875 14.756-1.326 13.078 2.65 34.233 13.948 62.205 39.284L220.27 135h23.408c-35.31-34.8-62.215-51.278-83.39-55.57a52.157 52.157 0 0 0-7.925-1.006c-.96-.045-1.91-.06-2.845-.043zm212.964 0c-.935-.016-1.885 0-2.845.044-2.562.12-5.21.455-7.924 1.006-21.176 4.292-48.082 20.77-83.39 55.57h23.406l1.352 1.354c27.972-25.336 49.127-36.633 62.205-39.284 7.643-1.55 12.096-.398 14.756 1.326 2.66 1.725 4.36 4.41 5.062 8.973 1.405 9.126-3.253 24.645-15.138 37.19-10.827 11.43-27.093 20.652-49.287 22.206L301.562 185H304c30.357 0 53.92-12.106 69.033-28.06 15.115-15.955 22.457-35.436 19.862-52.31-1.298-8.436-5.598-16.5-13.063-21.34-4.9-3.174-10.8-4.793-17.35-4.91zM227.73 153l-8.78 8.777L229.564 183h52.875l10.61-21.223-8.777-8.777h-56.54zM73 201v46h142v-46H73zm160 0v270h46V201h-46zm64 0v46h142v-46H297zm-192 64v206h110V265H105zm192 0v206h110V265H297z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">content.gift</span><span class="icon-board-slot-note">Welcome gift-stack · 26px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">❤️</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-20 ic-warm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M480.25 156.355c0 161.24-224.25 324.43-224.25 324.43S31.75 317.595 31.75 156.355c0-91.41 70.63-125.13 107.77-125.13 77.65 0 116.48 65.72 116.48 65.72s38.83-65.73 116.48-65.73c37.14.01 107.77 33.72 107.77 125.14z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">content.heart</span><span class="icon-board-slot-note">Affection / care meter · 20px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">🌙</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-22 ic-ink-soft"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M253.125 18.563c-131.53 0-238.375 106.813-238.375 238.343 0 131.53 106.846 238.344 238.375 238.344 131.53 0 238.344-106.815 238.344-238.344 0-131.528-106.816-238.344-238.345-238.344zm-23.938 52.093c40.517 0 77.988 12.904 108.532 34.813a154.099 154.099 0 0 0-17.064-.97c-84.157 0-152.375 68.25-152.375 152.406 0 84.157 68.22 152.375 152.376 152.375 5.762 0 11.467-.313 17.063-.936-30.545 21.91-68.016 34.812-108.533 34.812-102.98 0-186.28-83.272-186.28-186.25 0-102.977 83.3-186.25 186.28-186.25z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">content.moon</span><span class="icon-board-slot-note">Tuck-in action · 22px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">😴</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-22 ic-ink-soft"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M294.8 26.57 238 60.37l7.8 13.17L281 52.59 270.8 118l6.3 10.6L336 93.53l-7.8-13.17-37.3 22.14L301 37.12l-6.2-10.55zM147.1 60.55A224 224 0 0 0 32 256a224 224 0 0 0 224 224 224 224 0 0 0 214.9-161.2A208 208 0 0 1 320 384a208 208 0 0 1-208-208 208 208 0 0 1 35.1-115.45zm244.5 52.05-6.9 16.5 44.1 18.4-68.3 35.9-5.5 13.2 73.7 30.8 6.9-16.5-46.7-19.5 68.3-35.9 5.5-13.2-71.1-29.7zm-115 64-97.8 35 8.1 22.7 60.6-21.7-35.4 97.9 6.5 18.1L320 292.4l-8.1-22.7-64.2 23 35.4-97.9-6.5-18.2z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">content.sleep</span><span class="icon-board-slot-note">zzz resting indicator · 22px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">✨</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-22 ic-accent"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M237.4 20.73c-6.1 42.1-26.8 64.2-63.9 64 31.6 4.5 63.8 8 63.9 64.07-.6-46.1 24.5-63.07 64.1-64.07-38-1.5-64.9-16.3-64.1-64zm127.8 11.58c-9.1 14.25-20.8 21.29-38.9 10.28 14.9 11.79 18.6 24.76 10.2 38.97 8.9-11.18 17.5-22.73 39-10.27-17.8-10.06-18.8-23.57-10.3-38.98zM59.68 41.69c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.52-.3-20.5 10.9-28.12 28.5-28.52-16.9-.7-28.9-7.3-28.5-28.5zM431 66.28c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.52-.3-20.5 10.9-28.12 28.5-28.52-16.9-.7-28.9-7.3-28.5-28.5zM120.3 116.4c-15.8 53.7-47.76 48-79.35 43.4C76.6 170 90.3 197.1 84.28 239.2c12.66-46 42.62-52.6 79.42-43.4-37.6-12.1-56.9-35.4-43.4-79.4zm187 5c-8.8 61.6-39.3 94-93.6 93.7 46.2 6.5 93.6 11.7 93.6 93.7-.8-67.3 35.9-92.2 93.8-93.7-55.5-2.2-94.9-23.9-93.8-93.7zm136.8 38.3c-13.1 21.6-29.5 28.8-49.7 20.1 16.3 9.7 33 19.1 20.1 49.6 10.3-25.2 27.9-28.7 49.7-20-20.3-9.7-31.6-23.9-20.1-49.7zM50.7 243.2c9.16 16.7 7.63 30.1-5.61 40 12.46-6.9 24.85-14.3 39.91 5.6-12.57-16.2-8.2-29 5.61-40-13.92 9.7-27.47 11.6-39.91-5.6zm137.2.3c11.4 26.8-.5 41.3-21.7 50.9 22.7-8.5 40.8-4.5 50.9 21.7-12.7-31.8 4.8-41.2 21.7-50.9-21 8.5-37.8.9-50.9-21.7zm228 12.6c-26.6 64.7-68.7 91.7-127.8 76.4 48.6 19.8 98.8 38.5 76.4 127.9 17.5-73.7 64.4-90.7 127.9-76.5-59.9-17.5-96.9-52-76.5-127.8zM99.94 295.5c15.66 57.8.86 98.1-47.32 118.5 43.46-11.8 87.38-25.2 118.68 47.4-26.4-59.3-3.4-95.4 47.3-118.8-50 19.2-93.1 15-118.66-47.1zm169.36 61c-21.8 20.6-43 23.6-63.2 7.3 15.5 16.3 31.6 32.4 7.2 63.3 19.8-25.6 41.2-24.1 63.3-7.3-20.2-17.4-28.6-37.5-7.3-63.3zM443.2 404c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.5-.3-20.5 10.9-28.1 28.5-28.5-16.9-.7-28.9-7.3-28.5-28.5zm-169.7 36c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.5-.3-20.5 10.9-28.1 28.5-28.5-16.9-.7-28.9-7.3-28.5-28.5z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">content.sparkle</span><span class="icon-board-slot-note">Reward / growth burst · 22px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">🌱</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-22 ic-good"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M383.9 23.46c-13.4 2.23-26.3 3-36.9 5.31-14.8 3.18-24.2 7.59-29.8 22.41-1.4 3.88-1 6 .4 8.61 1.4 2.62 4.5 5.52 8.5 7.8 4 2.29 8.8 3.93 12.9 4.62 4 .69 7.5 0 7.5 0h.1c17.9-8.16 30.2-27.83 37.3-48.75zm-72.7 55.78c-3.4 20.1-13.5 38.56-25.2 56.26-.4 2.2-.9 4.3-1.5 6.4-2.7 9.3-7.5 18.2-14.3 25.8l.1.1c7.7-5.9 15.5-9.5 23.2-11.3 14.3-20.2 28.8-42.7 34.4-68.52-3.7-1.19-7.3-2.76-10.8-4.75-2-1.17-4-2.5-5.9-3.99zm-85.7 8.61c-11.9-.1-25.5 2.26-40.4 6-23.5 5.89-49 14.75-73.5 19.95 18.2 16.8 32.3 34.5 47.2 46.4 18.9 15 37.8 22.4 73.6 11.2 18.3-5.7 30.6-19.7 34.8-34.5 4.3-14.8 1.1-29.8-12.3-40.42-7.6-6.01-17.6-8.53-29.4-8.63zm81.2 84.35c-8.7-.1-17.4 3-27.8 11.8-23.6 19.9-12.7 40.7-2.2 45.4h.1c2.4 1.1 8.6 1.5 16.5-.2 8-1.7 17.6-5.3 27.5-10.1 14.5-7 29.4-16.7 40.9-26.4-13.2-5-25.1-12.2-36.4-16.3-5.9-2.2-11.4-3.8-16.9-4.1-.6 0-1.2-.1-1.7-.1zM244.6 237c-48 .5-91.3 4.6-122.7 10.6-16.9 3.2-30.51 7.1-39.1 11-4.3 1.9-7.31 3.9-8.75 5.3-.52.5-.62.6-.76.8.14.2.24.3.76.8 1.44 1.4 4.45 3.4 8.75 5.3 8.59 3.9 22.2 7.8 39.1 11 33.9 6.5 81.5 10.6 134.1 10.6 52.6 0 100.2-4.1 134.1-10.6 16.9-3.2 30.5-7.1 39.1-11 4.3-1.9 7.3-3.9 8.8-5.3.5-.5.6-.6.7-.8-.1-.2-.2-.3-.7-.8-1.5-1.4-4.5-3.4-8.8-5.3-8.6-3.9-22.2-7.8-39.1-11-19.3-3.7-43.1-6.6-69.7-8.5-8 3.4-15.8 6.1-23.3 7.7-9.9 2.1-19.2 2.8-27.7-1-2.2-1-4.3-2.2-6.2-3.6.9 8.8 2 17.6 3.2 26.5l-17.8 2.6c-1.7-11.4-3.1-22.7-4-34.3zM80.33 289.3l7.89 39.4c10.2 8.7 32.98 17.4 61.98 23 30.7 5.8 68.3 8.8 105.8 8.8s75.1-3 105.8-8.8c29-5.6 51.8-14.3 62-23l7.9-39.4c-10.2 3.9-23.1 7.3-38.2 10.2-35.6 6.8-84 10.9-137.5 10.9s-101.9-4.1-137.5-10.9c-15.1-2.9-27.98-6.3-38.17-10.2zm44.57 75.2 11.7 93.4c6.5 8.1 21.9 16.5 42.7 21.9 22 5.7 49.3 8.7 76.7 8.7 27.4 0 54.7-3 76.7-8.7 20.8-5.4 36.2-13.8 42.7-21.9l11.7-93.4c-6.9 1.8-14.2 3.3-21.9 4.8-32.3 6.2-70.7 9.2-109.2 9.2s-76.9-3-109.2-9.2c-7.7-1.4-15-3-21.9-4.8z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">content.sprout</span><span class="icon-board-slot-note">Growth / stage chip · 22px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">⭐</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-18 ic-gold"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 38.013c-22.458 0-66.472 110.3-84.64 123.502-18.17 13.2-136.674 20.975-143.614 42.334-6.94 21.358 84.362 97.303 91.302 118.662 6.94 21.36-22.286 136.465-4.116 149.665 18.17 13.2 118.61-50.164 141.068-50.164 22.458 0 122.9 63.365 141.068 50.164 18.17-13.2-11.056-128.306-4.116-149.665 6.94-21.36 98.242-97.304 91.302-118.663-6.94-21.36-125.444-29.134-143.613-42.335-18.168-13.2-62.182-123.502-84.64-123.502z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">content.star</span><span class="icon-board-slot-note">Filled rating pip · 18px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">☆</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-18 ic-muted"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 38.013c-22.458 0-66.472 110.3-84.64 123.502-18.17 13.2-136.674 20.975-143.614 42.334-6.94 21.358 84.362 97.303 91.302 118.662 6.94 21.36-22.286 136.465-4.116 149.665 18.17 13.2 118.61-50.164 141.068-50.164 22.458 0 122.9 63.365 141.068 50.164 18.17-13.2-11.056-128.306-4.116-149.665 6.94-21.36 98.242-97.304 91.302-118.663-6.94-21.36-125.444-29.134-143.613-42.335-18.168-13.2-62.182-123.502-84.64-123.502z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">content.emptyStar</span><span class="icon-board-slot-note">Same glyph, muted fill · 18px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">✅</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-16 ic-good"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M17.47 250.9C88.82 328.1 158 397.6 224.5 485.5c72.3-143.8 146.3-288.1 268.4-444.37L460 26.06C356.9 135.4 276.8 238.9 207.2 361.9c-48.4-43.6-126.62-105.3-174.38-137z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">inline.check</span><span class="icon-board-slot-note">Confirm / complete · 16px</span></span>
+      </div>
+      <div class="icon-board-row">
+        <span class="icon-board-old" aria-hidden="true">➡️</span>
+        <span class="icon-board-arrow">→</span>
+        <span class="icon-board-new icon i-16 ic-accent"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M84.41 106c-15.63.1-27.67 13.8-25.69 29.3 16 124 16 117.4 0 241.4-2.54 19.8 17.33 35 35.79 27.3L361.5 292.9v98.8c0 7.9 8.9 14.2 20 14.3h52c11.1-.1 20-6.4 20-14.3V120.2c-.1-7.8-9-14.1-20-14.2h-52c-11 .1-19.9 6.4-20 14.2v98.9L94.51 108c-3.2-1.3-6.63-2-10.1-2z"/></svg></span>
+        <span class="icon-board-slot"><span class="icon-board-slot-name">inline.arrowNext</span><span class="icon-board-slot-note">Next / skip affordance · 16px</span></span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="mock-section-title">Creature lineup</h2>
+    <div class="stackling-lineup">
+      <div class="stackling-lineup-item">
+        <div class="stackling-frame">
+          <div class="stackling stackling--ember stackling--tiny">
+            <img class="sl-leg sl-l" src="../assets/creatures/leg_redA.png" alt="" />
+            <img class="sl-leg sl-r sl-mirror" src="../assets/creatures/leg_redA.png" alt="" />
+            <img class="sl-arm sl-l" src="../assets/creatures/arm_redA.png" alt="" />
+            <img class="sl-arm sl-r sl-mirror" src="../assets/creatures/arm_redA.png" alt="" />
+            <img class="sl-body" src="../assets/creatures/body_redA.png" alt="Ember" />
+            <img class="sl-detail sl-l" src="../assets/creatures/detail_red_ear_round.png" alt="" />
+            <img class="sl-detail sl-r sl-mirror" src="../assets/creatures/detail_red_ear_round.png" alt="" />
+            <img class="sl-eye" src="../assets/creatures/eye_cute_light.png" alt="" />
+            <img class="sl-nose" src="../assets/creatures/nose_red.png" alt="" />
+            <img class="sl-mouth" src="../assets/creatures/mouth_closed_happy.png" alt="" />
+          </div>
+        </div>
+        <span class="stackling-name">Ember</span>
+        <span class="stackling-vibe">Rosy &amp; round — fireside-cozy default</span>
+      </div>
+
+      <div class="stackling-lineup-item">
+        <div class="stackling-frame">
+          <div class="stackling stackling--marigold stackling--tiny">
+            <img class="sl-leg sl-l" src="../assets/creatures/leg_yellowB.png" alt="" />
+            <img class="sl-leg sl-r sl-mirror" src="../assets/creatures/leg_yellowB.png" alt="" />
+            <img class="sl-arm sl-l" src="../assets/creatures/arm_yellowB.png" alt="" />
+            <img class="sl-arm sl-r sl-mirror" src="../assets/creatures/arm_yellowB.png" alt="" />
+            <img class="sl-body" src="../assets/creatures/body_yellowB.png" alt="Marigold" />
+            <img class="sl-detail sl-l" src="../assets/creatures/detail_yellow_antenna_small.png" alt="" />
+            <img class="sl-detail sl-r sl-mirror" src="../assets/creatures/detail_yellow_antenna_small.png" alt="" />
+            <img class="sl-eye" src="../assets/creatures/eye_cute_dark.png" alt="" />
+            <img class="sl-nose" src="../assets/creatures/nose_yellow.png" alt="" />
+            <img class="sl-mouth" src="../assets/creatures/mouth_closed_happy.png" alt="" />
+          </div>
+        </div>
+        <span class="stackling-name">Marigold</span>
+        <span class="stackling-vibe">Sunny &amp; curious — antennae up</span>
+      </div>
+
+      <div class="stackling-lineup-item">
+        <div class="stackling-frame">
+          <div class="stackling stackling--cinder stackling--tiny">
+            <img class="sl-leg sl-l" src="../assets/creatures/leg_darkC.png" alt="" />
+            <img class="sl-leg sl-r sl-mirror" src="../assets/creatures/leg_darkC.png" alt="" />
+            <img class="sl-arm sl-l" src="../assets/creatures/arm_darkC.png" alt="" />
+            <img class="sl-arm sl-r sl-mirror" src="../assets/creatures/arm_darkC.png" alt="" />
+            <img class="sl-body" src="../assets/creatures/body_darkC.png" alt="Cinder" />
+            <img class="sl-detail sl-l" src="../assets/creatures/detail_dark_horn_small.png" alt="" />
+            <img class="sl-detail sl-r sl-mirror" src="../assets/creatures/detail_dark_horn_small.png" alt="" />
+            <img class="sl-eye sl-l" src="../assets/creatures/eye_closed_happy.png" alt="" />
+            <img class="sl-eye sl-r sl-mirror" src="../assets/creatures/eye_closed_happy.png" alt="" />
+            <img class="sl-nose" src="../assets/creatures/nose_brown.png" alt="" />
+            <img class="sl-mouth" src="../assets/creatures/mouth_closed_happy.png" alt="" />
+          </div>
+        </div>
+        <span class="stackling-name">Cinder</span>
+        <span class="stackling-vibe">Cocoa-brown &amp; softly spooky</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  var KEY = 'stacklings.theme';
+  var root = document.documentElement;
+
+  function applyTheme(id) {
+    root.dataset.theme = id;
+    try { localStorage.setItem(KEY, id); } catch (e) {}
+    document.querySelectorAll('.theme-opt').forEach(function (btn) {
+      var sel = btn.dataset.themeId === id;
+      btn.classList.toggle('selected', sel);
+      btn.setAttribute('aria-pressed', String(sel));
+    });
+  }
+
+  var saved = 'nook';
+  try { saved = localStorage.getItem(KEY) || 'nook'; } catch (e) {}
+  applyTheme(saved);
+
+  document.querySelectorAll('.theme-opt').forEach(function (btn) {
+    btn.addEventListener('click', function () { applyTheme(btn.dataset.themeId); });
+  });
+})();
+</script>
+</body>
+</html>

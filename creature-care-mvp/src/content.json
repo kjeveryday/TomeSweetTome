@@ -369,6 +369,13 @@
     "icons": { "star": "⭐", "emptyStar": "☆", "heart": "💖", "gift": "🎁", "sparkle": "✨", "sleep": "💤", "moon": "🌙", "sprout": "🌱" },
     "habitatBubbles": ["Rawr!", "Rawr?", "Rawr…", "Rawr!!"]
   },
+  "credits": [
+    { "name": "Game icons", "by": "Lorc, Delapouite & Skoll", "license": "CC BY 3.0", "licenseUrl": "https://creativecommons.org/licenses/by/3.0/", "url": "https://game-icons.net" },
+    { "name": "Monster Builder Pack", "by": "Kenney", "license": "CC0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/", "url": "https://kenney.nl" },
+    { "name": "Vector emoji", "by": "RhosGFX", "license": "CC0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/", "url": "https://rhosgfx.itch.io" },
+    { "name": "Parchment texture", "by": "FelisChaus", "license": "CC0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/", "url": "https://opengameart.org/content/parchment-background" },
+    { "name": "Eczar", "by": "Rosetta Type", "license": "SIL OFL 1.1", "licenseUrl": "https://openfontlicense.org", "url": "https://www.rosettatype.com/Eczar" }
+  ],
   "copy": {
     "title": "Creature Care",
     "habitatOwnerName": "Vera",
@@ -520,6 +527,8 @@
     "settingsSuggestionsCleared": "Saved suggestions cleared.",
     "settingsResearchTitle": "Research & design",
     "settingsResearchReviewed": "Reviewed {date}",
+    "settingsCreditsTitle": "Credits & licenses",
+    "settingsCreditsIntro": "Placeholder art and type in this build come from these creators:",
     "navDiscover": "Discover",
     "navCare": "Care",
     "navHabitat": "Habitat",

@@ -1,0 +1,250 @@
+{
+  "assetRoot": "/Users/kylejohnson/Desktop/Tome Sweet Tome/Free Assets for Tome Sweet Tome",
+  "note": "All paths below are relative to assetRoot unless marked absolute. Paths contain spaces where noted — quote them in shell/tool calls.",
+
+  "packs": [
+    {
+      "name": "game-icons.net (icons/)",
+      "path": "icons/ffffff/transparent/1x1/<author>/<name>.svg",
+      "fileCount": 4180,
+      "authorCount": 36,
+      "formats": ["svg"],
+      "namingConvention": "kebab-case descriptive filename, one subfolder per contributing artist (lorc, delapouite, skoll, zeromancer, sbed, caro-asercion, aussiesim, darkzaitzev, faithtoken, etc.)",
+      "fill/color": "Every icon is a SINGLE <path> with fill=\"#fff\" on a transparent viewBox 0 0 512 512 canvas — trivially recolorable (swap fill=\"#fff\" for currentColor, or apply via CSS mask-image / a global find-replace). This is the main thematic icon library and the best-fit source for nearly every slot.",
+      "bestUsedFor": "Nav tabs, content icons, inline icons — anything needing a themeable single-color glyph.",
+      "gotchas": "Because it's crowd-sourced there is no single canonical 'plain' icon for common concepts (no bare heart.svg, star.svg, or gear.svg) — icons run to the specific/flavored (paw-heart, flat-star, cog) rather than generic. Attribution (CC BY 3.0) is required per-author per license.txt; a small subset are CC0 — check license.txt for the exact per-artist split before shipping."
+    },
+    {
+      "name": "game-icons.net (icons 2/)",
+      "path": "icons 2/ffffff/transparent/1x1/<author>/<name>.svg",
+      "fileCount": 4180,
+      "formats": ["svg"],
+      "namingConvention": "identical to icons/",
+      "fill/color": "identical to icons/",
+      "bestUsedFor": "N/A — redundant, see duplicates finding below.",
+      "gotchas": "Exact duplicate of icons/. Safe to delete before importing into the project to avoid double-tracking ~4180 files in git."
+    },
+    {
+      "name": "vector-emojis (RhosGFX Vector Ranks Pack)",
+      "path": "vector-emojis/SVG/Outline/<Description>.svg and vector-emojis/SVG/No Outline/<Description>.svg (also 64px/ and 256px/ PNG renders of both variants)",
+      "fileCount": 224,
+      "formats": ["svg (Outline + No Outline, 112 each)", "png (64px and 256px, Outline + No Outline)"],
+      "namingConvention": "Title Case full description, e.g. 'Sleeping face.svg', 'Smiling face with hearts.svg'. Filenames contain spaces — quote paths.",
+      "fill/color": "Full-color emoji-style illustrations (not single-fill/currentColor-friendly) — these are baked multi-color faces, not line icons.",
+      "bestUsedFor": "Creature mood/expression indicators (a face overlay or care-state badge), NOT for nav/UI icons since they're multicolor and cartoon-emoji styled rather than matching the gold/ink line-icon system.",
+      "gotchas": "112 unique expressions x 2 style variants (Outline / No Outline) x 2 raster sizes = 448 total files, but only 224 unique SVGs. 'Outline' adds a dark outline stroke to the emoji shapes; 'No Outline' is flatter/borderless — No Outline likely reads better against a dark candlelit theme."
+    },
+    {
+      "name": "kenney_ui-pack (UI Pack 2.0)",
+      "path": "kenney_ui-pack/Vector/<Grey|Blue|Green|Red|Yellow|Extra>/*.svg (also PNG/<color>/<Default|Double>/*.png, Sounds/, Font/)",
+      "fileCount": "~90 unique widgets x 6 color sets (Grey/Blue/Green/Red/Yellow/Extra) in Vector; same again x2 sizes in PNG",
+      "formats": ["svg", "png", "wav (Sounds/)", "ttf (Font/)"],
+      "namingConvention": "snake_case, color folder is the palette (not part of filename): buttons (buttonLong/buttonSquare/buttonRound + _pressed), panels, panelInset, bars (progress/health, 4 orientations), sliders, checkboxes (check_round_*, check_square_*), icon_checkmark/icon_cross/icon_outline_*, arrow_basic_*/arrow_decorative_* (n/s/e/w + _small), star.svg/star_outline.svg/star_outline_depth.svg, cursors.",
+      "fill/color": "BAKED hex colors with gradients/shading per SVG (not currentColor, not single-path) — e.g. star.svg uses linearGradient fills. To retheme these across the 3 dark themes you'd need to either pick a fixed color set (Grey works as a neutral base) or hand-edit the SVGs to strip gradients into flat currentColor fills.",
+      "bestUsedFor": "Nine-slice UI chrome (buttons, panels, sliders, checkboxes), and — notably — the ONLY source in this whole asset set with a ready-made filled/outline star pair (star.svg + star_outline.svg) and a plain right-pointing arrow (arrow_basic_e.svg) and a plain checkmark (icon_checkmark.svg / icon_outline_checkmark.svg).",
+      "gotchas": "Six color folders duplicate the same ~90 files six times — pick ONE color folder (Grey is most neutral for re-theming) rather than importing all six. CC0 licensed."
+    },
+    {
+      "name": "kenney_ui-pack-rpg-expansion",
+      "path": "kenney_ui-pack-rpg-expansion/PNG/*.png (individual, ~90 files); kenney_ui-pack-rpg-expansion/Vector/uipack_rpg_vector.svg (single combined sheet, NOT split); Spritesheet/uipack_rpg_sheet.png + .xml",
+      "fileCount": "~90 individual PNGs; 1 combined vector sheet",
+      "formats": ["png (individual)", "svg (combined spritesheet only)", "swf", "xml (spritesheet coords)"],
+      "namingConvention": "camelCase compound, e.g. buttonLong_blue.png, barRed_verticalMid.png, cursorSword_gold.png, iconCheck_beige.png, panelInset_brown.png",
+      "fill/color": "Baked color per named variant (blue/green/red/yellow/beige/brown/grey/silver/bronze/gold), PNG raster.",
+      "bestUsedFor": "Fantasy-flavored bars (health/growth bars with brown/gold frames — good match for the warm 'nook' theme), ornate cursors, RPG-style panels if the UI wants a more medieval-fantasy chrome than the base ui-pack.",
+      "gotchas": "The Vector/ folder is a SINGLE combined SVG (uipack_rpg_vector.svg) covering the whole sheet — individual vector icons are NOT pre-split like kenney_ui-pack is. To get a single vector asset out of this pack you must extract a sub-path/group from the combined file (or a specific <g id=...>) rather than opening a ready single-icon file; PNG is the practical fallback for anything here. CC0 licensed (license.txt present)."
+    },
+    {
+      "name": "kenney_game-icons",
+      "path": "kenney_game-icons/Vector/vector_whiteIcons.svg + vector_blackIcons.svg (combined sheets only); PNG/White/<1x|2x>/*.png and PNG/Black/<1x|2x>/*.png (individual, ~130 icons)",
+      "fileCount": "~130 individual PNGs x 2 colors x 2 scales; 2 combined vector sheets (white/black)",
+      "formats": ["png (individual)", "svg (combined sheet only)", "ai", "xml (spritesheet coords)"],
+      "namingConvention": "camelCase single-word/compound, e.g. gear.png, home.png, star.png, checkmark.png, arrowRight.png, trophy.png, medal1/2.png — mostly generic UI/gamepad/media icons (joystick, buttonA/B/X/Y, volume, zoom, save).",
+      "fill/color": "Solid single-color (pure white or pure black) flat PNG icons — closest thing to 'currentColor-ready' bitmap in this pack, but still raster, not vector-per-icon.",
+      "bestUsedFor": "Quick generic UI glyphs (gear.png, home.png, star.png, checkmark.png already exist here as clean single icons) if a raster fallback is acceptable, or as a visual reference while re-drawing the equivalent shape as an SVG from game-icons.net.",
+      "gotchas": "Same combined-sheet problem as the RPG expansion pack: Vector/ is only the two full spritesheets (vector_whiteIcons.svg / vector_blackIcons.svg), not per-icon files — usable individually only via the PNG folders or by manually slicing the sheet using the accompanying .xml coordinate maps. CC0 licensed."
+    },
+    {
+      "name": "kenney_monster-builder-pack",
+      "path": "kenney_monster-builder-pack/PNG/Default/*.png (178 files, primary); PNG/Double/*.png (178 files, 2x); Vector/overview.svg (single preview sheet, not per-part)",
+      "fileCount": 178,
+      "formats": ["png (Default 1x + Double 2x)", "svg (overview/preview sheet only, not usable per-part)", "swf"],
+      "namingConvention": "category_variant.png, e.g. body_redA.png, arm_greenB.png, eye_angry_blue.png, detail_white_horn_large.png, mouthA.png",
+      "fill/color": "Baked flat-color PNG raster parts, no vector-per-part source — recoloring requires re-exporting or picking from the pre-baked color set.",
+      "bestUsedFor": "Layered creature/Stackling avatar assembly — body + arm + leg + eye + mouth + detail parts compose into a full creature via absolute-positioned PNG layers.",
+      "gotchas": "Vector/ folder is a single overview.svg preview sheet (all parts laid out for reference), NOT split into per-part vector files — treat this pack as PNG-only in practice. See monsterBuilder section below for full taxonomy."
+    },
+    {
+      "name": "eczar",
+      "path": "eczar/Eczar-VariableFont_wght.ttf (variable); eczar/static/Eczar-{Regular,Medium,SemiBold,Bold,ExtraBold}.ttf",
+      "fileCount": 6,
+      "formats": ["ttf (variable)", "ttf (5 static weights)"],
+      "namingConvention": "Eczar-<Weight>.ttf",
+      "fill/color": "N/A (font)",
+      "bestUsedFor": "Serif display type per the redesign brief — headings, card titles, book-flavored UI chrome.",
+      "gotchas": "No woff/woff2 included — only .ttf. Convert to woff2 for web performance before shipping. OFL 1.1 licensed (attribution not required but appreciated; cannot be sold on its own)."
+    }
+  ],
+
+  "duplicates": "CONFIRMED: icons/ and icons 2/ are byte-identical duplicates. Relative file listing diff (sorted paths under each root) produced 0 differing lines across all 4180 files, and a spot-check SHA-1 checksum comparison across 6 files spanning the full alphabetical range (andymeneely/police-badge.svg, delapouite/cabbage.svg, delapouite/gloves.svg, delapouite/switch-weapon.svg, lorc/kaleidoscope-pearls.svg, skoll/read.svg) matched exactly. Recommendation: delete 'icons 2/' entirely before importing anything into the project repo — keeping both would double asset-tracking overhead for zero benefit.",
+
+  "extraUnscoutedFiles": [
+    {
+      "path": "CatumetGamesFurniture.svg",
+      "note": "Single combined multi-object SVG (viewBox 0 0 1075.85 1297.31), black-stroke/no-fill line art of furniture pieces — not split into individual icons, not currentColor-ready (uses fixed stroke:#000, fill:none). Could be a source for habitat/furniture decor art but needs manual extraction of individual objects. Not part of the brief's known-structure list — flagging as found but not otherwise catalogued."
+    },
+    {
+      "path": "FelisChaus_ParchmentBackground.jpg",
+      "note": "380x421 JPEG parchment/paper texture. Could work as a background fill for book/reading-themed panels or modals. Small resolution — would need upscaling or tiling for large surfaces."
+    },
+    {
+      "path": "Garden cozy icons pack.rar",
+      "note": "RAR v5 archive, UNEXTRACTED — no rar/unar tool was available in this environment to open it, so its contents are uncatalogued. Given the name ('Garden cozy icons pack') it may be relevant to habitat/nature-themed content icons (sprout, garden, etc.) and is worth extracting and re-scouting separately."
+    }
+  ],
+
+  "slotCandidates": {
+    "nav.discover": [
+      { "path": "icons/ffffff/transparent/1x1/lorc/magnifying-glass.svg", "why": "Classic plain magnifying glass — the most direct match for a 'search/discover' tab." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/spyglass.svg", "why": "Alt with more period/cozy-library flavor (brass spyglass vs. modern magnifier)." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/archive-research.svg", "why": "Thematic alt evoking archival research, fits the library setting." }
+    ],
+    "nav.care": [
+      { "path": "icons/ffffff/transparent/1x1/lorc/paw-print.svg", "why": "Clean single paw print, best direct match for 'care'." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/flat-paw-print.svg", "why": "Flatter/simpler variant, may sit better at small nav-icon sizes." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/paw.svg", "why": "Fuller paw shape (pad + toes), more detailed alt." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/paw-heart.svg", "why": "Paw + heart combo — nice bonus tie-in to the 'care' concept if a warmer icon is wanted." }
+    ],
+    "nav.habitat": [
+      { "path": "icons/ffffff/transparent/1x1/delapouite/hobbit-dwelling.svg", "why": "Rounded, cozy dwelling shape — best mood match for the candlelit/cozy aesthetic." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/wood-cabin.svg", "why": "Cozy cabin silhouette, warm and rustic, strong alt for the 'nook' theme." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/house.svg", "why": "Plain simple house — safe, legible fallback if a less whimsical shape is needed." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/family-house.svg", "why": "Alt simple house silhouette with slightly different roofline." }
+    ],
+    "nav.progress": [
+      { "path": "icons/ffffff/transparent/1x1/delapouite/growth.svg", "why": "Literally named 'growth' — most direct match." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/sprout.svg", "why": "Rising sprout shape, matches the 'rising sprout' description directly." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/tree-growth.svg", "why": "Shows staged growth (sapling to tree) — good visual metaphor for leveling up over time." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/stairs-goal.svg", "why": "Upward stairs-to-goal metaphor, an alt reading of 'progress' as ascension rather than growth." }
+    ],
+    "nav.books": [
+      { "path": "icons/ffffff/transparent/1x1/delapouite/bookshelf.svg", "why": "Literal bookshelf — most direct match for a library/books tab." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/book-pile.svg", "why": "Stacked books, matches the 'book stack' description directly." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/open-book.svg", "why": "Open book alt, reads clearly at small nav sizes." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/spell-book.svg", "why": "Thematic alt that ties into the 'spellbook' purple theme specifically." }
+    ],
+    "nav.settings": [
+      { "path": "icons/ffffff/transparent/1x1/lorc/cog.svg", "why": "Single plain gear/cog — the cleanest, most conventional settings glyph." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/gears.svg", "why": "Multiple interlocking gears, a busier alt if more visual weight is wanted." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/settings-knobs.svg", "why": "Slider-knobs alt reading of 'settings', distinct silhouette from a gear." }
+    ],
+
+    "content.gift": [
+      { "path": "icons/ffffff/transparent/1x1/delapouite/present.svg", "why": "Plain wrapped gift box — most direct, universally readable match." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/gift-of-knowledge.svg", "why": "Gift + book motif — strong thematic fit for a library/reading game specifically." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/wrapped-sweet.svg", "why": "Wrapped candy alt, cozier/softer silhouette than a box." }
+    ],
+    "content.heart": [
+      { "path": "icons/ffffff/transparent/1x1/skoll/hearts.svg", "why": "Simplest available heart glyph (single playing-card-suit heart shape) — closest thing to a 'plain heart' in this set." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/heart-beats.svg", "why": "Heart with EKG pulse line — good alt specifically for a 'care/vitality' reading." },
+      { "path": "icons/ffffff/transparent/1x1/zeromancer/heart-plus.svg", "why": "Heart with plus sign, reads well for an 'add affection' or full-heart state." }
+    ],
+    "content.moon": [
+      { "path": "icons/ffffff/transparent/1x1/lorc/moon.svg", "why": "Direct crescent moon glyph — best match." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/moon-orbit.svg", "why": "Alt with an orbiting ring detail, more ornate." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/falcon-moon.svg", "why": "Alt with a bird silhouette across the moon, atmospheric/spooky-cozy." }
+    ],
+    "content.sleep": [
+      { "path": "icons/ffffff/transparent/1x1/delapouite/night-sleep.svg", "why": "Night/sleep themed glyph — closest single-icon match for 'sleep' state." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/sleepy.svg", "why": "Alt sleepy-specific icon." },
+      { "path": "vector-emojis/SVG/No Outline/Sleeping face.svg", "why": "Full-color sleeping-face emoji alt if a mood-face reads better than an abstract glyph for this state." }
+    ],
+    "content.sparkle": [
+      { "path": "icons/ffffff/transparent/1x1/delapouite/sparkles.svg", "why": "Exact match — a cluster of sparkle/twinkle marks." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/magic-swirl.svg", "why": "Alt with a magical swirl motif, fits the spellbook theme." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/star-swirl.svg", "why": "Alt combining a star with a sparkle trail." }
+    ],
+    "content.sprout": [
+      { "path": "icons/ffffff/transparent/1x1/delapouite/seedling.svg", "why": "Exact match — a seedling/sprout glyph." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/sprout.svg", "why": "Alt sprout shape, slightly different silhouette." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/ground-sprout.svg", "why": "Alt showing sprout emerging from ground/soil, more grounded/rooted look." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/sprout-disc.svg", "why": "Alt with a circular disc/planter base, reads well as a small badge icon." }
+    ],
+    "content.star": [
+      { "path": "icons/ffffff/transparent/1x1/lorc/flat-star.svg", "why": "Simple flat filled star, single-path and easily recolorable — best fit for a currentColor-themed filled star." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/round-star.svg", "why": "Alt with softened/rounded points." },
+      { "path": "kenney_ui-pack/Vector/Grey/star.svg", "why": "Kenney's polished filled star — pairs directly with kenney's star_outline.svg for a matched filled/empty rating pair, but note it uses baked gradient fills (not currentColor)." }
+    ],
+    "content.emptyStar": [
+      { "path": "kenney_ui-pack/Vector/Grey/star_outline.svg", "why": "The ONLY ready-made outline-star in this whole asset collection — game-icons.net has no equivalent outline star. Pairs with kenney star.svg for a matched filled/empty pair, but is baked-color, not currentColor." },
+      { "path": "kenney_ui-pack/Vector/Yellow/star_outline.svg", "why": "Same shape, alt baked color if gold/yellow suits the theme directly without recoloring." }
+    ],
+
+    "inline.camera": [
+      { "path": "icons/ffffff/transparent/1x1/delapouite/photo-camera.svg", "why": "Plain photo camera — most direct match for a snapshot action." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/cctv-camera.svg", "why": "Alt camera silhouette, more surveillance-styled." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/video-camera.svg", "why": "Alt video-camera silhouette if a more classic camcorder shape reads better." }
+    ],
+    "inline.check": [
+      { "path": "icons/ffffff/transparent/1x1/delapouite/check-mark.svg", "why": "Plain checkmark, single-path and currentColor-ready — best fit for the themed icon system." },
+      { "path": "kenney_ui-pack/Vector/Grey/icon_checkmark.svg", "why": "Kenney's filled checkmark alt, baked color." },
+      { "path": "kenney_ui-pack/Vector/Grey/icon_outline_checkmark.svg", "why": "Kenney's outline-style checkmark alt, baked color." }
+    ],
+    "inline.arrowNext": [
+      { "path": "kenney_ui-pack/Vector/Grey/arrow_basic_e.svg", "why": "Simple plain right-pointing arrow — game-icons.net has no equivalent plain arrow glyph, so this Kenney asset is the best direct match despite being baked-color rather than currentColor." },
+      { "path": "icons/ffffff/transparent/1x1/delapouite/next-button.svg", "why": "currentColor-ready alt from game-icons.net, but styled as a media-player 'next/skip' triangle rather than a plain arrow — check it reads correctly at inline text size." },
+      { "path": "icons/ffffff/transparent/1x1/lorc/bottom-right-3d-arrow.svg", "why": "currentColor-ready alt with a stylized 3D-perspective arrowhead, more decorative." }
+    ]
+  },
+
+  "monsterBuilder": {
+    "totalParts": 178,
+    "sourcePath": "kenney_monster-builder-pack/PNG/Default/ (1x; kenney_monster-builder-pack/PNG/Double/ has the same 178 files at 2x)",
+    "categories": {
+      "body": { "count": 36, "variants": "6 colors (blue, dark, green, red, white, yellow) x 6 shapes (A-F)", "namingPattern": "body_<color><shape>.png" },
+      "arm": { "count": 30, "variants": "6 colors (blue, dark, green, red, white, yellow) x 5 shapes (A-E)", "namingPattern": "arm_<color><shape>.png" },
+      "leg": { "count": 30, "variants": "6 colors (blue, dark, green, red, white, yellow) x 5 shapes (A-E)", "namingPattern": "leg_<color><shape>.png" },
+      "detail": { "count": 42, "variants": "6 colors (blue, dark, green, red, white, yellow) x 7 sub-types (antenna_large, antenna_small, ear, ear_round, eye, horn_large, horn_small)", "namingPattern": "detail_<color>_<subtype>.png" },
+      "eye": { "count": 17, "variants": "Not color-matched to body — style/mood variants: angry (blue/green/red = 3), solid color (blue/red/yellow = 3), closed (feminine/happy = 2), cute (dark/light = 2), dead (1), human (plain/blue/green/red = 4), psycho (dark/light = 2)", "namingPattern": "eye_<style>[_<color>].png" },
+      "mouth": { "count": 14, "variants": "10 plain lettered shapes (mouthA.png .. mouthJ.png, no color) + 4 descriptive styles (closed_fangs, closed_happy, closed_sad, closed_teeth)", "namingPattern": "mouth<Letter>.png or mouth_<style>.png" },
+      "nose": { "count": 4, "variants": "4 solid colors (brown, green, red, yellow) — note this set does NOT match the body/arm/leg/detail 6-color palette (no blue/dark/white nose)", "namingPattern": "nose_<color>.png" },
+      "eyebrow": { "count": 3, "variants": "3 plain shapes (A, B, C), no color variants", "namingPattern": "eyebrow<Letter>.png" },
+      "snot": { "count": 2, "variants": "large, small — an optional overlay detail (drip/bogey), not required for assembly", "namingPattern": "snot_<size>.png" }
+    },
+    "assemblyNotes": "Layer order (back to front): body (base silhouette) -> legs (peek out from under body) -> arms (attach to body sides) -> detail (ears/horns/antennae, attach to head/body outline) -> eyes -> eyebrows -> nose -> mouth -> snot (topmost, optional). body/arm/leg/detail all share the SAME 6-color palette (blue, dark, green, red, white, yellow), so picking one color across those four categories gives a coherent monochrome creature; eye/mouth/eyebrow are mood/style selectors rather than palette-matched, and can be mixed freely on top of any body color. nose is the odd one out with only 4 colors that don't fully overlap the other categories' palette. This pack is raster-only in practice (see kenney_monster-builder-pack gotchas above) — assembly means absolutely-positioned/z-indexed <img> or CSS background-image layers, not currentColor SVG recoloring; a creature's color is fixed by which PNG variant you pick, not adjustable via CSS."
+  },
+
+  "creatureMoods": [
+    { "mood": "happy", "path": "vector-emojis/SVG/No Outline/Smiling face.svg" },
+    { "mood": "delighted", "path": "vector-emojis/SVG/No Outline/Beaming face with smiling eyes.svg" },
+    { "mood": "loved", "path": "vector-emojis/SVG/No Outline/Smiling face with hearts.svg" },
+    { "mood": "sleepy", "path": "vector-emojis/SVG/No Outline/Sleepy face.svg" },
+    { "mood": "sleeping", "path": "vector-emojis/SVG/No Outline/Sleeping face.svg" },
+    { "mood": "hungry", "path": "vector-emojis/SVG/No Outline/Drooling face.svg" },
+    { "mood": "sad", "path": "vector-emojis/SVG/No Outline/Pouting face.svg" },
+    { "mood": "disappointed", "path": "vector-emojis/SVG/No Outline/Disappointed face.svg" },
+    { "mood": "crying", "path": "vector-emojis/SVG/No Outline/Crying face.svg" },
+    { "mood": "sick", "path": "vector-emojis/SVG/No Outline/Face with thermometer.svg" },
+    { "mood": "worried", "path": "vector-emojis/SVG/No Outline/Worried face.svg" },
+    { "mood": "tired", "path": "vector-emojis/SVG/No Outline/Tired face.svg" },
+    { "mood": "excited", "path": "vector-emojis/SVG/No Outline/Star-struck.svg" },
+    { "mood": "neutral", "path": "vector-emojis/SVG/No Outline/Neutral face.svg" },
+    { "mood": "scared", "path": "vector-emojis/SVG/No Outline/Face screaming in fear.svg" }
+  ],
+
+  "font": {
+    "family": "Eczar",
+    "weights": ["Regular (400)", "Medium (500)", "SemiBold (600)", "Bold (700)", "ExtraBold (800)"],
+    "formats": ["ttf (variable, single wght axis file)", "ttf (5 static weights)"],
+    "license": "SIL Open Font License 1.1",
+    "files": [
+      "eczar/Eczar-VariableFont_wght.ttf",
+      "eczar/static/Eczar-Regular.ttf",
+      "eczar/static/Eczar-Medium.ttf",
+      "eczar/static/Eczar-SemiBold.ttf",
+      "eczar/static/Eczar-Bold.ttf",
+      "eczar/static/Eczar-ExtraBold.ttf"
+    ],
+    "gotcha": "No woff/woff2 provided — only .ttf. Convert to woff2 (e.g. via fonttools/pyftsubset or an online converter) before shipping for web performance; .ttf files are notably larger and lack the compression woff2 provides."
+  }
+}
