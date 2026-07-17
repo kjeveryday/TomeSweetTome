@@ -17,10 +17,6 @@ export function createUI(root, content, handlers) {
 
   root.dataset.hatched = 'false';
   root.innerHTML = `
-    <header class="topbar">
-      <h1 class="title"></h1>
-    </header>
-
     <div class="page page-discover" id="page-discover" role="tabpanel" aria-labelledby="tab-discover" hidden>
       <div class="book-card">
         <h2 class="book-title"></h2>
@@ -69,39 +65,6 @@ export function createUI(root, content, handlers) {
     </div>
 
     <div class="page page-care" id="page-care" role="tabpanel" aria-labelledby="tab-care">
-      <section class="reading-panel" aria-labelledby="reading-title">
-        <h2 id="reading-title" class="reading-title"></h2>
-        <div class="reading-start-view">
-          <p class="reading-intro"></p>
-          <button class="reading-start" type="button"></button>
-        </div>
-        <div class="reading-active-view" hidden>
-          <p class="reading-progress" role="status"></p>
-          <div class="reading-grid">
-            <label for="reading-book" class="reading-label reading-book-label"></label>
-            <select id="reading-book" class="reading-book"></select>
-            <label for="reading-mode" class="reading-label reading-mode-label"></label>
-            <select id="reading-mode" class="reading-mode"></select>
-            <button class="reading-record" type="button"></button>
-            <div class="reading-timer" hidden>
-              <button class="timer-start" type="button"></button>
-              <p class="timer-running" role="timer" hidden></p>
-              <div class="timer-actions" hidden>
-                <button class="timer-stop" type="button"></button>
-                <button class="timer-cancel" type="button"></button>
-              </div>
-              <div class="timer-confirm" hidden>
-                <p></p>
-                <button class="timer-confirm-yes" type="button"></button>
-                <button class="timer-confirm-no" type="button"></button>
-              </div>
-            </div>
-            <label for="reading-status" class="reading-label reading-status-label"></label>
-            <select id="reading-status" class="reading-status"></select>
-          </div>
-          <p class="reading-empty" hidden></p>
-        </div>
-      </section>
       <section class="scene">
         <span class="sun"></span>
         <span class="cloud c1"></span>
@@ -133,7 +96,7 @@ export function createUI(root, content, handlers) {
         </div>
         <p class="egg-hint"></p>
         <div class="nameplate">
-          <span class="name-pill"></span><span class="mood-chip"></span><span class="stage-tag"></span>
+          <span class="name-pill"></span><span class="mood-chip"></span><span class="stage-tag"></span><span class="grow-chip" title=""></span>
         </div>
         <p class="relationship-line" role="status" hidden></p>
         <div class="tuck-veil" aria-hidden="true">
@@ -141,15 +104,16 @@ export function createUI(root, content, handlers) {
           <span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span>
         </div>
       </section>
-      <section class="growth">
-        <p class="growth-caption"></p>
-        <div class="star-trail" aria-hidden="true"></div>
-      </section>
       <section class="meters"></section>
       <section class="actions"></section>
-      <button class="tuck-btn" type="button">
-        <span class="a-icon"></span><span class="t-label"></span>
-      </button>
+      <div class="care-buttons">
+        <button class="reading-open" type="button">
+          <span class="ro-icon" aria-hidden="true"></span><span class="ro-label"></span>
+        </button>
+        <button class="tuck-btn" type="button">
+          <span class="a-icon"></span><span class="t-label"></span>
+        </button>
+      </div>
     </div>
 
     <div class="page page-habitat" id="page-habitat" role="tabpanel" aria-labelledby="tab-habitat" hidden>
@@ -301,6 +265,44 @@ export function createUI(root, content, handlers) {
         </details>
       </div>
     </div>
+    <div class="reading-modal" role="dialog" aria-modal="true" aria-labelledby="reading-title" hidden>
+      <div class="reading-modal-card">
+        <button class="reading-close" type="button"></button>
+        <section class="reading-panel" aria-labelledby="reading-title">
+          <h2 id="reading-title" class="reading-title"></h2>
+          <div class="reading-start-view">
+            <p class="reading-intro"></p>
+            <button class="reading-start" type="button"></button>
+          </div>
+          <div class="reading-active-view" hidden>
+            <p class="reading-progress" role="status"></p>
+            <div class="reading-grid">
+              <label for="reading-book" class="reading-label reading-book-label"></label>
+              <select id="reading-book" class="reading-book"></select>
+              <label for="reading-mode" class="reading-label reading-mode-label"></label>
+              <select id="reading-mode" class="reading-mode"></select>
+              <button class="reading-record" type="button"></button>
+              <div class="reading-timer" hidden>
+                <button class="timer-start" type="button"></button>
+                <p class="timer-running" role="timer" hidden></p>
+                <div class="timer-actions" hidden>
+                  <button class="timer-stop" type="button"></button>
+                  <button class="timer-cancel" type="button"></button>
+                </div>
+                <div class="timer-confirm" hidden>
+                  <p></p>
+                  <button class="timer-confirm-yes" type="button"></button>
+                  <button class="timer-confirm-no" type="button"></button>
+                </div>
+              </div>
+              <label for="reading-status" class="reading-label reading-status-label"></label>
+              <select id="reading-status" class="reading-status"></select>
+            </div>
+            <p class="reading-empty" hidden></p>
+          </div>
+        </section>
+      </div>
+    </div>
     <div class="reading-recovery" role="dialog" aria-modal="true" aria-labelledby="reading-recovery-title" hidden>
       <div class="reading-recovery-card">
         <h2 id="reading-recovery-title"></h2>
@@ -315,8 +317,10 @@ export function createUI(root, content, handlers) {
 
   const q = (sel) => root.querySelector(sel);
   const el = {
-    title: q('.title'),
     readingPanel: q('.reading-panel'),
+    readingModal: q('.reading-modal'),
+    readingOpen: q('.reading-open'),
+    readingClose: q('.reading-close'),
     readingTitle: q('.reading-title'),
     readingStartView: q('.reading-start-view'),
     readingIntro: q('.reading-intro'),
@@ -356,8 +360,7 @@ export function createUI(root, content, handlers) {
     moodChip: q('.mood-chip'),
     stageTag: q('.stage-tag'),
     relationshipLine: q('.relationship-line'),
-    growthCaption: q('.growth-caption'),
-    starTrail: q('.star-trail'),
+    growChip: q('.grow-chip'),
     meters: q('.meters'),
     actions: q('.actions'),
     tuckBtn: q('.tuck-btn'),
@@ -486,7 +489,9 @@ export function createUI(root, content, handlers) {
     }
   };
 
-  el.title.textContent = copy.title;
+  el.readingOpen.querySelector('.ro-icon').textContent = copy.readingOpenIcon;
+  el.readingOpen.querySelector('.ro-label').textContent = copy.readingOpen;
+  el.readingClose.textContent = copy.readingClose;
   el.readingTitle.textContent = copy.readingTitle;
   el.readingIntro.textContent = copy.readingIntro;
   el.readingStart.textContent = copy.readingStart;
@@ -538,6 +543,22 @@ export function createUI(root, content, handlers) {
     el.timerConfirm.hidden = true;
   }
 
+  function openReadingModal() {
+    el.readingModal.hidden = false;
+    (el.readingStartView.hidden ? el.readingRecord : el.readingStart).focus();
+  }
+  function closeReadingModal() {
+    el.readingModal.hidden = true;
+    el.readingOpen.focus();
+  }
+  el.readingOpen.addEventListener('click', openReadingModal);
+  el.readingClose.addEventListener('click', closeReadingModal);
+  el.readingModal.addEventListener('click', (event) => {
+    if (event.target === el.readingModal) closeReadingModal();
+  });
+  el.readingModal.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeReadingModal();
+  });
   el.readingStart.addEventListener('click', () => handlers.onStartReadingChallenge());
   el.readingRecord.addEventListener('click', () => {
     const workId = selectedReadingWorkId();
@@ -1720,31 +1741,42 @@ export function createUI(root, content, handlers) {
     );
   }
 
-  // ----- star trail toward the next stage -----
+  // ----- growth marker: a tiny 3-pip meter tucked into the nameplate. The
+  // underlying requirement is 12-18 CP, too many to show as literal pips, so the
+  // chip fills proportionally toward the next stage and becomes a heart at full.
+  const GROW_PIPS = 3;
   function renderGrowth(state, stage) {
     const next = nextStageDef(state.stage);
-    el.starTrail.replaceChildren();
+    el.growChip.replaceChildren();
     if (!next) {
-      el.growthCaption.textContent = copy.allGrown;
       const heart = document.createElement('span');
       heart.className = 'st filled';
       heart.textContent = icons.heart;
-      el.starTrail.append(heart);
+      el.growChip.append(heart);
+      el.growChip.title = copy.allGrown;
+      el.growChip.setAttribute('aria-label', copy.allGrown);
       return;
     }
-    const total = next.cpRequired - stage.cpRequired;
-    const filled = Math.min(Math.max(state.cp - stage.cpRequired, 0), total);
-    for (let i = 0; i < total; i += 1) {
+    const span = next.cpRequired - stage.cpRequired;
+    const into = Math.min(Math.max(state.cp - stage.cpRequired, 0), span);
+    const filled = span > 0 ? Math.round((into / span) * GROW_PIPS) : 0;
+    const lead = document.createElement('span');
+    lead.className = 'grow-lead';
+    lead.textContent = icons.sprout;
+    el.growChip.append(lead);
+    for (let i = 0; i < GROW_PIPS; i += 1) {
       const star = document.createElement('span');
       star.className = i < filled ? 'st filled' : 'st';
       star.textContent = icons.star;
-      el.starTrail.append(star);
+      el.growChip.append(star);
     }
-    el.growthCaption.textContent = fill(copy.growLabel, state);
+    const label = fill(copy.growLabel, state);
+    el.growChip.title = label;
+    el.growChip.setAttribute('aria-label', label);
   }
 
   function pulseNewestStar() {
-    const filledStars = el.starTrail.querySelectorAll('.st.filled');
+    const filledStars = el.growChip.querySelectorAll('.st.filled');
     const newest = filledStars[filledStars.length - 1];
     if (newest) flash(newest, 'just-earned', 'star-earn');
   }

@@ -366,11 +366,14 @@
   ],
   "ui": {
     "sparkleCount": 6,
-    "icons": { "star": "⭐", "emptyStar": "☆", "heart": "💖", "gift": "🎁", "sparkle": "✨", "sleep": "💤", "moon": "🌙" }
+    "icons": { "star": "⭐", "emptyStar": "☆", "heart": "💖", "gift": "🎁", "sparkle": "✨", "sleep": "💤", "moon": "🌙", "sprout": "🌱" }
   },
   "copy": {
     "title": "Creature Care",
     "readingTitle": "Reading challenge",
+    "readingOpenIcon": "📖",
+    "readingOpen": "Read with your buddy",
+    "readingClose": "Done",
     "readingIntro": "Read on 20 different days. There’s no deadline.",
     "readingStart": "Start challenge",
     "readingRegistered": "Ready to begin · 0 of 20 days",
