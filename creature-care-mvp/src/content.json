@@ -366,10 +366,18 @@
   ],
   "ui": {
     "sparkleCount": 6,
-    "icons": { "star": "⭐", "emptyStar": "☆", "heart": "💖", "gift": "🎁", "sparkle": "✨", "sleep": "💤", "moon": "🌙", "sprout": "🌱" }
+    "icons": { "star": "⭐", "emptyStar": "☆", "heart": "💖", "gift": "🎁", "sparkle": "✨", "sleep": "💤", "moon": "🌙", "sprout": "🌱" },
+    "habitatBubbles": ["Rawr!", "Rawr?", "Rawr…", "Rawr!!"]
   },
   "copy": {
     "title": "Creature Care",
+    "habitatWindowLabel": "Your habitat",
+    "habitatEmpty": "Wake a book creature to fill your habitat.",
+    "habitatEditButton": "🎨 Edit habitat",
+    "habitatVisitorButton": "🐾 Ask a buddy",
+    "collectionCare": "Care",
+    "collectionInHabitatOn": "In habitat — tap to hide",
+    "collectionInHabitatOff": "Hidden — tap to show in habitat",
     "readingTitle": "Reading challenge",
     "readingOpenIcon": "📖",
     "readingOpen": "Read with your buddy",

@@ -853,6 +853,202 @@ button:focus-visible {
   75% { translate: 4px 0; }
 }
 
+/* ---------- habitat page: cozy library window + wandering creatures ---------- */
+
+.page-habitat {
+  height: calc(100dvh - 12px);
+  overflow: hidden;
+}
+
+.habitat-window {
+  position: relative;
+  flex: none;
+  height: 310px;
+  border-radius: var(--radius-big);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--bg-top) 0%, var(--peach) 62%, var(--peach-deep) 100%);
+}
+
+/* reading lamp: a soft glowing accent in one corner */
+.habitat-window .hb-lamp {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  z-index: 1;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #fffaea 0%, var(--gold) 55%, transparent 74%);
+  box-shadow: 0 0 22px 10px rgba(255, 212, 105, 0.32);
+}
+
+/* potted plant: pot + a few leaf blobs, opposite corner */
+.habitat-window .hb-plant {
+  position: absolute;
+  bottom: 14px;
+  left: 16px;
+  z-index: 1;
+  width: 30px;
+  height: 42px;
+}
+.habitat-window .hb-plant::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  translate: -50% 0;
+  width: 26px;
+  height: 18px;
+  border-radius: 4px 4px 12px 12px;
+  background: linear-gradient(180deg, var(--peach-deep), var(--peach));
+}
+.habitat-window .hb-plant::after {
+  content: "";
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  translate: -50% 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 80% 10% 80% 10%;
+  background: var(--mint-deep);
+  box-shadow:
+    -11px -7px 0 -1px var(--mint),
+    10px -11px 0 -1px var(--mint-deep),
+    -3px -17px 0 -2px var(--mint);
+}
+
+/* bookshelf band: colorful spines drawn with a repeating gradient */
+.habitat-shelf {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 38%;
+  z-index: 1;
+  height: 44px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--peach) 0 14px,
+    var(--peach-deep) 14px 16px,
+    var(--mint) 16px 30px,
+    var(--mint-deep) 30px 32px,
+    var(--lavender) 32px 46px,
+    var(--lavender-deep) 46px 48px,
+    var(--sky-btn) 48px 60px,
+    var(--sky-btn-deep) 60px 62px
+  );
+  box-shadow: inset 0 -8px 12px rgba(133, 94, 120, 0.1), 0 3px 0 rgba(133, 94, 120, 0.12);
+}
+
+.habitat-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.habitat-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  max-width: 68%;
+  text-align: center;
+  color: var(--ink-soft);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* wandering monsters: wrapper drifts with margin-left (keeps the -50% centering
+   transform intact), the inner orb bounces independently. */
+.habitat-monster {
+  position: absolute;
+  bottom: 34px;
+  transform: translateX(-50%);
+  animation: hb-drift var(--drift-dur, 5s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes hb-drift {
+  0%, 100% { margin-left: calc(var(--drift-x) * -1); }
+  50% { margin-left: var(--drift-x); }
+}
+.habitat-monster .book-orb {
+  animation: hb-bounce var(--bounce-dur, 2.2s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes hb-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.rawr-bubble {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  z-index: 20;
+  transform: translateX(-50%);
+  margin-bottom: 6px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 999px;
+  box-shadow: 0 4px 10px rgba(133, 94, 120, 0.18);
+  animation: hb-rawr-pop 250ms cubic-bezier(0.3, 1.6, 0.4, 1);
+}
+.rawr-bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  translate: -50% -50%;
+  rotate: 45deg;
+  width: 8px;
+  height: 8px;
+  background: #fff;
+}
+@keyframes hb-rawr-pop {
+  0% { transform: translateX(-50%) translateY(6px) scale(0.4); opacity: 0; }
+  70% { transform: translateX(-50%) translateY(-2px) scale(1.1); opacity: 1; }
+  100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+}
+
+.habitat-tools {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex: none;
+}
+.habitat-tool-btn {
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  border: none;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink);
+  transition: transform 150ms ease;
+}
+.habitat-tool-btn:active { transform: translateY(1px); }
+.habitat-edit-btn.habitat-tool-btn {
+  background: linear-gradient(180deg, #fff, var(--lavender));
+}
+.visitor-ask.habitat-tool-btn {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff, var(--sky-btn));
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  align-self: auto;
+}
+
 /* ---------- collection panel: shelf of revealed creatures ---------- */
 .collection {
   background: var(--card);
@@ -862,6 +1058,8 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 .collection[hidden] { display: none; }
 .collection-title {
@@ -869,39 +1067,52 @@ button:focus-visible {
   font-size: 15px;
   font-weight: 800;
   color: var(--ink-soft);
+  flex: none;
 }
 .collection-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
-.collection-item { display: flex; }
+.collection-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+.collection-item[data-in-habitat="false"] {
+  opacity: 0.5;
+  filter: grayscale(0.5);
+}
 .collection-chip {
   position: relative;
   flex: 1;
   min-width: 0;
-  background: linear-gradient(145deg, #eefaff, #fff4e7);
-  border: 2px solid #fff;
-  border-radius: 18px;
-  box-shadow: 0 4px 10px rgba(133, 94, 120, 0.12);
-  padding: 10px 8px 8px;
+  background: var(--card);
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 8px 10px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 6px;
-  text-align: center;
+  gap: 10px;
+  text-align: left;
   transition: transform 150ms ease;
 }
 button.collection-chip { cursor: pointer; }
 button.collection-chip:active { transform: translateY(2px) scale(0.98); }
 .collection-chip[data-active="true"] {
-  border-color: var(--gold);
   background: linear-gradient(145deg, #fff8dd, #ffeede);
   box-shadow: 0 4px 12px rgba(212, 160, 60, 0.28);
 }
 .collection-chip .book-orb {
-  width: 62px;
-  height: 56px;
+  width: 52px;
+  height: 46px;
   flex: none;
 }
 .collection-meta {
@@ -910,7 +1121,20 @@ button.collection-chip:active { transform: translateY(2px) scale(0.98); }
   gap: 1px;
   min-width: 0;
   width: 100%;
+  text-align: left;
 }
+.collection-care {
+  flex: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: linear-gradient(180deg, #fff, var(--mint));
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  transition: transform 150ms ease;
+}
+.collection-care:active { transform: translateY(1px); }
 .collection-name {
   font-size: 13px;
   font-weight: 800;

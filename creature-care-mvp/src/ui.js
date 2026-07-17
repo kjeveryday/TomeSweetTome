@@ -117,29 +117,32 @@ export function createUI(root, content, handlers) {
     </div>
 
     <div class="page page-habitat" id="page-habitat" role="tabpanel" aria-labelledby="tab-habitat" hidden>
-      <section class="collection" aria-labelledby="collection-title" hidden>
-        <h2 id="collection-title" class="collection-title"></h2>
-        <div class="collection-list" role="list"></div>
+      <section class="habitat-window">
+        <span class="hb-lamp" aria-hidden="true"></span>
+        <span class="hb-plant" aria-hidden="true"></span>
+        <div class="habitat-shelf" aria-hidden="true"></div>
+        <div class="habitat-stage" role="img"></div>
+        <p class="habitat-empty" hidden></p>
       </section>
-      <section class="visitor" aria-labelledby="visitor-title" hidden>
-        <h2 id="visitor-title" class="visitor-title"></h2>
-        <button class="visitor-ask" type="button"></button>
-        <div class="visitor-card" hidden>
-          <p class="visitor-greeting"></p>
-          <p class="visitor-reason"></p>
-          <p class="visitor-sample-note"></p>
-          <ul class="visitor-books"></ul>
-          <div class="visitor-card-actions">
-            <button class="visitor-save" type="button"></button>
-            <span class="visitor-saved" hidden></span>
-            <button class="visitor-dismiss" type="button"></button>
-          </div>
+      <div class="habitat-tools">
+        <button class="habitat-edit-btn habitat-tool-btn" type="button"></button>
+        <button class="visitor-ask habitat-tool-btn" type="button" hidden></button>
+      </div>
+      <div class="visitor-card" hidden>
+        <p class="visitor-greeting"></p>
+        <p class="visitor-reason"></p>
+        <p class="visitor-sample-note"></p>
+        <ul class="visitor-books"></ul>
+        <div class="visitor-card-actions">
+          <button class="visitor-save" type="button"></button>
+          <span class="visitor-saved" hidden></span>
+          <button class="visitor-dismiss" type="button"></button>
         </div>
         <button class="visitor-reset" type="button"></button>
-      </section>
-      <section class="habitat-edit under-construction">
-        <h2 class="habitat-edit-title"></h2>
-        <p class="habitat-edit-note"></p>
+      </div>
+      <section class="collection" aria-labelledby="collection-title">
+        <h2 id="collection-title" class="collection-title"></h2>
+        <div class="collection-list" role="list"></div>
       </section>
     </div>
 
@@ -368,11 +371,13 @@ export function createUI(root, content, handlers) {
     tuckText: q('.tuck-text'),
     toast: q('.toast'),
     shelf: q('.shelf'),
+    habitatWindow: q('.habitat-window'),
+    habitatStage: q('.habitat-stage'),
+    habitatEmpty: q('.habitat-empty'),
+    habitatEditBtn: q('.habitat-edit-btn'),
     collection: q('.collection'),
     collectionTitle: q('.collection-title'),
     collectionList: q('.collection-list'),
-    visitor: q('.visitor'),
-    visitorTitle: q('.visitor-title'),
     visitorAsk: q('.visitor-ask'),
     visitorCard: q('.visitor-card'),
     visitorGreeting: q('.visitor-greeting'),
@@ -457,8 +462,6 @@ export function createUI(root, content, handlers) {
     settingsResearchEntries: q('.settings-research-entries'),
     birthmark: q('.birthmark'),
     marks: [...root.querySelectorAll('.creature .mark')],
-    habitatEditTitle: q('.habitat-edit-title'),
-    habitatEditNote: q('.habitat-edit-note'),
     progressTitle: q('.progress-title'),
     progressStatus: q('.progress-status'),
     progressHistoryTitle: q('.progress-history-title'),
@@ -630,9 +633,13 @@ export function createUI(root, content, handlers) {
     star.textContent = icons.sparkle;
   }
   el.shelf.setAttribute('aria-label', copy.shelfLabel);
+  el.habitatWindow.setAttribute('aria-label', copy.habitatWindowLabel);
+  el.habitatEmpty.textContent = copy.habitatEmpty;
+  el.habitatEmpty.hidden = false;
+  el.habitatEditBtn.textContent = copy.habitatEditButton;
+  el.habitatEditBtn.addEventListener('click', () => toast(copy.habitatEditUnderConstructionNote));
   el.collectionTitle.textContent = copy.collectionTitle;
-  el.visitorTitle.textContent = copy.visitorTitle;
-  el.visitorAsk.textContent = copy.visitorAsk;
+  el.visitorAsk.textContent = copy.habitatVisitorButton;
   el.visitorSave.textContent = copy.visitorSave;
   el.visitorSaved.textContent = copy.visitorSaved;
   el.visitorDismiss.textContent = copy.visitorDismiss;
@@ -659,10 +666,11 @@ export function createUI(root, content, handlers) {
 
   function renderVisitor(state) {
     if (!handlers.isRecommendationVisitorsEnabled()) {
-      el.visitor.hidden = true;
+      el.visitorAsk.hidden = true;
+      el.visitorCard.hidden = true;
       return;
     }
-    el.visitor.hidden = false;
+    el.visitorAsk.hidden = false;
 
     const dismissedIds = Array.isArray(state?.recommendations?.dismissedIds)
       ? state.recommendations.dismissedIds
@@ -787,8 +795,6 @@ export function createUI(root, content, handlers) {
   el.settingsResearchTitle.textContent = copy.settingsResearchTitle;
 
   // ----- under-construction placeholders (static, kid-friendly notes) -----
-  el.habitatEditTitle.textContent = copy.habitatEditTitle;
-  el.habitatEditNote.textContent = copy.habitatEditUnderConstructionNote;
   el.progressTitle.textContent = copy.progressTitle;
   el.progressHistoryTitle.textContent = copy.progressHistoryTitle;
   el.progressHistoryEmpty.textContent = copy.progressHistoryEmpty;
@@ -1437,6 +1443,7 @@ export function createUI(root, content, handlers) {
     renderGrowth(state, stage);
 
     renderShelf(state);
+    renderHabitat(state);
     renderCollection(state);
     renderVisitor(state);
 
@@ -1613,22 +1620,16 @@ export function createUI(root, content, handlers) {
     }
   }
 
-  // ----- collection panel: the shelf of revealed creatures -----
-  // Order: active first, then remaining visible, then archived. Only revealed
-  // creatures appear; each chip is painted from its OWN baseTraits (never
-  // state.creature, which only reflects the active creature).
-  function renderCollection(state) {
-    el.collectionList.replaceChildren();
-    const collection = state.collection;
+  // Ordered revealed creatures: active first, then remaining visible, then
+  // archived. Only revealed creatures appear; each is painted from its OWN
+  // baseTraits (never state.creature, which only reflects the active creature).
+  function revealedOrdered(state) {
+    const collection = state?.collection;
     const creatures = collection?.creatures;
-    if (!collection || !creatures) {
-      el.collection.hidden = true;
-      return;
-    }
+    if (!collection || !creatures) return { ordered: [], activeId: null };
     const activeId = collection.activeCreatureId ?? null;
     const visibleIds = Array.isArray(collection.visibleCreatureIds) ? collection.visibleCreatureIds : [];
     const archivedIds = Array.isArray(collection.archivedCreatureIds) ? collection.archivedCreatureIds : [];
-
     const ordered = [];
     const seen = new Set();
     const push = (id) => {
@@ -1641,15 +1642,86 @@ export function createUI(root, content, handlers) {
     push(activeId);
     for (const id of visibleIds) push(id);
     for (const id of archivedIds) push(id);
+    return { ordered, activeId };
+  }
+
+  // Which creatures are placed in the habitat window. Session-local: a creature
+  // is shown unless the player has hidden it, and the active buddy is always in.
+  // New creatures appear automatically because absence-from-the-set means shown.
+  const habitatHidden = new Set();
+  const inHabitat = (record, activeId) => record.id === activeId || !habitatHidden.has(record.id);
+
+  // ----- habitat window: the active creatures wander a little library scene.
+  // Monsters are the same painted mini-orb as the collection, positioned along a
+  // floor line and gently animated (bounce + drift) by CSS. Layout params are
+  // derived from the slot index so they stay stable across re-renders.
+  function renderHabitat(state) {
+    const { ordered, activeId } = revealedOrdered(state);
+    el.habitatEmpty.hidden = ordered.length > 0;
+    const members = ordered.filter((record) => inHabitat(record, activeId));
+    el.habitatStage.replaceChildren();
+    const n = members.length;
+    members.forEach((record, i) => {
+      const monster = document.createElement('div');
+      monster.className = 'habitat-monster';
+      monster.dataset.creatureId = record.id;
+      monster.style.left = `${((i + 1) / (n + 1)) * 100}%`;
+      monster.style.setProperty('--drift-x', `${6 + (i % 3) * 5}px`);
+      monster.style.setProperty('--drift-dur', `${5 + (i % 4)}s`);
+      monster.style.setProperty('--bounce-dur', `${2.2 + (i % 3) * 0.5}s`);
+      monster.style.setProperty('--delay', `${(i % 5) * 0.4}s`);
+      monster.style.zIndex = String(10 + i);
+      const orb = buildMiniOrb();
+      paintMiniOrb(orb, record.baseTraits ?? {});
+      monster.append(orb);
+      el.habitatStage.append(monster);
+    });
+    el.habitatStage.setAttribute(
+      'aria-label',
+      members.map((r) => r.baseTraits?.name).filter(Boolean).join(', ') || copy.habitatEmpty
+    );
+  }
+
+  // A random monster lets out a "Rawr" every few seconds while the habitat is on
+  // screen. One self-rescheduling timer for the app's lifetime; it reads the live
+  // DOM each tick, so it needs no wiring to re-renders.
+  const rawrBubbles = Array.isArray(content.ui.habitatBubbles) && content.ui.habitatBubbles.length
+    ? content.ui.habitatBubbles
+    : ['Rawr!'];
+  function popRawr() {
+    if (el.pages.habitat?.hidden) return;
+    const monsters = el.habitatStage.querySelectorAll('.habitat-monster');
+    if (!monsters.length) return;
+    const pick = monsters[Math.floor(Math.random() * monsters.length)];
+    if (pick.querySelector('.rawr-bubble')) return;
+    const bubble = document.createElement('span');
+    bubble.className = 'rawr-bubble';
+    bubble.textContent = rawrBubbles[Math.floor(Math.random() * rawrBubbles.length)];
+    pick.append(bubble);
+    window.setTimeout(() => bubble.remove(), 1800);
+  }
+  function scheduleRawr() {
+    window.setTimeout(() => { popRawr(); scheduleRawr(); }, 3000 + Math.random() * 4000);
+  }
+  scheduleRawr();
+
+  // ----- collection list: "Your creatures". Tapping a chip shows/hides that
+  // creature in the habitat window; a separate "Care" button switches which
+  // creature you're caring for on the Pet Care page. Scrolls internally.
+  function renderCollection(state) {
+    el.collectionList.replaceChildren();
+    const { ordered, activeId } = revealedOrdered(state);
 
     for (const record of ordered) {
       const traits = record.baseTraits ?? {};
       const isActive = record.id === activeId;
       const name = traits.name ?? '';
+      const shown = inHabitat(record, activeId);
 
       const item = document.createElement('div');
       item.className = 'collection-item';
       item.setAttribute('role', 'listitem');
+      item.dataset.inHabitat = String(shown);
 
       const chip = document.createElement(isActive ? 'div' : 'button');
       chip.className = 'collection-chip';
@@ -1659,8 +1731,14 @@ export function createUI(root, content, handlers) {
         chip.setAttribute('aria-current', 'true');
       } else {
         chip.type = 'button';
-        chip.setAttribute('aria-label', interpolate(copy.collectionActivateLabel, { name }));
-        chip.addEventListener('click', () => handlers.onActivateCreature(record.id));
+        chip.setAttribute('aria-pressed', String(shown));
+        chip.setAttribute('aria-label', shown ? copy.collectionInHabitatOn : copy.collectionInHabitatOff);
+        chip.addEventListener('click', () => {
+          if (habitatHidden.has(record.id)) habitatHidden.delete(record.id);
+          else habitatHidden.add(record.id);
+          renderHabitat(latestState);
+          renderCollection(latestState);
+        });
       }
 
       const orb = buildMiniOrb();
@@ -1697,6 +1775,17 @@ export function createUI(root, content, handlers) {
       }
 
       item.append(chip);
+
+      if (!isActive) {
+        const care = document.createElement('button');
+        care.type = 'button';
+        care.className = 'collection-care';
+        care.textContent = copy.collectionCare;
+        care.setAttribute('aria-label', interpolate(copy.collectionActivateLabel, { name }));
+        care.addEventListener('click', () => handlers.onActivateCreature(record.id));
+        item.append(care);
+      }
+
       el.collectionList.append(item);
     }
 
