@@ -143,6 +143,22 @@ export function spriteLookFor(creature, stage, mood) {
   };
 }
 
+// A gene-less "plain starter" (hatched straight from the egg, no book yet) has
+// no palette/family to map, so without this it falls back to the old CSS blob.
+// Feed spriteLookFor a fixed, warm default creature so the very first monster is
+// a proper sprite too. Pure + deterministic: same stage/mood -> same look.
+export const DEFAULT_CREATURE = {
+  palette: { id: 'coral' },                     // warm coral -> red body
+  family: { id: 'motelet', appendage: 'ears' }, // round body (B) + friendly ears
+  voice: { id: 'purr' },                        // a cozy eye style
+  idle: { id: 'bounce' },                       // a happy mouth
+  rarity: { id: 'common' }
+};
+
+export function defaultSpriteLook(stage, mood) {
+  return spriteLookFor(DEFAULT_CREATURE, stage, mood);
+}
+
 // creature.voice.id -> its 0-7 slot in EYE_POOL. Fixed independently of
 // content.json's array order so this module never needs to import content.json.
 const VOICE_INDEX = {

@@ -8,7 +8,7 @@ import { stageDef, nextStageDef } from './systems/growth.js';
 import { currentRelationshipResponse, relationshipLevel } from './systems/relationship.js';
 import { DEFAULT_THEME, THEMES } from './systems/theme.js';
 import { iconMarkup } from './icons.js';
-import { spriteLookFor, layoutFor, MINI_SCALE } from './systems/sprite-map.js';
+import { spriteLookFor, layoutFor, MINI_SCALE, defaultSpriteLook } from './systems/sprite-map.js';
 
 const SPRITE_BASE = 'assets/creatures/';
 
@@ -1273,12 +1273,24 @@ export function createUI(root, content, handlers) {
     positionMarks([...orb.querySelectorAll('.mini-mark')], creature.pattern.placements ?? []);
 
     const generated = creature.kind === 'book';
-    const miniSprite = orb.querySelector('.mini-sprite');
+    // Habitat/collection orbs are built by buildMiniOrb() (which adds the
+    // .mini-sprite wrapper), but the book-PREVIEW orb is static template markup
+    // that lacks it — create it on demand so previews sprite too (was the cause
+    // of scanned-book previews still showing the old glyph).
+    let miniSprite = orb.querySelector('.mini-sprite');
+    if (generated && !miniSprite) {
+      miniSprite = document.createElement('div');
+      miniSprite.className = 'mini-sprite';
+      orb.append(miniSprite);
+    }
+    const miniFace = orb.querySelector('.mini-face');
     if (!generated || !miniSprite) {
       delete orb.dataset.shape;
+      if (miniFace) miniFace.style.display = '';
       if (miniSprite) miniSprite.replaceChildren();
       return;
     }
+    if (miniFace) miniFace.style.display = 'none'; // hide the old glyph beneath the sprite
     // Mini orbs never grow with stage and never show mood overlays (the old
     // static mini-face glyph didn't either) - a neutral fixed stage/mood
     // gives a stable body+eye+mouth+nose look, same for every render.
@@ -1513,8 +1525,6 @@ export function createUI(root, content, handlers) {
     if (!generated) {
       el.creature.style.setProperty('--hue', stage.theme.hue);
       el.creature.style.removeProperty('--accent');
-      el.creature.style.removeProperty('--body-width');
-      el.creature.style.removeProperty('--body-height');
       el.creature.style.removeProperty('--body-radius');
       delete el.creature.dataset.body;
       delete el.creature.dataset.appendage;
@@ -1526,6 +1536,30 @@ export function createUI(root, content, handlers) {
       el.egg.style.removeProperty('--egg-accent');
       el.eggHint.textContent = copy.tapEgg;
       el.egg.setAttribute('aria-label', `${copy.eggLabel} — ${copy.tapEgg}`);
+
+      // A hatched plain starter (no book yet) still gets a sprite — a fixed warm
+      // default look — so the very first monster is never a bare CSS blob. The
+      // pre-hatch egg state (not hatched) shows no creature, so skip it there.
+      if (state.hatched && el.creatureBody) {
+        const mood = state.tuckedIn ? 'sleepy' : moodOf(state);
+        const look = defaultSpriteLook(stage.stage, mood);
+        el.creature.dataset.generated = 'true';
+        el.creature.dataset.shape = look.body.shape;
+        positionMarks(el.marks, []);
+        const { frame } = layoutFor(look);
+        el.creature.style.setProperty('--body-width', `${frame.w}px`);
+        el.creature.style.setProperty('--body-height', `${frame.h}px`);
+        const includeIds = new Set(['body', 'eye', 'eyeL', 'eyeR', 'nose', 'mouth']);
+        if (look.partsVisible.legs) { includeIds.add('legL'); includeIds.add('legR'); }
+        if (look.partsVisible.arms) { includeIds.add('armL'); includeIds.add('armR'); }
+        if (look.partsVisible.detail) { includeIds.add('detailL'); includeIds.add('detailR'); }
+        paintSpriteLayers(el.creatureBody, look, { includeIds, cssScale: true, factor: 1 });
+      } else {
+        delete el.creature.dataset.shape;
+        el.creature.style.removeProperty('--body-width');
+        el.creature.style.removeProperty('--body-height');
+        if (el.creatureBody) el.creatureBody.replaceChildren();
+      }
       return;
     }
 
