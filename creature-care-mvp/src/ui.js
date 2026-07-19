@@ -23,50 +23,85 @@ export function createUI(root, content, handlers) {
   root.dataset.hatched = 'false';
   root.innerHTML = `
     <div class="page page-discover" id="page-discover" role="tabpanel" aria-labelledby="tab-discover" hidden>
-      <div class="book-card">
-        <h2 class="book-title"></h2>
-        <p class="book-body"></p>
-        <p class="book-privacy"></p>
-        <label class="photo-btn">
-          <span>📷</span><span class="photo-label"></span>
-          <input class="photo-input visually-hidden" type="file" accept="image/*" capture="environment" />
-        </label>
-        <div class="manual-divider"><span></span></div>
-        <form class="isbn-form" novalidate>
-          <label class="isbn-label" for="book-isbn"></label>
-          <div class="isbn-row">
-            <input id="book-isbn" class="isbn-input" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" />
-            <button class="isbn-submit" type="submit"></button>
+      <div class="tome" data-open="false">
+        <button class="tome-cover" type="button">
+          <span class="tome-cover-flourish">&#10087;</span>
+          <h2 class="tome-cover-title"></h2>
+          <span class="tome-cover-rule"></span>
+          <span class="tome-cover-hint"></span>
+        </button>
+
+        <div class="tome-spread">
+          <div class="tome-page tome-page-left">
+            <h3 class="tome-guide-title"></h3>
+            <ol class="tome-guide">
+              <li class="tome-guide-item"><span class="tome-guide-num">1</span><span class="tome-guide-body"><b class="tome-scan-name"></b><span class="tome-scan-desc"></span></span></li>
+              <li class="tome-guide-item"><span class="tome-guide-num">2</span><span class="tome-guide-body"><b class="tome-isbn-name"></b><span class="tome-isbn-desc"></span></span></li>
+              <li class="tome-guide-item"><span class="tome-guide-num">3</span><span class="tome-guide-body"><b class="tome-search-name"></b><span class="tome-search-desc"></span></span></li>
+            </ol>
+            <button class="tome-close" type="button"></button>
           </div>
-        </form>
-        <div class="manual-divider"><span class="search-divider"></span></div>
-        <form class="book-search-form" novalidate>
-          <div class="book-search-grid">
-            <label class="isbn-label" for="book-search-title"></label>
-            <input id="book-search-title" class="isbn-input book-search-title" type="text" autocomplete="off" maxlength="200" />
-            <label class="isbn-label" for="book-search-author"></label>
-            <input id="book-search-author" class="isbn-input book-search-author" type="text" autocomplete="off" maxlength="200" />
+
+          <div class="tome-page tome-page-right">
+            <label class="photo-btn tome-btn tome-btn-lg">
+              <span class="tome-btn-ic" aria-hidden="true"></span>
+              <span class="tome-btn-label photo-label"></span>
+              <input class="photo-input visually-hidden" type="file" accept="image/*" capture="environment" />
+            </label>
+
+            <div class="tome-action" data-open="false">
+              <button class="tome-btn tome-action-toggle" type="button">
+                <span class="tome-btn-label isbn-name"></span>
+                <span class="tome-caret" aria-hidden="true">&#9662;</span>
+              </button>
+              <form class="isbn-form tome-panel" novalidate>
+                <label class="isbn-label" for="book-isbn"></label>
+                <div class="isbn-row">
+                  <input id="book-isbn" class="isbn-input" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" />
+                  <button class="isbn-submit" type="submit"></button>
+                </div>
+              </form>
+            </div>
+
+            <div class="tome-action" data-open="false">
+              <button class="tome-btn tome-action-toggle" type="button">
+                <span class="tome-btn-label search-name"></span>
+                <span class="tome-caret" aria-hidden="true">&#9662;</span>
+              </button>
+              <form class="book-search-form tome-panel" novalidate>
+                <div class="book-search-grid">
+                  <label class="isbn-label" for="book-search-title"></label>
+                  <input id="book-search-title" class="isbn-input book-search-title" type="text" autocomplete="off" maxlength="200" />
+                  <label class="isbn-label" for="book-search-author"></label>
+                  <input id="book-search-author" class="isbn-input book-search-author" type="text" autocomplete="off" maxlength="200" />
+                </div>
+                <button class="isbn-submit book-search-submit" type="submit"></button>
+              </form>
+            </div>
+
+            <p class="book-privacy tome-note"></p>
           </div>
-          <button class="isbn-submit book-search-submit" type="submit"></button>
-        </form>
-        <p class="scan-status" role="status" aria-live="polite"></p>
-        <section class="book-result" aria-label="" hidden>
-          <button class="preview-debug" type="button"><span aria-hidden="true">⚙️</span></button>
-          <div class="book-orb" aria-hidden="true">
-            <span class="mini-mark mm1"></span><span class="mini-mark mm2"></span>
-            <span class="mini-mark mm3"></span><span class="mini-mark mm4"></span>
-            <span class="mini-face">•ᴗ•</span>
-          </div>
-          <div class="book-result-copy">
-            <h3 class="book-name"></h3>
-            <p class="book-line"></p>
-            <p class="book-details"></p>
-            <p class="book-birthmark"></p>
-            <p class="book-isbn-line"></p>
-          </div>
-          <button class="book-use" type="button"></button>
-        </section>
+        </div>
       </div>
+
+      <p class="scan-status" role="status" aria-live="polite"></p>
+
+      <section class="book-result" aria-label="" hidden>
+        <button class="preview-debug" type="button"><span aria-hidden="true">⚙️</span></button>
+        <div class="book-orb" aria-hidden="true">
+          <span class="mini-mark mm1"></span><span class="mini-mark mm2"></span>
+          <span class="mini-mark mm3"></span><span class="mini-mark mm4"></span>
+          <span class="mini-face">•ᴗ•</span>
+        </div>
+        <div class="book-result-copy">
+          <h3 class="book-name"></h3>
+          <p class="book-line"></p>
+          <p class="book-details"></p>
+          <p class="book-birthmark"></p>
+          <p class="book-isbn-line"></p>
+        </div>
+        <button class="book-use" type="button"></button>
+      </section>
     </div>
 
     <div class="page page-care" id="page-care" role="tabpanel" aria-labelledby="tab-care">
@@ -412,18 +447,16 @@ export function createUI(root, content, handlers) {
     giftLine: q('.gift-line'),
     welcomeBtn: q('.welcome-btn'),
     discoverPage: q('#page-discover'),
-    bookCard: q('.book-card'),
-    bookTitle: q('.book-title'),
-    bookBody: q('.book-body'),
+    tome: q('.tome'),
+    tomeCover: q('.tome-cover'),
+    tomeClose: q('.tome-close'),
     bookPrivacy: q('.book-privacy'),
     photoInput: q('.photo-input'),
     photoLabel: q('.photo-label'),
-    manualDivider: q('.manual-divider span'),
     isbnForm: q('.isbn-form'),
     isbnLabel: q('.isbn-label'),
     isbnInput: q('.isbn-input'),
     isbnSubmit: q('.isbn-submit'),
-    searchDivider: q('.search-divider'),
     bookSearchForm: q('.book-search-form'),
     bookSearchTitle: q('.book-search-title'),
     bookSearchAuthor: q('.book-search-author'),
@@ -775,15 +808,40 @@ export function createUI(root, content, handlers) {
   let debugReturnFocus = null;
 
   el.discoverPage.setAttribute('aria-label', copy.discoverTitle);
-  el.bookTitle.textContent = copy.bookDialogTitle;
-  el.bookBody.textContent = copy.bookDialogBody;
   el.bookPrivacy.textContent = copy.bookPrivacy;
-  el.photoLabel.textContent = copy.choosePhoto;
-  el.manualDivider.textContent = copy.manualDivider;
+  el.photoLabel.textContent = copy.discoverScanName;
   el.isbnLabel.textContent = copy.isbnLabel;
   el.isbnInput.placeholder = copy.isbnPlaceholder;
   el.isbnSubmit.textContent = copy.makeCreature;
-  el.searchDivider.textContent = copy.searchDivider;
+
+  // ----- magic tome (Discover): copy + open/close + per-action reveal -----
+  root.querySelector('.tome-cover-title').textContent = copy.discoverTomeTitle;
+  root.querySelector('.tome-cover-hint').textContent = copy.discoverTomeHint;
+  root.querySelector('.tome-guide-title').textContent = copy.discoverGuideTitle;
+  root.querySelector('.tome-scan-name').textContent = copy.discoverScanName;
+  root.querySelector('.tome-scan-desc').textContent = copy.discoverScanDesc;
+  root.querySelector('.tome-isbn-name').textContent = copy.discoverIsbnName;
+  root.querySelector('.tome-isbn-desc').textContent = copy.discoverIsbnDesc;
+  root.querySelector('.tome-search-name').textContent = copy.discoverSearchName;
+  root.querySelector('.tome-search-desc').textContent = copy.discoverSearchDesc;
+  root.querySelector('.isbn-name').textContent = copy.discoverIsbnName;
+  root.querySelector('.search-name').textContent = copy.discoverSearchName;
+  root.querySelector('.tome-btn-ic').innerHTML = iconMarkup('camera');
+  el.tomeClose.textContent = copy.discoverClose;
+  el.tomeCover.addEventListener('click', () => { el.tome.dataset.open = 'true'; });
+  el.tomeClose.addEventListener('click', () => {
+    el.tome.dataset.open = 'false';
+    for (const a of root.querySelectorAll('.tome-action')) a.dataset.open = 'false';
+  });
+  for (const toggle of root.querySelectorAll('.tome-action-toggle')) {
+    toggle.addEventListener('click', () => {
+      const action = toggle.closest('.tome-action');
+      const willOpen = action.dataset.open !== 'true';
+      for (const a of root.querySelectorAll('.tome-action')) a.dataset.open = 'false';
+      action.dataset.open = String(willOpen);
+      if (willOpen) action.querySelector('input')?.focus();
+    });
+  }
   el.bookSearchTitle.previousElementSibling.textContent = copy.searchTitleLabel;
   el.bookSearchTitle.placeholder = copy.searchTitlePlaceholder;
   el.bookSearchAuthor.previousElementSibling.textContent = copy.searchAuthorLabel;
