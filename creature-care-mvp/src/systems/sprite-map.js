@@ -85,8 +85,11 @@ export const MOUTH_BY_IDLE = {
 };
 
 // Live mood overlays (mood is derived from stats each render, not a gene).
-export const EYE_MOOD_OVERRIDE = { sleepy: 'closed_happy' };
-export const MOUTH_MOOD_OVERRIDE = { beaming: 'closed_happy', peckish: 'D' };
+// mood -> forced eye/mouth. 'wild' = a freshly-caught, not-yet-read creature:
+// angry eyes + fangs. Reading (reveal) drops the 'wild' mood so it softens back
+// to its gene/stat-driven cozy face.
+export const EYE_MOOD_OVERRIDE = { sleepy: 'closed_happy', wild: 'angry_red' };
+export const MOUTH_MOOD_OVERRIDE = { beaming: 'closed_happy', peckish: 'D', wild: 'closed_fangs' };
 
 // Kenney body color -> nose color. The nose set only ships brown/green/red/
 // yellow, so blue/white bodies drop the nose entirely rather than wear a
@@ -120,8 +123,10 @@ export function spriteLookFor(creature, stage, mood) {
   const idleName = creature.idle.id;
 
   const eyeBase = EYE_POOL[voiceSlot] ?? EYE_POOL[0];
-  const eyeName = mood != null && EYE_MOOD_OVERRIDE[mood] ? EYE_MOOD_OVERRIDE[mood] : eyeBase.name;
-  const eyeLayout = eyeName === EYE_MOOD_OVERRIDE.sleepy ? 'pair' : eyeBase.layout;
+  const eyeOverride = mood != null ? EYE_MOOD_OVERRIDE[mood] : null;
+  const eyeName = eyeOverride ?? eyeBase.name;
+  // Mood-override eyes (sleepy = closed, wild = angry) are single-eye sprites shown mirrored.
+  const eyeLayout = eyeOverride ? 'pair' : eyeBase.layout;
 
   const mouthBaseName = MOUTH_BY_IDLE[idleName] ?? MOUTH_BY_IDLE.bounce;
   const mouthName = mood != null && MOUTH_MOOD_OVERRIDE[mood] ? MOUTH_MOOD_OVERRIDE[mood] : mouthBaseName;

@@ -126,8 +126,14 @@ test('mood overlays override the gene-picked eye and mouth live, without touchin
   assert.deepEqual(sleepy.eye, { name: 'closed_happy', layout: 'pair', file: 'eye_closed_happy.png' });
   assert.deepEqual(sleepy.mouth, base.mouth); // sleepy does not touch the mouth
 
+  // 'wild' (a caught-but-unread creature) forces angry eyes + fangs; reading
+  // clears the 'wild' mood so it softens back to the gene/stat face.
+  const wild = spriteLookFor(creature, 2, 'wild');
+  assert.deepEqual(wild.eye, { name: 'angry_red', layout: 'pair', file: 'eye_angry_red.png' });
+  assert.deepEqual(wild.mouth, { name: 'closed_fangs', file: 'mouth_closed_fangs.png' });
+
   // everything else stays identical across mood swaps
-  for (const withMood of [beaming, peckish, sleepy]) {
+  for (const withMood of [beaming, peckish, sleepy, wild]) {
     assert.deepEqual(withMood.body, base.body);
     assert.deepEqual(withMood.arms, base.arms);
     assert.deepEqual(withMood.legs, base.legs);

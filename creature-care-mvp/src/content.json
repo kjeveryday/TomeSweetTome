@@ -458,6 +458,7 @@
     "takeCareButton": "Take care of {name}?",
     "addToHabitatButton": "Add to habitat",
     "collectionWild": "wild",
+    "moodWildChip": "😾 Wild!",
     "bookApplied": "{name} has a book-born look! ✨",
     "bookEggHint": "Tap to hatch {name}!",
     "debugGear": "Inspect creature values",

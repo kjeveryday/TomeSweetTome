@@ -1326,7 +1326,7 @@ export function createUI(root, content, handlers) {
 
   // Paint an existing .book-orb element from a creature look (baseTraits shape).
   // Reused by the book preview AND the collection chips so they share one look.
-  function paintMiniOrb(orb, creature) {
+  function paintMiniOrb(orb, creature, { wild = false } = {}) {
     if (!orb || !creature || !creature.family || !creature.pattern || !creature.palette) return;
     orb.dataset.body = creature.family.body;
     orb.dataset.pattern = creature.pattern.id;
@@ -1356,7 +1356,7 @@ export function createUI(root, content, handlers) {
     // Mini orbs never grow with stage and never show mood overlays (the old
     // static mini-face glyph didn't either) - a neutral fixed stage/mood
     // gives a stable body+eye+mouth+nose look, same for every render.
-    const look = spriteLookFor(creature, 3, 'content');
+    const look = spriteLookFor(creature, 3, wild ? 'wild' : 'content');
     const { shape } = look.body;
     const factor = MINI_SCALE[shape] ?? 0.3;
     const { frame } = layoutFor(look);
@@ -1410,7 +1410,7 @@ export function createUI(root, content, handlers) {
       el.bookUse.textContent = copy.useEgg;
       el.bookAdd.hidden = true;
     }
-    paintMiniOrb(el.bookOrb, creature);
+    paintMiniOrb(el.bookOrb, creature, { wild: true });
     showScanStatus(copy.bookReady);
     el.bookUse.focus();
   }
@@ -1660,7 +1660,10 @@ export function createUI(root, content, handlers) {
     // Monster Builder sprite assembly, painted inside .creature .body. Mood
     // folds in tuckedIn here (both are already-deterministic derived state)
     // so sprite-map.js's spriteLookFor() only ever sees one effective mood.
-    const mood = state.tuckedIn ? 'sleepy' : moodOf(state);
+    // A caught-but-unread creature is WILD (angry) until reading tames it.
+    const activeRecord = state.collection?.creatures?.[state.collection?.activeCreatureId];
+    const wild = activeRecord?.revealed === false;
+    const mood = state.tuckedIn ? 'sleepy' : (wild ? 'wild' : moodOf(state));
     const look = spriteLookFor(creature, stage.stage, mood);
     el.creature.dataset.shape = look.body.shape;
     if (el.creatureBody) {
@@ -1697,7 +1700,11 @@ export function createUI(root, content, handlers) {
     el.scene.dataset.mood = mood;
     const moodDef = content.mood.moods[mood];
     el.namePill.textContent = state.name;
-    el.moodChip.textContent = `${moodDef.icon} ${moodDef.label}`;
+    // A wild (caught-but-unread) active creature reads as fierce, not its stat mood.
+    const activeRec = state.collection?.creatures?.[state.collection?.activeCreatureId];
+    el.moodChip.textContent = activeRec?.revealed === false
+      ? copy.moodWildChip
+      : `${moodDef.icon} ${moodDef.label}`;
     renderDailyCare(state, stage);
     renderRelationship(state);
 
@@ -1936,7 +1943,7 @@ export function createUI(root, content, handlers) {
       monster.style.setProperty('--delay', `${(i % 5) * 0.4}s`);
       monster.style.zIndex = String(10 + i);
       const orb = buildMiniOrb();
-      paintMiniOrb(orb, record.baseTraits ?? {});
+      paintMiniOrb(orb, record.baseTraits ?? {}, { wild: record.revealed === false });
       monster.append(orb);
       el.habitatStage.append(monster);
     });
@@ -2006,7 +2013,7 @@ export function createUI(root, content, handlers) {
       }
 
       const orb = buildMiniOrb();
-      paintMiniOrb(orb, traits);
+      paintMiniOrb(orb, traits, { wild: record.revealed === false });
       chip.append(orb);
 
       const meta = document.createElement('div');
