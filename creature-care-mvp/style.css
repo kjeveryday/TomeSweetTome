@@ -2459,3 +2459,27 @@ button.collection-chip:active { transform: translateY(2px) scale(0.98); }
 
 /* result reveal card */
 .page-discover .book-result { width: min(100%, 460px); }
+.book-actions { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; }
+.book-add {
+  width: 100%;
+  min-height: 42px;
+  border-radius: 14px;
+  border: 1.5px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+}
+.book-add:hover { background: var(--edge); color: var(--ink); }
+
+/* a caught-but-unread creature is still wild */
+.collection-wild {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--warm);
+}

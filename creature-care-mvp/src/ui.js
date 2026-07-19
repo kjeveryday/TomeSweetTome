@@ -100,7 +100,10 @@ export function createUI(root, content, handlers) {
           <p class="book-birthmark"></p>
           <p class="book-isbn-line"></p>
         </div>
-        <button class="book-use" type="button"></button>
+        <div class="book-actions">
+          <button class="book-use" type="button"></button>
+          <button class="book-add" type="button" hidden></button>
+        </div>
       </section>
     </div>
 
@@ -470,6 +473,7 @@ export function createUI(root, content, handlers) {
     bookBirthmark: q('.book-birthmark'),
     bookIsbnLine: q('.book-isbn-line'),
     bookUse: q('.book-use'),
+    bookAdd: q('.book-add'),
     previewDebug: q('.preview-debug'),
     debugModal: q('.debug-modal'),
     debugCard: q('.debug-card'),
@@ -1398,9 +1402,14 @@ export function createUI(root, content, handlers) {
     el.bookIsbnLine.textContent = creature.isbn
       ? interpolate(copy.bookEditionLine, { isbn: creature.isbn })
       : copy.bookSearchEditionLine;
-    el.bookUse.textContent = latestState?.hatched
-      ? interpolate(copy.useLook, { name: latestState.name })
-      : copy.useEgg;
+    if (latestState?.hatched) {
+      el.bookUse.textContent = interpolate(copy.takeCareButton, { name: creature.name });
+      el.bookAdd.textContent = copy.addToHabitatButton;
+      el.bookAdd.hidden = false;
+    } else {
+      el.bookUse.textContent = copy.useEgg;
+      el.bookAdd.hidden = true;
+    }
     paintMiniOrb(el.bookOrb, creature);
     showScanStatus(copy.bookReady);
     el.bookUse.focus();
@@ -1446,20 +1455,30 @@ export function createUI(root, content, handlers) {
     }));
   });
 
-  el.bookUse.addEventListener('click', () => {
+  function catchCreature({ takeCare }) {
     if (!pendingCreature) return;
     const wasHatched = Boolean(latestState?.hatched);
-    handlers.onUseCreature(pendingCreature, pendingBookRecords);
+    // Scanning CATCHES the creature into the habitat (still WILD until you read its
+    // book). "Take care" also makes it your active creature straight away.
+    const creatureId = handlers.onUseCreature(pendingCreature, pendingBookRecords);
+    if (takeCare && creatureId) handlers.onActivateCreature(creatureId);
     pendingCreature = null;
     pendingBookRecords = null;
     // Discover is a permanent page now (no "open" event resets it for next time),
     // so clear the just-used preview here rather than leaving it stale on screen.
     el.bookResult.hidden = true;
     showScanStatus('');
-    // The creature/egg lives on Pet Care — hop over there after a successful use.
-    showPage('care');
-    if (!wasHatched) el.egg.focus();
-  });
+    if (takeCare || !wasHatched) {
+      // Taking care (or hatching your first) → the hero scene on Pet Care.
+      showPage('care');
+      if (!wasHatched) el.egg.focus();
+    } else {
+      // Just caught it → go see it land in the habitat.
+      showPage('habitat');
+    }
+  }
+  el.bookUse.addEventListener('click', () => catchCreature({ takeCare: true }));
+  el.bookAdd.addEventListener('click', () => catchCreature({ takeCare: false }));
 
   // ----- meters (built once from content) -----
   const meterEls = {};
@@ -1877,13 +1896,16 @@ export function createUI(root, content, handlers) {
     const push = (id) => {
       if (id == null || seen.has(id)) return;
       const record = creatures[id];
-      if (!record || record.revealed !== true) return;
+      if (!record) return;
       seen.add(id);
       ordered.push(record);
     };
     push(activeId);
     for (const id of visibleIds) push(id);
     for (const id of archivedIds) push(id);
+    // Caught-but-still-WILD creatures (scanned, not yet read/tamed) belong in the
+    // habitat too — append any not already placed via active/visible/archived.
+    for (const id of Object.keys(creatures)) push(id);
     return { ordered, activeId };
   }
 
@@ -1996,6 +2018,13 @@ export function createUI(root, content, handlers) {
       subEl.className = 'collection-sub';
       subEl.textContent = [traits.rarity?.label, traits.quirk?.label].filter(Boolean).join(' · ');
       meta.append(nameEl, subEl);
+      // A caught-but-unread creature is still WILD — tag it until reading tames it.
+      if (record.revealed !== true) {
+        const wild = document.createElement('span');
+        wild.className = 'collection-wild';
+        wild.textContent = copy.collectionWild;
+        meta.append(wild);
+      }
       chip.append(meta);
 
       if (isActive) {

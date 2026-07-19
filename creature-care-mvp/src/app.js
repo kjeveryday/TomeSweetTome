@@ -338,6 +338,9 @@ const ui = createUI(document.querySelector('#app'), content, {
         now
       ));
     }
+    // Return the caught creature's id so the UI can offer "Take care of {name}?"
+    // (make it the active creature) right after it lands in the habitat as wild.
+    return preview.ok ? preview.creatureId : null;
   },
   onActivateCreature: (creatureId) => {
     if (!state.collection.creatures[creatureId]) return false;
