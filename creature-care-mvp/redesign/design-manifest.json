@@ -1,0 +1,135 @@
+{
+  "meta": {
+    "role": "Art-direction manifest for the Stacklings redesign. Selections + treatment specs only; developer implements into review mocks.",
+    "assetRoot": "/Users/kylejohnson/Desktop/Tome Sweet Tome/Free Assets for Tome Sweet Tome",
+    "allPathsRelativeToAssetRoot": true,
+    "pathsContainSpaces": "Quote every path in shell/import tooling."
+  },
+
+  "iconTreatment": "Inline the SVG in the DOM, delete the baked fill=\"#fff\", set fill:currentColor on the path; the glyph then inherits the element's color and auto-matches all 3 themes. Rest color inherits --ink-soft; active/selected inherits --accent-ink (nav) or the slot's semantic var. Every chosen icon is a single-path game-icons.net glyph so this rule works uniformly — no baked-color Kenney assets were kept, to avoid a grey/gradient icon sitting next to gold line art.",
+
+  "slots": {
+    "nav.discover": { "chosen": "icons/ffffff/transparent/1x1/lorc/magnifying-glass.svg", "source": "game-icons", "treatment": "currentColor", "px": 24, "activeColor": "--accent-ink", "note": "Clean, instantly legible search glyph at 22-24px. lorc/spyglass.svg is the cozier period alt but the telescope shape reads ambiguously at nav size, and delapouite/archive-research.svg (magnifier+book) is too busy small." },
+    "nav.care": { "chosen": "icons/ffffff/transparent/1x1/lorc/flat-paw-print.svg", "source": "game-icons", "treatment": "currentColor", "px": 24, "activeColor": "--accent-ink", "note": "Classic pad+4-toes paw; the flat variant is the most legible paw at small size. paw-heart is a warmer alt but combines two concepts." },
+    "nav.habitat": { "chosen": "icons/ffffff/transparent/1x1/delapouite/hobbit-dwelling.svg", "source": "game-icons", "treatment": "currentColor", "px": 24, "activeColor": "--accent-ink", "note": "Rounded cozy dwelling; matches the detail level of the rest of the nav set better than a plain house. Fallback: delapouite/house.svg if it muddies at final render size." },
+    "nav.progress": { "chosen": "icons/ffffff/transparent/1x1/delapouite/growth.svg", "source": "game-icons", "treatment": "currentColor", "px": 24, "activeColor": "--accent-ink", "note": "Bold upward growth arrow, reads as advancement instantly and stays distinct from the content seedling/sprout. lorc/sprout is the cozier alt but collides conceptually with content.sprout." },
+    "nav.books": { "chosen": "icons/ffffff/transparent/1x1/delapouite/bookshelf.svg", "source": "game-icons", "treatment": "currentColor", "px": 24, "activeColor": "--accent-ink", "note": "Shelved books = 'your library', distinct from the discover magnifier and the reading open-book action. book-pile is a fine cozy alt." },
+    "nav.settings": { "chosen": "icons/ffffff/transparent/1x1/lorc/cog.svg", "source": "game-icons", "treatment": "currentColor", "px": 24, "activeColor": "--accent-ink", "note": "Single clean gear, the conventional settings glyph and the cleanest of the three at 22px. Reuse the same file for the two debug-gear buttons (.preview-debug, .creature-debug) currently using the emoji." },
+
+    "content.gift": { "chosen": "icons/ffffff/transparent/1x1/delapouite/present.svg", "source": "game-icons", "treatment": "currentColor", "px": 26, "activeColor": "--accent-ink", "note": "Wrapped box reads as 'gift' instantly (welcome gift-stack). lorc/gift-of-knowledge (gift+book) is thematic but reads as an open book, not a present." },
+    "content.heart": { "chosen": "icons/ffffff/transparent/1x1/skoll/hearts.svg", "source": "game-icons", "treatment": "currentColor", "px": 20, "activeColor": "--warm", "note": "Despite the plural filename this renders as one clean plain heart, the closest thing to a bare heart in the set. Tint --warm for the affection/care meter. heart-beats is the alt if a vitality-EKG read is wanted." },
+    "content.moon": { "chosen": "icons/ffffff/transparent/1x1/lorc/moon.svg", "source": "game-icons", "treatment": "currentColor", "px": 22, "activeColor": "--ink-soft", "note": "Clean crescent+disc; the candlelit/spooky-cozy nighttime marker." },
+    "content.sleep": { "chosen": "icons/ffffff/transparent/1x1/delapouite/night-sleep.svg", "source": "game-icons", "treatment": "currentColor", "px": 22, "activeColor": "--ink-soft", "note": "Crescent moon with Z-z-z; unambiguous 'sleep' state, pairs with the tuck-in action." },
+    "content.sparkle": { "chosen": "icons/ffffff/transparent/1x1/delapouite/sparkles.svg", "source": "game-icons", "treatment": "currentColor", "px": 22, "activeColor": "--accent-ink", "note": "Twinkle cluster for reward/growth bursts. Tint --accent-ink for the candle-gold glow." },
+    "content.sprout": { "chosen": "icons/ffffff/transparent/1x1/delapouite/seedling.svg", "source": "game-icons", "treatment": "currentColor", "px": 22, "activeColor": "--good", "note": "Potted sprout for the growth/stage chip. Tint --good (green) for the one intentional cool accent, reads as 'alive/growing'." },
+    "content.star": { "chosen": "icons/ffffff/transparent/1x1/delapouite/round-star.svg", "source": "game-icons", "treatment": "currentColor", "px": 18, "activeColor": "--gold", "note": "Rounded 5-point filled star; the clean rating star. Rejected lorc/flat-star (renders as an ornate swirled shuriken, not a plain star)." },
+    "content.emptyStar": { "chosen": "icons/ffffff/transparent/1x1/delapouite/round-star.svg", "source": "game-icons", "treatment": "currentColor (empty = muted --line fill)", "px": 18, "activeColor": "--gold", "note": "DELIBERATE deviation from catalog: reuse the SAME round-star glyph for the empty state (fill --line, or fill:none + stroke:currentColor) rather than importing Kenney's star_outline. Kenney's outline is a different silhouette AND baked grey — mixing it into a gold currentColor rating row looks off. One glyph, two fills = silhouette-consistent and fully themeable." },
+
+    "inline.camera": { "chosen": "icons/ffffff/transparent/1x1/delapouite/photo-camera.svg", "source": "game-icons", "treatment": "currentColor", "px": 18, "activeColor": "--ink-soft", "note": "Plain camera for the .photo-btn snapshot action (replaces the current inline emoji)." },
+    "inline.check": { "chosen": "icons/ffffff/transparent/1x1/delapouite/check-mark.svg", "source": "game-icons", "treatment": "currentColor", "px": 16, "activeColor": "--good", "note": "Bold clean check, currentColor-ready — beats both baked Kenney checkmarks. Tint --good for confirm states." },
+    "inline.arrowNext": { "chosen": "icons/ffffff/transparent/1x1/delapouite/next-button.svg", "source": "game-icons", "treatment": "currentColor", "px": 16, "activeColor": "--accent-ink", "note": "Chosen over Kenney's arrow_basic_e specifically to keep the whole set currentColor + one visual family; the Kenney arrow is baked grey/gradient and would clash. Reads as a media 'skip/next' triangle-with-bar, acceptable for a next affordance." }
+  },
+
+  "creatures": [
+    {
+      "name": "Ember",
+      "vibe": "Rosy, round, fireside-cozy — the warm welcoming default Stackling.",
+      "palette": "red (renders as a warm coral/rose) + red nose",
+      "layers": [
+        { "part": "body", "path": "kenney_monster-builder-pack/PNG/Default/body_redA.png", "z": 10, "pos": "base, centered" },
+        { "part": "leg", "path": "kenney_monster-builder-pack/PNG/Default/leg_redA.png", "z": 5, "pos": "x2 behind body, mirror right; splayed at bottom under the body" },
+        { "part": "arm", "path": "kenney_monster-builder-pack/PNG/Default/arm_redA.png", "z": 8, "pos": "x2 at mid-body sides, mirror right" },
+        { "part": "detail", "path": "kenney_monster-builder-pack/PNG/Default/detail_red_ear_round.png", "z": 12, "pos": "x2 atop head, mirror right — round friendly ears" },
+        { "part": "eye", "path": "kenney_monster-builder-pack/PNG/Default/eye_cute_light.png", "z": 20, "pos": "x2 upper-center, mirror right (single-eye sprite)" },
+        { "part": "nose", "path": "kenney_monster-builder-pack/PNG/Default/nose_red.png", "z": 22, "pos": "center" },
+        { "part": "mouth", "path": "kenney_monster-builder-pack/PNG/Default/mouth_closed_happy.png", "z": 24, "pos": "lower-center, below nose" }
+      ],
+      "traitMapping": "Warm/uplifting book tone -> red(coral) color; short, gentle read -> round body A; feel-good genre -> round ears + cute eyes + happy mouth."
+    },
+    {
+      "name": "Marigold",
+      "vibe": "Sunny and curious — antennae up, always mid-question. The eager nonfiction reader.",
+      "palette": "yellow (golden) + yellow nose",
+      "layers": [
+        { "part": "body", "path": "kenney_monster-builder-pack/PNG/Default/body_yellowB.png", "z": 10, "pos": "base, centered" },
+        { "part": "leg", "path": "kenney_monster-builder-pack/PNG/Default/leg_yellowB.png", "z": 5, "pos": "x2 behind body, mirror right" },
+        { "part": "arm", "path": "kenney_monster-builder-pack/PNG/Default/arm_yellowB.png", "z": 8, "pos": "x2 at mid-body sides, mirror right" },
+        { "part": "detail", "path": "kenney_monster-builder-pack/PNG/Default/detail_yellow_antenna_small.png", "z": 12, "pos": "x2 atop head, mirror right — curious antennae" },
+        { "part": "eye", "path": "kenney_monster-builder-pack/PNG/Default/eye_cute_dark.png", "z": 20, "pos": "x2 upper-center, mirror right" },
+        { "part": "nose", "path": "kenney_monster-builder-pack/PNG/Default/nose_yellow.png", "z": 22, "pos": "center" },
+        { "part": "mouth", "path": "kenney_monster-builder-pack/PNG/Default/mouth_closed_happy.png", "z": 24, "pos": "lower-center" }
+      ],
+      "traitMapping": "Bright/curious book tone -> yellow color; taller body B -> longer page count; nonfiction/adventure genre -> antennae (feelers = inquisitiveness)."
+    },
+    {
+      "name": "Cinder",
+      "vibe": "Warm cocoa-brown, tiny horns, eyes contentedly shut — the ever-so-slightly-spooky cozy one. The gothic/mystery reader who's actually a softie.",
+      "palette": "dark (renders as a warm cocoa brown) + brown nose",
+      "layers": [
+        { "part": "body", "path": "kenney_monster-builder-pack/PNG/Default/body_darkC.png", "z": 10, "pos": "base, centered" },
+        { "part": "leg", "path": "kenney_monster-builder-pack/PNG/Default/leg_darkC.png", "z": 5, "pos": "x2 behind body, mirror right" },
+        { "part": "arm", "path": "kenney_monster-builder-pack/PNG/Default/arm_darkC.png", "z": 8, "pos": "x2 at mid-body sides, mirror right" },
+        { "part": "detail", "path": "kenney_monster-builder-pack/PNG/Default/detail_dark_horn_small.png", "z": 12, "pos": "x2 atop head, mirror right — small spooky-cute horns" },
+        { "part": "eye", "path": "kenney_monster-builder-pack/PNG/Default/eye_closed_happy.png", "z": 20, "pos": "x2 upper-center, mirror right — serene/sleepy" },
+        { "part": "nose", "path": "kenney_monster-builder-pack/PNG/Default/nose_brown.png", "z": 22, "pos": "center" },
+        { "part": "mouth", "path": "kenney_monster-builder-pack/PNG/Default/mouth_closed_happy.png", "z": 24, "pos": "lower-center" }
+      ],
+      "traitMapping": "Dark/mysterious book tone -> dark(cocoa) color; mystery/gothic genre -> small horns; calm, well-loved temperament -> closed-happy eyes + gentle mouth."
+    }
+  ],
+
+  "creatureAssemblyNotes": "Parts are individually-cropped PNG sprites (verified: body_redA 165x165, arm_redA 82x176, leg_redA 72x167, ear 54x54, eye 64x69, mouth 80x24, nose 47x51), NOT full-canvas aligned — so assembly is absolute-positioned <img>/background layers with per-part offsets the developer hand-tunes, not a simple 0,0 stack. arm/leg/detail/eye are SINGLE sprites: place two copies and mirror one (transform: scaleX(-1)) for symmetry. Color is fixed by the chosen PNG variant (no CSS recolor). Warm read confirmed by test composite: 'red'=coral/rose, 'dark'=warm brown, 'yellow'=golden; keep blue/green out except tiny cool accents. Use the vector-emoji No-Outline mood faces (catalog.creatureMoods) as a separate care-state badge overlay, not baked into the body.",
+
+  "font": {
+    "displayFamily": "Eczar",
+    "fontDisplayValue": "\"Eczar\", \"Iowan Old Style\", Georgia, \"Times New Roman\", serif",
+    "fontBodyValue": "unchanged (keep the existing per-theme sans stack in --font; Eczar is a heavy display serif, wrong for long body copy at small sizes)",
+    "weightMap": {
+      "400 Regular": "small display / subheads",
+      "500 Medium": "optional secondary headings, nameplate",
+      "600 SemiBold": "card titles (h3), .book-name, .name-pill",
+      "700 Bold": "page titles (h1/h2)",
+      "800 ExtraBold": "large numerals — stat/meter/level numbers for punch"
+    },
+    "fontFaces": [
+      { "weight": 400, "src": "eczar/static/Eczar-Regular.ttf", "format": "truetype" },
+      { "weight": 500, "src": "eczar/static/Eczar-Medium.ttf", "format": "truetype" },
+      { "weight": 600, "src": "eczar/static/Eczar-SemiBold.ttf", "format": "truetype" },
+      { "weight": 700, "src": "eczar/static/Eczar-Bold.ttf", "format": "truetype" },
+      { "weight": 800, "src": "eczar/static/Eczar-ExtraBold.ttf", "format": "truetype" }
+    ],
+    "appliesTo": ["h1", "h2", "h3", ".book-title", ".book-name", ".habitat-page-title", ".collection-title", ".progress-title", ".settings-title", ".welcome-title", ".name-pill", "large numerals (.stage-tag, .grow-chip, meter values)"],
+    "notes": "Set --font-display to the Eczar stack once in :root. This UNIFIES the display face across all 3 themes — nook & spellbook already use serifs so it fits; schoolhouse currently uses a casual Chalkboard display, so Eczar changes its personality (flag for sign-off, though the brief's 'serif display type' points this way). Ship gotcha: only .ttf is provided — mock can load .ttf via format('truetype'), but convert to woff2 (fonttools/pyftsubset) before production for size; also subset to Latin. Alternatively load eczar/Eczar-VariableFont_wght.ttf once and drive weights via font-weight."
+  },
+
+  "decor": {
+    "parchment": { "use": true, "how": "FelisChaus_ParchmentBackground.jpg as a very-low-opacity (~5-8%) warm grain overlay on PAPER surfaces only — .book-card, the reading popup, .nameplate — via a ::before with mix-blend-mode: soft-light, background-size tiled (380x421 is small, so tile; seams vanish at that opacity). Adds candlelit-paper warmth without lightening the dark cards. Do NOT lay it over the whole dark app background." },
+    "panels": { "use": false, "how": "Skip Kenney nine-slice panels. They're baked-color raster/gradient chrome that won't retheme across the 3 dark themes and would fight the clean CSS rounded-card system (20-30px radius + box-shadow already gives the frame). Keeping the UI CSS-driven is worth more than the borrowed frame." },
+    "furniture": { "use": false, "how": "Cut from the core mock for restraint + extraction cost, but a viable STRETCH: CatumetGamesFurniture.svg is a combined black-stroke sheet — one could extract a single armchair/shelf/lamp, swap stroke:#000 for stroke:currentColor at low opacity (--line), and use it as faint line-art backdrop in the .habitat-window (replacing the CSS hb-lamp/hb-plant placeholders). Only if habitat mock has time." }
+  },
+
+  "screensToMock": ["tabbar", "care", "habitat"],
+  "screensRationale": "tabbar (given) showcases all 6 themed nav glyphs recoloring live. care is the hero: it exercises the most asset types at once — a monster-builder Stackling, a vector-emoji mood badge, heart/star meters, moon/sleep/sparkle/camera/check action icons, Eczar headings + numerals, and the nameplate. habitat is the second showcase: the library-window with a multi-creature collection and the parchment/decor treatment. Strong 4th if time: the discover book-card, the only place the star-rating pair, gift, and camera icons all appear together.",
+
+  "beforeAfter": [
+    { "slot": "nav.discover", "old": "🔍", "new": "icons/ffffff/transparent/1x1/lorc/magnifying-glass.svg" },
+    { "slot": "nav.care", "old": "🐾", "new": "icons/ffffff/transparent/1x1/lorc/flat-paw-print.svg" },
+    { "slot": "nav.habitat", "old": "🏡", "new": "icons/ffffff/transparent/1x1/delapouite/hobbit-dwelling.svg" },
+    { "slot": "nav.progress", "old": "📈", "new": "icons/ffffff/transparent/1x1/delapouite/growth.svg" },
+    { "slot": "nav.books", "old": "📚", "new": "icons/ffffff/transparent/1x1/delapouite/bookshelf.svg" },
+    { "slot": "nav.settings", "old": "⚙️", "new": "icons/ffffff/transparent/1x1/lorc/cog.svg" },
+    { "slot": "inline.camera", "old": "📷", "new": "icons/ffffff/transparent/1x1/delapouite/photo-camera.svg" },
+    { "slot": "debug.gear (.preview-debug/.creature-debug)", "old": "⚙️", "new": "icons/ffffff/transparent/1x1/lorc/cog.svg" },
+    { "slot": "content.gift", "old": "🎁", "new": "icons/ffffff/transparent/1x1/delapouite/present.svg" },
+    { "slot": "content.heart", "old": "❤️", "new": "icons/ffffff/transparent/1x1/skoll/hearts.svg" },
+    { "slot": "content.moon", "old": "🌙", "new": "icons/ffffff/transparent/1x1/lorc/moon.svg" },
+    { "slot": "content.sleep", "old": "😴", "new": "icons/ffffff/transparent/1x1/delapouite/night-sleep.svg" },
+    { "slot": "content.sparkle", "old": "✨", "new": "icons/ffffff/transparent/1x1/delapouite/sparkles.svg" },
+    { "slot": "content.sprout", "old": "🌱", "new": "icons/ffffff/transparent/1x1/delapouite/seedling.svg" },
+    { "slot": "content.star", "old": "⭐", "new": "icons/ffffff/transparent/1x1/delapouite/round-star.svg" },
+    { "slot": "content.emptyStar", "old": "☆", "new": "icons/ffffff/transparent/1x1/delapouite/round-star.svg (muted --line fill)" },
+    { "slot": "inline.check", "old": "✅", "new": "icons/ffffff/transparent/1x1/delapouite/check-mark.svg" },
+    { "slot": "inline.arrowNext", "old": "➡️", "new": "icons/ffffff/transparent/1x1/delapouite/next-button.svg" }
+  ],
+  "beforeAfterNote": "nav.* and inline.camera + debug gear old-emoji values are the literal glyphs in src/ui.js; content.* old values are the conventional emoji those injected icons stand in for (exact current glyphs live in content.json ui.icons)."
+}

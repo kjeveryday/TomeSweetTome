@@ -7,6 +7,10 @@ import { EventTypes } from './events.js';
 import { stageDef, nextStageDef } from './systems/growth.js';
 import { currentRelationshipResponse, relationshipLevel } from './systems/relationship.js';
 import { DEFAULT_THEME, THEMES } from './systems/theme.js';
+import { iconMarkup } from './icons.js';
+import { spriteLookFor, layoutFor, MINI_SCALE, defaultSpriteLook, evolutionTierFor, EVOLUTION_SCALE } from './systems/sprite-map.js';
+
+const SPRITE_BASE = 'assets/creatures/';
 
 export function createUI(root, content, handlers) {
   const copy = content.copy;
@@ -19,50 +23,88 @@ export function createUI(root, content, handlers) {
   root.dataset.hatched = 'false';
   root.innerHTML = `
     <div class="page page-discover" id="page-discover" role="tabpanel" aria-labelledby="tab-discover" hidden>
-      <div class="book-card">
-        <h2 class="book-title"></h2>
-        <p class="book-body"></p>
-        <p class="book-privacy"></p>
-        <label class="photo-btn">
-          <span>📷</span><span class="photo-label"></span>
-          <input class="photo-input visually-hidden" type="file" accept="image/*" capture="environment" />
-        </label>
-        <div class="manual-divider"><span></span></div>
-        <form class="isbn-form" novalidate>
-          <label class="isbn-label" for="book-isbn"></label>
-          <div class="isbn-row">
-            <input id="book-isbn" class="isbn-input" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" />
-            <button class="isbn-submit" type="submit"></button>
+      <div class="tome" data-open="false">
+        <button class="tome-cover" type="button">
+          <span class="tome-cover-flourish">&#10087;</span>
+          <h2 class="tome-cover-title"></h2>
+          <span class="tome-cover-rule"></span>
+          <span class="tome-cover-hint"></span>
+        </button>
+
+        <div class="tome-spread">
+          <div class="tome-page tome-page-left">
+            <h3 class="tome-guide-title"></h3>
+            <ol class="tome-guide">
+              <li class="tome-guide-item"><span class="tome-guide-num">1</span><span class="tome-guide-body"><b class="tome-scan-name"></b><span class="tome-scan-desc"></span></span></li>
+              <li class="tome-guide-item"><span class="tome-guide-num">2</span><span class="tome-guide-body"><b class="tome-isbn-name"></b><span class="tome-isbn-desc"></span></span></li>
+              <li class="tome-guide-item"><span class="tome-guide-num">3</span><span class="tome-guide-body"><b class="tome-search-name"></b><span class="tome-search-desc"></span></span></li>
+            </ol>
+            <button class="tome-close" type="button"></button>
           </div>
-        </form>
-        <div class="manual-divider"><span class="search-divider"></span></div>
-        <form class="book-search-form" novalidate>
-          <div class="book-search-grid">
-            <label class="isbn-label" for="book-search-title"></label>
-            <input id="book-search-title" class="isbn-input book-search-title" type="text" autocomplete="off" maxlength="200" />
-            <label class="isbn-label" for="book-search-author"></label>
-            <input id="book-search-author" class="isbn-input book-search-author" type="text" autocomplete="off" maxlength="200" />
+
+          <div class="tome-page tome-page-right">
+            <label class="photo-btn tome-btn tome-btn-lg">
+              <span class="tome-btn-ic" aria-hidden="true"></span>
+              <span class="tome-btn-label photo-label"></span>
+              <input class="photo-input visually-hidden" type="file" accept="image/*" capture="environment" />
+            </label>
+
+            <div class="tome-action" data-open="false">
+              <button class="tome-btn tome-action-toggle" type="button">
+                <span class="tome-btn-label isbn-name"></span>
+                <span class="tome-caret" aria-hidden="true">&#9662;</span>
+              </button>
+              <form class="isbn-form tome-panel" novalidate>
+                <label class="isbn-label" for="book-isbn"></label>
+                <div class="isbn-row">
+                  <input id="book-isbn" class="isbn-input" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" />
+                  <button class="isbn-submit" type="submit"></button>
+                </div>
+              </form>
+            </div>
+
+            <div class="tome-action" data-open="false">
+              <button class="tome-btn tome-action-toggle" type="button">
+                <span class="tome-btn-label search-name"></span>
+                <span class="tome-caret" aria-hidden="true">&#9662;</span>
+              </button>
+              <form class="book-search-form tome-panel" novalidate>
+                <div class="book-search-grid">
+                  <label class="isbn-label" for="book-search-title"></label>
+                  <input id="book-search-title" class="isbn-input book-search-title" type="text" autocomplete="off" maxlength="200" />
+                  <label class="isbn-label" for="book-search-author"></label>
+                  <input id="book-search-author" class="isbn-input book-search-author" type="text" autocomplete="off" maxlength="200" />
+                </div>
+                <button class="isbn-submit book-search-submit" type="submit"></button>
+              </form>
+            </div>
+
+            <p class="book-privacy tome-note"></p>
           </div>
-          <button class="isbn-submit book-search-submit" type="submit"></button>
-        </form>
-        <p class="scan-status" role="status" aria-live="polite"></p>
-        <section class="book-result" aria-label="" hidden>
-          <button class="preview-debug" type="button"><span aria-hidden="true">⚙️</span></button>
-          <div class="book-orb" aria-hidden="true">
-            <span class="mini-mark mm1"></span><span class="mini-mark mm2"></span>
-            <span class="mini-mark mm3"></span><span class="mini-mark mm4"></span>
-            <span class="mini-face">•ᴗ•</span>
-          </div>
-          <div class="book-result-copy">
-            <h3 class="book-name"></h3>
-            <p class="book-line"></p>
-            <p class="book-details"></p>
-            <p class="book-birthmark"></p>
-            <p class="book-isbn-line"></p>
-          </div>
-          <button class="book-use" type="button"></button>
-        </section>
+        </div>
       </div>
+
+      <p class="scan-status" role="status" aria-live="polite"></p>
+
+      <section class="book-result" aria-label="" hidden>
+        <button class="preview-debug" type="button"><span aria-hidden="true">⚙️</span></button>
+        <div class="book-orb" aria-hidden="true">
+          <span class="mini-mark mm1"></span><span class="mini-mark mm2"></span>
+          <span class="mini-mark mm3"></span><span class="mini-mark mm4"></span>
+          <span class="mini-face">•ᴗ•</span>
+        </div>
+        <div class="book-result-copy">
+          <h3 class="book-name"></h3>
+          <p class="book-line"></p>
+          <p class="book-details"></p>
+          <p class="book-birthmark"></p>
+          <p class="book-isbn-line"></p>
+        </div>
+        <div class="book-actions">
+          <button class="book-use" type="button"></button>
+          <button class="book-add" type="button" hidden></button>
+        </div>
+      </section>
     </div>
 
     <div class="page page-care" id="page-care" role="tabpanel" aria-labelledby="tab-care">
@@ -89,6 +131,7 @@ export function createUI(root, content, handlers) {
               <span class="cheek chl"></span><span class="cheek chr"></span>
               <span class="mouth"></span>
             </div>
+            <div class="evo-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
             <span class="shadow"></span>
             <span class="zzz"></span>
           </div>
@@ -212,6 +255,11 @@ export function createUI(root, content, handlers) {
           <h3 class="settings-research-title"></h3>
           <p class="settings-research-disclaimer"></p>
           <div class="settings-research-entries"></div>
+        </section>
+        <section class="settings-section settings-credits">
+          <h3 class="settings-credits-title"></h3>
+          <p class="settings-credits-intro"></p>
+          <ul class="settings-credits-list"></ul>
         </section>
       </div>
     </div>
@@ -362,6 +410,7 @@ export function createUI(root, content, handlers) {
     egg: q('.egg'),
     eggHint: q('.egg-hint'),
     creature: q('.creature'),
+    creatureBody: q('.creature .body'),
     zzz: q('.zzz'),
     fx: q('.fx'),
     burstLayer: q('.burst-layer'),
@@ -402,18 +451,16 @@ export function createUI(root, content, handlers) {
     giftLine: q('.gift-line'),
     welcomeBtn: q('.welcome-btn'),
     discoverPage: q('#page-discover'),
-    bookCard: q('.book-card'),
-    bookTitle: q('.book-title'),
-    bookBody: q('.book-body'),
+    tome: q('.tome'),
+    tomeCover: q('.tome-cover'),
+    tomeClose: q('.tome-close'),
     bookPrivacy: q('.book-privacy'),
     photoInput: q('.photo-input'),
     photoLabel: q('.photo-label'),
-    manualDivider: q('.manual-divider span'),
     isbnForm: q('.isbn-form'),
     isbnLabel: q('.isbn-label'),
     isbnInput: q('.isbn-input'),
     isbnSubmit: q('.isbn-submit'),
-    searchDivider: q('.search-divider'),
     bookSearchForm: q('.book-search-form'),
     bookSearchTitle: q('.book-search-title'),
     bookSearchAuthor: q('.book-search-author'),
@@ -427,6 +474,7 @@ export function createUI(root, content, handlers) {
     bookBirthmark: q('.book-birthmark'),
     bookIsbnLine: q('.book-isbn-line'),
     bookUse: q('.book-use'),
+    bookAdd: q('.book-add'),
     previewDebug: q('.preview-debug'),
     debugModal: q('.debug-modal'),
     debugCard: q('.debug-card'),
@@ -469,6 +517,9 @@ export function createUI(root, content, handlers) {
     settingsResearchTitle: q('.settings-research-title'),
     settingsResearchDisclaimer: q('.settings-research-disclaimer'),
     settingsResearchEntries: q('.settings-research-entries'),
+    settingsCreditsTitle: q('.settings-credits-title'),
+    settingsCreditsIntro: q('.settings-credits-intro'),
+    settingsCreditsList: q('.settings-credits-list'),
     birthmark: q('.birthmark'),
     marks: [...root.querySelectorAll('.creature .mark')],
     progressTitle: q('.progress-title'),
@@ -633,13 +684,13 @@ export function createUI(root, content, handlers) {
   }
   el.eggHint.textContent = copy.tapEgg;
   el.egg.setAttribute('aria-label', `${copy.eggLabel} — ${copy.tapEgg}`);
-  el.zzz.textContent = icons.sleep;
+  el.zzz.innerHTML = iconMarkup('sleep');
   el.tuckText.textContent = copy.tuckInLine;
   el.tuckBtn.querySelector('.a-icon').textContent = copy.tuckInIcon;
   el.tuckBtn.querySelector('.t-label').textContent = copy.tuckInButton;
   el.tuckBtn.addEventListener('click', () => handlers.onTuckIn());
   for (const star of el.tuckVeil.querySelectorAll('.star')) {
-    star.textContent = icons.sparkle;
+    star.innerHTML = iconMarkup('sparkle');
   }
   el.shelf.setAttribute('aria-label', copy.shelfLabel);
   el.habitatTitle.textContent = interpolate(copy.habitatTitle, { owner: copy.habitatOwnerName });
@@ -762,15 +813,40 @@ export function createUI(root, content, handlers) {
   let debugReturnFocus = null;
 
   el.discoverPage.setAttribute('aria-label', copy.discoverTitle);
-  el.bookTitle.textContent = copy.bookDialogTitle;
-  el.bookBody.textContent = copy.bookDialogBody;
   el.bookPrivacy.textContent = copy.bookPrivacy;
-  el.photoLabel.textContent = copy.choosePhoto;
-  el.manualDivider.textContent = copy.manualDivider;
+  el.photoLabel.textContent = copy.discoverScanName;
   el.isbnLabel.textContent = copy.isbnLabel;
   el.isbnInput.placeholder = copy.isbnPlaceholder;
   el.isbnSubmit.textContent = copy.makeCreature;
-  el.searchDivider.textContent = copy.searchDivider;
+
+  // ----- magic tome (Discover): copy + open/close + per-action reveal -----
+  root.querySelector('.tome-cover-title').textContent = copy.discoverTomeTitle;
+  root.querySelector('.tome-cover-hint').textContent = copy.discoverTomeHint;
+  root.querySelector('.tome-guide-title').textContent = copy.discoverGuideTitle;
+  root.querySelector('.tome-scan-name').textContent = copy.discoverScanName;
+  root.querySelector('.tome-scan-desc').textContent = copy.discoverScanDesc;
+  root.querySelector('.tome-isbn-name').textContent = copy.discoverIsbnName;
+  root.querySelector('.tome-isbn-desc').textContent = copy.discoverIsbnDesc;
+  root.querySelector('.tome-search-name').textContent = copy.discoverSearchName;
+  root.querySelector('.tome-search-desc').textContent = copy.discoverSearchDesc;
+  root.querySelector('.isbn-name').textContent = copy.discoverIsbnName;
+  root.querySelector('.search-name').textContent = copy.discoverSearchName;
+  root.querySelector('.tome-btn-ic').innerHTML = iconMarkup('camera');
+  el.tomeClose.textContent = copy.discoverClose;
+  el.tomeCover.addEventListener('click', () => { el.tome.dataset.open = 'true'; });
+  el.tomeClose.addEventListener('click', () => {
+    el.tome.dataset.open = 'false';
+    for (const a of root.querySelectorAll('.tome-action')) a.dataset.open = 'false';
+  });
+  for (const toggle of root.querySelectorAll('.tome-action-toggle')) {
+    toggle.addEventListener('click', () => {
+      const action = toggle.closest('.tome-action');
+      const willOpen = action.dataset.open !== 'true';
+      for (const a of root.querySelectorAll('.tome-action')) a.dataset.open = 'false';
+      action.dataset.open = String(willOpen);
+      if (willOpen) action.querySelector('input')?.focus();
+    });
+  }
   el.bookSearchTitle.previousElementSibling.textContent = copy.searchTitleLabel;
   el.bookSearchTitle.placeholder = copy.searchTitlePlaceholder;
   el.bookSearchAuthor.previousElementSibling.textContent = copy.searchAuthorLabel;
@@ -803,6 +879,26 @@ export function createUI(root, content, handlers) {
   el.settingsDeleteYes.textContent = copy.settingsDeleteYes;
   el.settingsDeleteCancel.textContent = copy.settingsDeleteCancel;
   el.settingsResearchTitle.textContent = copy.settingsResearchTitle;
+  el.settingsCreditsTitle.textContent = copy.settingsCreditsTitle;
+  el.settingsCreditsIntro.textContent = copy.settingsCreditsIntro;
+  el.settingsCreditsList.replaceChildren(...(content.credits ?? []).map((credit) => {
+    const item = document.createElement('li');
+    item.className = 'settings-credit';
+    const source = document.createElement('a');
+    source.className = 'settings-credits-link';
+    source.href = credit.url;
+    source.target = '_blank';
+    source.rel = 'noopener noreferrer';
+    source.textContent = credit.by ? `${credit.name} by ${credit.by}` : credit.name;
+    const license = document.createElement('a');
+    license.className = 'settings-credits-link';
+    license.href = credit.licenseUrl;
+    license.target = '_blank';
+    license.rel = 'noopener noreferrer';
+    license.textContent = credit.license;
+    item.append(source, document.createTextNode(' — '), license);
+    return item;
+  }));
 
   // ----- theme picker (Settings) -----
   // Static: theme metadata never changes at runtime, so this is built once here
@@ -871,6 +967,9 @@ export function createUI(root, content, handlers) {
     const tab = el.tabs[pageId];
     if (!tab) continue;
     tab.querySelector('.tab-label').textContent = copy[tabLabelKeys[pageId]] ?? pageId;
+    const tabIcon = tab.querySelector('.tab-icon');
+    // Overwrite the emoji fallback in the template with a themed inline SVG.
+    if (tabIcon) tabIcon.innerHTML = iconMarkup(pageId);
   }
 
   function showPage(pageId) {
@@ -1196,15 +1295,78 @@ export function createUI(root, content, handlers) {
     });
   }
 
+  // Paint sprite <img> layers (from systems/sprite-map.js's spriteLookFor/
+  // layoutFor) into `frameEl`. Clears and rebuilds every call — renders are
+  // event-driven, not a tight loop, so this stays cheap and always correct.
+  // `cssScale: true` (hero) positions via calc(var(--scale) * Npx) so the
+  // existing --scale-driven growth animation keeps working unchanged;
+  // `cssScale: false` (mini) writes plain px pre-multiplied by `factor`.
+  function paintSpriteLayers(frameEl, look, { includeIds, cssScale, factor = 1 } = {}) {
+    frameEl.querySelectorAll(':scope > img.sl-part').forEach((img) => img.remove());
+    const { parts } = layoutFor(look);
+    const px = (n) => {
+      const scaled = n * factor;
+      return cssScale ? `calc(var(--scale) * ${scaled}px)` : `${scaled}px`;
+    };
+    for (const part of parts) {
+      if (includeIds && !includeIds.has(part.id)) continue;
+      const img = document.createElement('img');
+      img.className = `sl-part sl-${part.id}${part.mirror ? ' sl-mirror' : ''}`;
+      img.alt = '';
+      img.src = `${SPRITE_BASE}${part.file}`;
+      img.style.zIndex = String(part.z);
+      img.style.left = px(part.left);
+      img.style.top = px(part.top);
+      img.style.width = px(part.w);
+      img.style.height = px(part.h);
+      frameEl.append(img);
+    }
+  }
+
+  const MINI_PART_IDS = new Set(['body', 'eye', 'eyeL', 'eyeR', 'nose', 'mouth']);
+
   // Paint an existing .book-orb element from a creature look (baseTraits shape).
   // Reused by the book preview AND the collection chips so they share one look.
-  function paintMiniOrb(orb, creature) {
+  function paintMiniOrb(orb, creature, { wild = false, evolution = 0 } = {}) {
     if (!orb || !creature || !creature.family || !creature.pattern || !creature.palette) return;
     orb.dataset.body = creature.family.body;
     orb.dataset.pattern = creature.pattern.id;
     orb.style.setProperty('--hue', String(creature.palette.hue));
     orb.style.setProperty('--accent', String(creature.palette.accentHue));
     positionMarks([...orb.querySelectorAll('.mini-mark')], creature.pattern.placements ?? []);
+
+    const generated = creature.kind === 'book';
+    // Habitat/collection orbs are built by buildMiniOrb() (which adds the
+    // .mini-sprite wrapper), but the book-PREVIEW orb is static template markup
+    // that lacks it — create it on demand so previews sprite too (was the cause
+    // of scanned-book previews still showing the old glyph).
+    let miniSprite = orb.querySelector('.mini-sprite');
+    if (generated && !miniSprite) {
+      miniSprite = document.createElement('div');
+      miniSprite.className = 'mini-sprite';
+      orb.append(miniSprite);
+    }
+    const miniFace = orb.querySelector('.mini-face');
+    if (!generated || !miniSprite) {
+      delete orb.dataset.shape;
+      delete orb.dataset.evolution;
+      if (miniFace) miniFace.style.display = '';
+      if (miniSprite) miniSprite.replaceChildren();
+      return;
+    }
+    if (miniFace) miniFace.style.display = 'none'; // hide the old glyph beneath the sprite
+    // Mini orbs never grow with stage and never show mood overlays (the old
+    // static mini-face glyph didn't either) - a neutral fixed stage/mood
+    // gives a stable body+eye+mouth+nose look, same for every render.
+    const look = spriteLookFor(creature, 3, wild ? 'wild' : 'content');
+    const { shape } = look.body;
+    const factor = (MINI_SCALE[shape] ?? 0.3) * (EVOLUTION_SCALE[evolution] ?? 1);
+    const { frame } = layoutFor(look);
+    orb.dataset.shape = shape;
+    orb.dataset.evolution = String(evolution);
+    miniSprite.style.width = `${frame.w * factor}px`;
+    miniSprite.style.height = `${frame.h * factor}px`;
+    paintSpriteLayers(miniSprite, look, { includeIds: MINI_PART_IDS, cssScale: false, factor });
   }
 
   // Build a fresh .book-orb mini-creature element (same markup as the preview orb).
@@ -1217,10 +1379,9 @@ export function createUI(root, content, handlers) {
       mark.className = `mini-mark mm${n}`;
       orb.append(mark);
     }
-    const face = document.createElement('span');
-    face.className = 'mini-face';
-    face.textContent = '•ᴗ•';
-    orb.append(face);
+    const sprite = document.createElement('div');
+    sprite.className = 'mini-sprite';
+    orb.append(sprite);
     return orb;
   }
 
@@ -1244,10 +1405,15 @@ export function createUI(root, content, handlers) {
     el.bookIsbnLine.textContent = creature.isbn
       ? interpolate(copy.bookEditionLine, { isbn: creature.isbn })
       : copy.bookSearchEditionLine;
-    el.bookUse.textContent = latestState?.hatched
-      ? interpolate(copy.useLook, { name: latestState.name })
-      : copy.useEgg;
-    paintMiniOrb(el.bookOrb, creature);
+    if (latestState?.hatched) {
+      el.bookUse.textContent = interpolate(copy.takeCareButton, { name: creature.name });
+      el.bookAdd.textContent = copy.addToHabitatButton;
+      el.bookAdd.hidden = false;
+    } else {
+      el.bookUse.textContent = copy.useEgg;
+      el.bookAdd.hidden = true;
+    }
+    paintMiniOrb(el.bookOrb, creature, { wild: true });
     showScanStatus(copy.bookReady);
     el.bookUse.focus();
   }
@@ -1292,20 +1458,30 @@ export function createUI(root, content, handlers) {
     }));
   });
 
-  el.bookUse.addEventListener('click', () => {
+  function catchCreature({ takeCare }) {
     if (!pendingCreature) return;
     const wasHatched = Boolean(latestState?.hatched);
-    handlers.onUseCreature(pendingCreature, pendingBookRecords);
+    // Scanning CATCHES the creature into the habitat (still WILD until you read its
+    // book). "Take care" also makes it your active creature straight away.
+    const creatureId = handlers.onUseCreature(pendingCreature, pendingBookRecords);
+    if (takeCare && creatureId) handlers.onActivateCreature(creatureId);
     pendingCreature = null;
     pendingBookRecords = null;
     // Discover is a permanent page now (no "open" event resets it for next time),
     // so clear the just-used preview here rather than leaving it stale on screen.
     el.bookResult.hidden = true;
     showScanStatus('');
-    // The creature/egg lives on Pet Care — hop over there after a successful use.
-    showPage('care');
-    if (!wasHatched) el.egg.focus();
-  });
+    if (takeCare || !wasHatched) {
+      // Taking care (or hatching your first) → the hero scene on Pet Care.
+      showPage('care');
+      if (!wasHatched) el.egg.focus();
+    } else {
+      // Just caught it → go see it land in the habitat.
+      showPage('habitat');
+    }
+  }
+  el.bookUse.addEventListener('click', () => catchCreature({ takeCare: true }));
+  el.bookAdd.addEventListener('click', () => catchCreature({ takeCare: false }));
 
   // ----- meters (built once from content) -----
   const meterEls = {};
@@ -1425,12 +1601,11 @@ export function createUI(root, content, handlers) {
     el.creature.dataset.generated = String(generated);
     el.egg.dataset.generated = String(generated);
     el.creature.style.setProperty('--scale', stage.theme.scale);
+    el.creature.dataset.evolution = '0';
 
     if (!generated) {
       el.creature.style.setProperty('--hue', stage.theme.hue);
       el.creature.style.removeProperty('--accent');
-      el.creature.style.removeProperty('--body-width');
-      el.creature.style.removeProperty('--body-height');
       el.creature.style.removeProperty('--body-radius');
       delete el.creature.dataset.body;
       delete el.creature.dataset.appendage;
@@ -1442,14 +1617,36 @@ export function createUI(root, content, handlers) {
       el.egg.style.removeProperty('--egg-accent');
       el.eggHint.textContent = copy.tapEgg;
       el.egg.setAttribute('aria-label', `${copy.eggLabel} — ${copy.tapEgg}`);
+
+      // A hatched plain starter (no book yet) still gets a sprite — a fixed warm
+      // default look — so the very first monster is never a bare CSS blob. The
+      // pre-hatch egg state (not hatched) shows no creature, so skip it there.
+      if (state.hatched && el.creatureBody) {
+        const mood = state.tuckedIn ? 'sleepy' : moodOf(state);
+        const look = defaultSpriteLook(stage.stage, mood);
+        el.creature.dataset.generated = 'true';
+        el.creature.dataset.shape = look.body.shape;
+        positionMarks(el.marks, []);
+        const { frame } = layoutFor(look);
+        el.creature.style.setProperty('--body-width', `${frame.w}px`);
+        el.creature.style.setProperty('--body-height', `${frame.h}px`);
+        const includeIds = new Set(['body', 'eye', 'eyeL', 'eyeR', 'nose', 'mouth']);
+        if (look.partsVisible.legs) { includeIds.add('legL'); includeIds.add('legR'); }
+        if (look.partsVisible.arms) { includeIds.add('armL'); includeIds.add('armR'); }
+        if (look.partsVisible.detail) { includeIds.add('detailL'); includeIds.add('detailR'); }
+        paintSpriteLayers(el.creatureBody, look, { includeIds, cssScale: true, factor: 1 });
+      } else {
+        delete el.creature.dataset.shape;
+        el.creature.style.removeProperty('--body-width');
+        el.creature.style.removeProperty('--body-height');
+        if (el.creatureBody) el.creatureBody.replaceChildren();
+      }
       return;
     }
 
     const hue = (Number(creature.palette.hue) + Number(stage.theme.hueShift ?? 0)) % 360;
     el.creature.style.setProperty('--hue', String(hue));
     el.creature.style.setProperty('--accent', String(creature.palette.accentHue));
-    el.creature.style.setProperty('--body-width', creature.family.width);
-    el.creature.style.setProperty('--body-height', creature.family.height);
     el.creature.style.setProperty('--body-radius', creature.family.radius);
     el.creature.dataset.body = creature.family.body;
     el.creature.dataset.appendage = creature.family.appendage;
@@ -1463,6 +1660,32 @@ export function createUI(root, content, handlers) {
     el.egg.style.setProperty('--egg-accent', String(creature.palette.accentHue));
     el.eggHint.textContent = interpolate(copy.bookEggHint, { name: creature.name });
     el.egg.setAttribute('aria-label', `${copy.eggLabel} — ${el.eggHint.textContent}`);
+
+    // Monster Builder sprite assembly, painted inside .creature .body. Mood
+    // folds in tuckedIn here (both are already-deterministic derived state)
+    // so sprite-map.js's spriteLookFor() only ever sees one effective mood.
+    // A caught-but-unread creature is WILD (angry) until reading tames it; a
+    // tamed friend EVOLVES with its friendship (relationshipLevel = reading days)
+    // — bigger, a bonus head detail, and a sparkle aura.
+    const activeRecord = state.collection?.creatures?.[state.collection?.activeCreatureId];
+    const wild = activeRecord?.revealed === false;
+    const evolution = wild ? 0 : evolutionTierFor(activeRecord ? relationshipLevel(activeRecord) : 0);
+    const mood = state.tuckedIn ? 'sleepy' : (wild ? 'wild' : moodOf(state));
+    const look = spriteLookFor(creature, stage.stage, mood, evolution);
+    el.creature.dataset.shape = look.body.shape;
+    el.creature.dataset.evolution = String(evolution);
+    el.creature.style.setProperty('--scale', String(Number(stage.theme.scale) * (EVOLUTION_SCALE[evolution] ?? 1)));
+    if (el.creatureBody) {
+      const { frame } = layoutFor(look);
+      el.creature.style.setProperty('--body-width', `${frame.w}px`);
+      el.creature.style.setProperty('--body-height', `${frame.h}px`);
+      const includeIds = new Set(['body', 'eye', 'eyeL', 'eyeR', 'nose', 'mouth']);
+      if (look.partsVisible.legs) { includeIds.add('legL'); includeIds.add('legR'); }
+      if (look.partsVisible.arms) { includeIds.add('armL'); includeIds.add('armR'); }
+      if (look.partsVisible.detail) { includeIds.add('detailL'); includeIds.add('detailR'); }
+      if (look.detail2) { includeIds.add('detail2L'); includeIds.add('detail2R'); }
+      paintSpriteLayers(el.creatureBody, look, { includeIds, cssScale: true, factor: 1 });
+    }
   }
 
   // ----- render: state -> DOM (idempotent) -----
@@ -1487,7 +1710,11 @@ export function createUI(root, content, handlers) {
     el.scene.dataset.mood = mood;
     const moodDef = content.mood.moods[mood];
     el.namePill.textContent = state.name;
-    el.moodChip.textContent = `${moodDef.icon} ${moodDef.label}`;
+    // A wild (caught-but-unread) active creature reads as fierce, not its stat mood.
+    const activeRec = state.collection?.creatures?.[state.collection?.activeCreatureId];
+    el.moodChip.textContent = activeRec?.revealed === false
+      ? copy.moodWildChip
+      : `${moodDef.icon} ${moodDef.label}`;
     renderDailyCare(state, stage);
     renderRelationship(state);
 
@@ -1686,13 +1913,16 @@ export function createUI(root, content, handlers) {
     const push = (id) => {
       if (id == null || seen.has(id)) return;
       const record = creatures[id];
-      if (!record || record.revealed !== true) return;
+      if (!record) return;
       seen.add(id);
       ordered.push(record);
     };
     push(activeId);
     for (const id of visibleIds) push(id);
     for (const id of archivedIds) push(id);
+    // Caught-but-still-WILD creatures (scanned, not yet read/tamed) belong in the
+    // habitat too — append any not already placed via active/visible/archived.
+    for (const id of Object.keys(creatures)) push(id);
     return { ordered, activeId };
   }
 
@@ -1723,7 +1953,8 @@ export function createUI(root, content, handlers) {
       monster.style.setProperty('--delay', `${(i % 5) * 0.4}s`);
       monster.style.zIndex = String(10 + i);
       const orb = buildMiniOrb();
-      paintMiniOrb(orb, record.baseTraits ?? {});
+      const evolution = record.revealed === false ? 0 : evolutionTierFor(relationshipLevel(record));
+      paintMiniOrb(orb, record.baseTraits ?? {}, { wild: record.revealed === false, evolution });
       monster.append(orb);
       el.habitatStage.append(monster);
     });
@@ -1793,7 +2024,8 @@ export function createUI(root, content, handlers) {
       }
 
       const orb = buildMiniOrb();
-      paintMiniOrb(orb, traits);
+      const evolution = record.revealed === false ? 0 : evolutionTierFor(relationshipLevel(record));
+      paintMiniOrb(orb, traits, { wild: record.revealed === false, evolution });
       chip.append(orb);
 
       const meta = document.createElement('div');
@@ -1805,12 +2037,19 @@ export function createUI(root, content, handlers) {
       subEl.className = 'collection-sub';
       subEl.textContent = [traits.rarity?.label, traits.quirk?.label].filter(Boolean).join(' · ');
       meta.append(nameEl, subEl);
+      // A caught-but-unread creature is still WILD — tag it until reading tames it.
+      if (record.revealed !== true) {
+        const wild = document.createElement('span');
+        wild.className = 'collection-wild';
+        wild.textContent = copy.collectionWild;
+        meta.append(wild);
+      }
       chip.append(meta);
 
       if (isActive) {
         const badge = document.createElement('span');
         badge.className = 'collection-badge';
-        badge.textContent = '✓';
+        badge.innerHTML = iconMarkup('check');
         badge.setAttribute('aria-label', copy.collectionActiveBadge);
         chip.append(badge);
       }
@@ -1873,8 +2112,13 @@ export function createUI(root, content, handlers) {
   function renderDailyCare(state, stage) {
     const total = content.care.dailyCpCap;
     const done = Math.min(state.actionsToday, total);
-    const pips = icons.star.repeat(done) + icons.emptyStar.repeat(total - done);
-    el.stageTag.textContent = `${stage.label} · ${pips}`;
+    el.stageTag.replaceChildren(document.createTextNode(`${stage.label} · `));
+    for (let i = 0; i < total; i += 1) {
+      const pip = document.createElement('span');
+      pip.className = i < done ? 'pip filled' : 'pip';
+      pip.innerHTML = iconMarkup('star');
+      el.stageTag.append(pip);
+    }
     el.stageTag.setAttribute(
       'aria-label',
       copy.dailyCareLabel.replace('{done}', String(done)).replace('{total}', String(total))
@@ -1891,7 +2135,7 @@ export function createUI(root, content, handlers) {
     if (!next) {
       const heart = document.createElement('span');
       heart.className = 'st filled';
-      heart.textContent = icons.heart;
+      heart.innerHTML = iconMarkup('heart');
       el.growChip.append(heart);
       el.growChip.title = copy.allGrown;
       el.growChip.setAttribute('aria-label', copy.allGrown);
@@ -1902,12 +2146,12 @@ export function createUI(root, content, handlers) {
     const filled = span > 0 ? Math.round((into / span) * GROW_PIPS) : 0;
     const lead = document.createElement('span');
     lead.className = 'grow-lead';
-    lead.textContent = icons.sprout;
+    lead.innerHTML = iconMarkup('sprout');
     el.growChip.append(lead);
     for (let i = 0; i < GROW_PIPS; i += 1) {
       const star = document.createElement('span');
       star.className = i < filled ? 'st filled' : 'st';
-      star.textContent = icons.star;
+      star.innerHTML = iconMarkup('star');
       el.growChip.append(star);
     }
     const label = fill(copy.growLabel, state);
@@ -1966,7 +2210,7 @@ export function createUI(root, content, handlers) {
         el.giftStack.replaceChildren();
         const box = document.createElement('span');
         box.className = 'gift-box';
-        box.textContent = icons.gift;
+        box.innerHTML = iconMarkup('gift');
         const reveal = document.createElement('span');
         reveal.className = 'gift-sticker';
         reveal.textContent = sticker ? sticker.icon : icons.star;
