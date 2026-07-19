@@ -3,11 +3,11 @@
    Base :root mirrors "nook" so an unset attribute still looks right. */
 
 /* Eczar — cozy display serif (SIL OFL 1.1). Attribution in Settings > Credits. */
-@font-face { font-family: "Eczar"; font-weight: 400; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-Regular.ttf") format("truetype"); }
-@font-face { font-family: "Eczar"; font-weight: 500; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-Medium.ttf") format("truetype"); }
-@font-face { font-family: "Eczar"; font-weight: 600; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-SemiBold.ttf") format("truetype"); }
-@font-face { font-family: "Eczar"; font-weight: 700; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-Bold.ttf") format("truetype"); }
-@font-face { font-family: "Eczar"; font-weight: 800; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-ExtraBold.ttf") format("truetype"); }
+@font-face { font-family: "Eczar"; font-weight: 400; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-Regular.woff2") format("woff2"), url("assets/fonts/Eczar-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Eczar"; font-weight: 500; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-Medium.woff2") format("woff2"), url("assets/fonts/Eczar-Medium.ttf") format("truetype"); }
+@font-face { font-family: "Eczar"; font-weight: 600; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-SemiBold.woff2") format("woff2"), url("assets/fonts/Eczar-SemiBold.ttf") format("truetype"); }
+@font-face { font-family: "Eczar"; font-weight: 700; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-Bold.woff2") format("woff2"), url("assets/fonts/Eczar-Bold.ttf") format("truetype"); }
+@font-face { font-family: "Eczar"; font-weight: 800; font-style: normal; font-display: swap; src: url("assets/fonts/Eczar-ExtraBold.woff2") format("woff2"), url("assets/fonts/Eczar-ExtraBold.ttf") format("truetype"); }
 
 :root {
   /* ---- shared, theme-independent ---- */
@@ -2207,7 +2207,7 @@ button.collection-chip:active { transform: translateY(2px) scale(0.98); }
 /* Parchment paper-grain: a whisper of warm texture on paper surfaces only.
    soft-light at 6% warms the card without lightening the dark theme. The three
    surfaces already carry position:relative, so ::before anchors cleanly. */
-.nameplate::before, .book-card::before, .reading-modal-card::before {
+.nameplate::before, .book-card::before, .reading-modal-card::before, .book-result::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -2218,6 +2218,12 @@ button.collection-chip:active { transform: translateY(2px) scale(0.98); }
   mix-blend-mode: soft-light;
   pointer-events: none;
 }
+/* The Discover preview card is a grid: its static grid children paint below an
+   absolutely-positioned ::before, so lift them above the grain (.preview-debug
+   already carries z-index 2; .book-orb keeps its own position: relative). */
+.book-result > .book-orb,
+.book-result > .book-result-copy,
+.book-result > .book-actions { position: relative; z-index: 1; }
 
 /* =========================================================================
    Monster Builder sprite rendering (book-generated creatures only).
@@ -2284,6 +2290,45 @@ button.collection-chip:active { transform: translateY(2px) scale(0.98); }
 }
 .mini-sprite .sl-part { position: absolute; }
 .book-orb .mini-mark { z-index: 26; }
+
+/* ---------- mini-orb evolution: warm glow + twinkles by friendship tier ----------
+   Keyed on orb.dataset.evolution ("1"/"2"/"3"); "0" and wild/preview orbs set
+   no such attribute (or "0") and stay plain. Gold palette + @keyframes
+   evo-twinkle are shared with the hero's .creature[data-evolution] rules.
+   overflow:visible so the slightly-larger evolved sprite, its glow, and the
+   corner twinkles aren't clipped by the orb's default overflow:hidden. */
+.book-orb[data-evolution="1"],
+.book-orb[data-evolution="2"],
+.book-orb[data-evolution="3"] { overflow: visible; }
+.book-orb[data-evolution="1"] { filter: drop-shadow(0 0 4px rgba(255, 212, 122, 0.35)); }
+.book-orb[data-evolution="2"] { filter: drop-shadow(0 0 7px rgba(255, 212, 122, 0.5)); }
+.book-orb[data-evolution="3"] { filter: drop-shadow(0 0 11px rgba(255, 222, 140, 0.65)); }
+
+/* small gold twinkles near the top corners: one for tier >= 2, a second for
+   tier 3. z-index 27 keeps them above sprite parts (<=24) and mini-marks (26).
+   Static by default; the animation is added only under no-preference below, so
+   reduced-motion users keep the steady glow with no flicker. */
+.book-orb[data-evolution="2"]::before,
+.book-orb[data-evolution="3"]::before,
+.book-orb[data-evolution="3"]::after {
+  content: "";
+  position: absolute;
+  z-index: 27;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle, #fff6cf 18%, var(--accent-ink) 52%, transparent 72%);
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+  pointer-events: none;
+}
+.book-orb[data-evolution="2"]::before,
+.book-orb[data-evolution="3"]::before { top: -3px; left: -1px; }
+.book-orb[data-evolution="3"]::after { top: -4px; right: -1px; width: 9px; height: 9px; }
+@media (prefers-reduced-motion: no-preference) {
+  .book-orb[data-evolution="2"]::before,
+  .book-orb[data-evolution="3"]::before,
+  .book-orb[data-evolution="3"]::after { animation: evo-twinkle 2.8s ease-in-out infinite; }
+  .book-orb[data-evolution="3"]::after { animation-delay: 1.1s; }
+}
 
 /* ============ Discover: the magic Tome ============ */
 .page-discover { display: flex; flex-direction: column; align-items: center; gap: 12px; }

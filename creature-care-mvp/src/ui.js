@@ -1327,7 +1327,7 @@ export function createUI(root, content, handlers) {
 
   // Paint an existing .book-orb element from a creature look (baseTraits shape).
   // Reused by the book preview AND the collection chips so they share one look.
-  function paintMiniOrb(orb, creature, { wild = false } = {}) {
+  function paintMiniOrb(orb, creature, { wild = false, evolution = 0 } = {}) {
     if (!orb || !creature || !creature.family || !creature.pattern || !creature.palette) return;
     orb.dataset.body = creature.family.body;
     orb.dataset.pattern = creature.pattern.id;
@@ -1349,6 +1349,7 @@ export function createUI(root, content, handlers) {
     const miniFace = orb.querySelector('.mini-face');
     if (!generated || !miniSprite) {
       delete orb.dataset.shape;
+      delete orb.dataset.evolution;
       if (miniFace) miniFace.style.display = '';
       if (miniSprite) miniSprite.replaceChildren();
       return;
@@ -1359,9 +1360,10 @@ export function createUI(root, content, handlers) {
     // gives a stable body+eye+mouth+nose look, same for every render.
     const look = spriteLookFor(creature, 3, wild ? 'wild' : 'content');
     const { shape } = look.body;
-    const factor = MINI_SCALE[shape] ?? 0.3;
+    const factor = (MINI_SCALE[shape] ?? 0.3) * (EVOLUTION_SCALE[evolution] ?? 1);
     const { frame } = layoutFor(look);
     orb.dataset.shape = shape;
+    orb.dataset.evolution = String(evolution);
     miniSprite.style.width = `${frame.w * factor}px`;
     miniSprite.style.height = `${frame.h * factor}px`;
     paintSpriteLayers(miniSprite, look, { includeIds: MINI_PART_IDS, cssScale: false, factor });
@@ -1951,7 +1953,8 @@ export function createUI(root, content, handlers) {
       monster.style.setProperty('--delay', `${(i % 5) * 0.4}s`);
       monster.style.zIndex = String(10 + i);
       const orb = buildMiniOrb();
-      paintMiniOrb(orb, record.baseTraits ?? {}, { wild: record.revealed === false });
+      const evolution = record.revealed === false ? 0 : evolutionTierFor(relationshipLevel(record));
+      paintMiniOrb(orb, record.baseTraits ?? {}, { wild: record.revealed === false, evolution });
       monster.append(orb);
       el.habitatStage.append(monster);
     });
@@ -2021,7 +2024,8 @@ export function createUI(root, content, handlers) {
       }
 
       const orb = buildMiniOrb();
-      paintMiniOrb(orb, traits, { wild: record.revealed === false });
+      const evolution = record.revealed === false ? 0 : evolutionTierFor(relationshipLevel(record));
+      paintMiniOrb(orb, traits, { wild: record.revealed === false, evolution });
       chip.append(orb);
 
       const meta = document.createElement('div');

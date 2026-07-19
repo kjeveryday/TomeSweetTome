@@ -251,9 +251,12 @@ export const SHAPE_LAYOUT = {
     legL: { left: 47, top: 201, w: 102, h: 109 },
     armL: { left: 18, top: 128, w: 71, h: 149 },
     detailL: { cx: 75, cy: 63 },
-    eyeCy: 128,
-    noseCy: 181,
-    mouthCy: 229
+    // face anchors nudged down ~+22px from the proportional template: on the
+    // tall capsule the centered face floated high with an empty lower belly;
+    // visually tuned against all 6 shapes side by side (see redesign notes).
+    eyeCy: 150,
+    noseCy: 203,
+    mouthCy: 251
   },
   F: {
     frame: { w: 250, h: 318 },
@@ -261,9 +264,10 @@ export const SHAPE_LAYOUT = {
     legL: { left: 48, top: 187, w: 102, h: 109 },
     armL: { left: 18, top: 124, w: 71, h: 149 },
     detailL: { cx: 84, cy: 63 },
-    eyeCy: 123,
-    noseCy: 173,
-    mouthCy: 219
+    // face anchors nudged down ~+18px (same tall-body fix as shape E).
+    eyeCy: 141,
+    noseCy: 191,
+    mouthCy: 237
   }
 };
 
