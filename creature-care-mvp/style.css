@@ -2483,3 +2483,31 @@ button.collection-chip:active { transform: translateY(2px) scale(0.98); }
   text-transform: uppercase;
   color: var(--warm);
 }
+
+/* ---------- creature evolution: sparkle aura + glow (bigger is via --scale) ---------- */
+.evo-sparkles { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+.evo-sparkles i {
+  position: absolute;
+  width: 13px; height: 13px;
+  display: none;
+  background: radial-gradient(circle, #fff6cf 18%, var(--accent-ink) 52%, transparent 72%);
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+  animation: evo-twinkle 2.8s ease-in-out infinite;
+}
+.evo-sparkles i:nth-child(1) { top: 12%; left: 20%; animation-delay: 0s; }
+.evo-sparkles i:nth-child(2) { top: 18%; right: 16%; animation-delay: .5s; }
+.evo-sparkles i:nth-child(3) { top: 46%; left: 7%; animation-delay: 1s; }
+.evo-sparkles i:nth-child(4) { top: 54%; right: 9%; animation-delay: 1.4s; }
+.evo-sparkles i:nth-child(5) { top: 74%; left: 27%; width: 10px; height: 10px; animation-delay: 1.9s; }
+.evo-sparkles i:nth-child(6) { top: 6%; left: 50%; width: 16px; height: 16px; animation-delay: 2.3s; }
+/* how many sparkles show, by friendship tier */
+.creature[data-evolution="1"] .evo-sparkles i:nth-child(-n+2),
+.creature[data-evolution="2"] .evo-sparkles i:nth-child(-n+4),
+.creature[data-evolution="3"] .evo-sparkles i { display: block; }
+/* a warm glow around the sprite grows with the tier */
+.creature[data-evolution="2"] .body { filter: drop-shadow(0 0 10px rgba(255, 212, 122, 0.45)); }
+.creature[data-evolution="3"] .body { filter: drop-shadow(0 0 17px rgba(255, 222, 140, 0.62)); }
+@keyframes evo-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(45deg); }
+}

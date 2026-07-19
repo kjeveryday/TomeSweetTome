@@ -8,7 +8,7 @@ import { stageDef, nextStageDef } from './systems/growth.js';
 import { currentRelationshipResponse, relationshipLevel } from './systems/relationship.js';
 import { DEFAULT_THEME, THEMES } from './systems/theme.js';
 import { iconMarkup } from './icons.js';
-import { spriteLookFor, layoutFor, MINI_SCALE, defaultSpriteLook } from './systems/sprite-map.js';
+import { spriteLookFor, layoutFor, MINI_SCALE, defaultSpriteLook, evolutionTierFor, EVOLUTION_SCALE } from './systems/sprite-map.js';
 
 const SPRITE_BASE = 'assets/creatures/';
 
@@ -131,6 +131,7 @@ export function createUI(root, content, handlers) {
               <span class="cheek chl"></span><span class="cheek chr"></span>
               <span class="mouth"></span>
             </div>
+            <div class="evo-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
             <span class="shadow"></span>
             <span class="zzz"></span>
           </div>
@@ -1598,6 +1599,7 @@ export function createUI(root, content, handlers) {
     el.creature.dataset.generated = String(generated);
     el.egg.dataset.generated = String(generated);
     el.creature.style.setProperty('--scale', stage.theme.scale);
+    el.creature.dataset.evolution = '0';
 
     if (!generated) {
       el.creature.style.setProperty('--hue', stage.theme.hue);
@@ -1660,12 +1662,17 @@ export function createUI(root, content, handlers) {
     // Monster Builder sprite assembly, painted inside .creature .body. Mood
     // folds in tuckedIn here (both are already-deterministic derived state)
     // so sprite-map.js's spriteLookFor() only ever sees one effective mood.
-    // A caught-but-unread creature is WILD (angry) until reading tames it.
+    // A caught-but-unread creature is WILD (angry) until reading tames it; a
+    // tamed friend EVOLVES with its friendship (relationshipLevel = reading days)
+    // — bigger, a bonus head detail, and a sparkle aura.
     const activeRecord = state.collection?.creatures?.[state.collection?.activeCreatureId];
     const wild = activeRecord?.revealed === false;
+    const evolution = wild ? 0 : evolutionTierFor(activeRecord ? relationshipLevel(activeRecord) : 0);
     const mood = state.tuckedIn ? 'sleepy' : (wild ? 'wild' : moodOf(state));
-    const look = spriteLookFor(creature, stage.stage, mood);
+    const look = spriteLookFor(creature, stage.stage, mood, evolution);
     el.creature.dataset.shape = look.body.shape;
+    el.creature.dataset.evolution = String(evolution);
+    el.creature.style.setProperty('--scale', String(Number(stage.theme.scale) * (EVOLUTION_SCALE[evolution] ?? 1)));
     if (el.creatureBody) {
       const { frame } = layoutFor(look);
       el.creature.style.setProperty('--body-width', `${frame.w}px`);
@@ -1674,6 +1681,7 @@ export function createUI(root, content, handlers) {
       if (look.partsVisible.legs) { includeIds.add('legL'); includeIds.add('legR'); }
       if (look.partsVisible.arms) { includeIds.add('armL'); includeIds.add('armR'); }
       if (look.partsVisible.detail) { includeIds.add('detailL'); includeIds.add('detailR'); }
+      if (look.detail2) { includeIds.add('detail2L'); includeIds.add('detail2R'); }
       paintSpriteLayers(el.creatureBody, look, { includeIds, cssScale: true, factor: 1 });
     }
   }

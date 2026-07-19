@@ -104,6 +104,23 @@ export const STAGE_PARTS_VISIBLE = {
   3: { legs: true, arms: true, detail: true }
 };
 
+// Evolution: a TAMED creature's friendship (relationshipLevel = distinct reading
+// days) makes it bigger, shows its full parts, adds a second head detail, and
+// sparkles. Wild (unread) creatures are always tier 0.
+export function evolutionTierFor(relLevel = 0) {
+  if (relLevel >= 6) return 3;
+  if (relLevel >= 3) return 2;
+  if (relLevel >= 1) return 1;
+  return 0;
+}
+export const EVOLUTION_SCALE = [1, 1.06, 1.13, 1.22];
+// primary head-detail subtype -> the bonus SECOND detail added at tier >= 2.
+const BONUS_DETAIL = {
+  ear: 'horn_small', ear_round: 'horn_small',
+  horn_small: 'antenna_small', horn_large: 'antenna_small',
+  antenna_small: 'horn_small', antenna_large: 'horn_small'
+};
+
 function mouthFile(name) {
   return /^[A-J]$/.test(name) ? `mouth${name}.png` : `mouth_${name}.png`;
 }
@@ -112,7 +129,7 @@ function mouthFile(name) {
 // 2. spriteLookFor(creature, stage, mood) - the main entry point
 // ---------------------------------------------------------------------------
 
-export function spriteLookFor(creature, stage, mood) {
+export function spriteLookFor(creature, stage, mood, evolution = 0) {
   const shape = FAMILY_SHAPE[creature.family.id] ?? 'A';
   const bodyColor = PALETTE_COLOR[creature.palette.id] ?? 'red';
   const armLegLetter = ARM_LEG_LETTER[shape] ?? shape;
@@ -133,13 +150,18 @@ export function spriteLookFor(creature, stage, mood) {
 
   const noseColor = NOSE_COLOR[bodyColor] ?? null;
 
-  const partsVisible = STAGE_PARTS_VISIBLE[stage] ?? STAGE_PARTS_VISIBLE[1];
+  // An evolving friend shows its full parts regardless of growth stage.
+  const partsVisible = evolution >= 1
+    ? { legs: true, arms: true, detail: true }
+    : (STAGE_PARTS_VISIBLE[stage] ?? STAGE_PARTS_VISIBLE[1]);
+  const detail2Subtype = evolution >= 2 ? (BONUS_DETAIL[detailSubtype] ?? 'horn_small') : null;
 
   return {
     body: { color: bodyColor, shape, file: `body_${bodyColor}${shape}.png` },
     arms: { color: bodyColor, shape: armLegLetter, file: `arm_${bodyColor}${armLegLetter}.png` },
     legs: { color: bodyColor, shape: armLegLetter, file: `leg_${bodyColor}${armLegLetter}.png` },
     detail: { subtype: detailSubtype, color: bodyColor, file: `detail_${bodyColor}_${detailSubtype}.png` },
+    detail2: detail2Subtype ? { subtype: detail2Subtype, color: bodyColor, file: `detail_${bodyColor}_${detail2Subtype}.png` } : null,
     eye: { name: eyeName, layout: eyeLayout, file: `eye_${eyeName}.png` },
     mouth: { name: mouthName, file: mouthFile(mouthName) },
     nose: noseColor ? { color: noseColor, file: `nose_${noseColor}.png` } : null,
@@ -318,6 +340,14 @@ export function layoutFor(spriteLook) {
   const detailR = boxAt(frame.w - layout.detailL.cx, layout.detailL.cy, detailDims);
   parts.push({ id: 'detailL', file: spriteLook.detail.file, z: 12, mirror: false, ...detailL });
   parts.push({ id: 'detailR', file: spriteLook.detail.file, z: 12, mirror: true, ...detailR });
+
+  // Evolution bonus: a second head detail stacked just above the primary one.
+  if (spriteLook.detail2) {
+    const d2Dims = ASSET_DIMENSIONS.detail[spriteLook.detail2.subtype] ?? { w: 40, h: 40 };
+    const cy2 = layout.detailL.cy - Math.round(detailDims.h * 0.5);
+    parts.push({ id: 'detail2L', file: spriteLook.detail2.file, z: 13, mirror: false, ...boxAt(layout.detailL.cx, cy2, d2Dims) });
+    parts.push({ id: 'detail2R', file: spriteLook.detail2.file, z: 13, mirror: true, ...boxAt(frame.w - layout.detailL.cx, cy2, d2Dims) });
+  }
 
   const eyeDims = ASSET_DIMENSIONS.eye[spriteLook.eye.name] ?? { w: 64, h: 69 };
   const eyeCx = frame.w / 2;

@@ -81,7 +81,8 @@ test('known books produce a frozen sprite look (mirrors generation.test.mjs fixt
 
   for (const [isbn, expected] of fixtures) {
     const { creature } = await generateCreature(isbn);
-    assert.deepEqual(spriteLookFor(creature, 2, 'content'), expected, `sprite look mismatch for ${isbn}`);
+    // detail2 (the evolution bonus part) is null for these unevolved fixtures.
+    assert.deepEqual(spriteLookFor(creature, 2, 'content'), { detail2: null, ...expected }, `sprite look mismatch for ${isbn}`);
   }
 });
 
@@ -145,6 +146,24 @@ test('mood overlays override the gene-picked eye and mouth live, without touchin
   // a neutral/unmapped mood (or none at all) leaves the gene picks alone
   assert.deepEqual(spriteLookFor(creature, 2, 'content'), base);
   assert.deepEqual(spriteLookFor(creature, 2, undefined), base);
+});
+
+test('evolution: a tamed friend shows full parts (any stage), gains a bonus detail at tier 2, and its files exist', async () => {
+  const { evolutionTierFor } = await import('../src/systems/sprite-map.js');
+  assert.deepEqual([0, 1, 3, 6].map(evolutionTierFor), [0, 1, 2, 3]);
+  const { creature } = await generateCreature('9780064400558');
+
+  const wild = spriteLookFor(creature, 1, 'wild', 0); // stage 1 + tier 0
+  assert.deepEqual(wild.partsVisible, { legs: false, arms: false, detail: false });
+  assert.equal(wild.detail2, null);
+
+  const tier1 = spriteLookFor(creature, 1, 'content', 1); // stage 1 but evolved -> full parts
+  assert.deepEqual(tier1.partsVisible, { legs: true, arms: true, detail: true });
+  assert.equal(tier1.detail2, null);
+
+  const tier2 = spriteLookFor(creature, 1, 'content', 2);
+  assert.ok(tier2.detail2 && tier2.detail2.file.startsWith('detail_'));
+  assert.notEqual(tier2.detail2.subtype, tier2.detail.subtype); // it's a DIFFERENT part
 });
 
 test('spriteLookFor is a pure function: same inputs always produce deepEqual output', async () => {
